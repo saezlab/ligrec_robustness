@@ -1,5 +1,8 @@
 # 1.1 Installing LIANA
 {
+# install.packages('tidyverse')
+# install.packages('Seurat')
+# install.packages('RobustRankAggreg')
 # install.packages('devtools')
 # library(devtools)
 # 
@@ -29,28 +32,30 @@
 require(tidyverse)
 require(Seurat)
 require(liana)
-require(tibble)
-require(purrr)
   
-#library(pillar)
-
+load(RobustRankAggreg)
 }
 
 # 2.1 Liana Wrapper
-
-  # get liana package
-  liana_path <- system.file(package = 'liana')
-  # retrieve testdata from liana package
+{
+  # Load Testdata
+  {
+  liana_path <- system.file(package = 'liana')                                    # get liana package filepath
   testdata <- 
-    readRDS(file.path(liana_path, "testdata", "input", "testdata.rds"))
-  
-  testdata %>% glimpse
-  
-  
-  
-  
-  
-  
-  
-  
+    readRDS(file.path(liana_path, "testdata", "input", "testdata.rds"))           # retrieve testdata from filepath
 
+  testdata %>% glimpse                                                            # View Testdata
+  }
+  
+  # Run wrapper on testdata for omnipath x squidppy and connectome
+  liana_test <- liana_wrap(testdata,
+                           method = c('cellchat', 'connectome', 'italk', 'natmi', 'sca'),
+                           resource = c('OmniPath'))                              # All methods but Squidpy Work so far
+  
+}
+  
+# 2.2 Consensus Ranking
+{
+liana_aggregated_ranks <- liana_test %>% liana_aggregate()
+liana_aggregated_ranks
+}
