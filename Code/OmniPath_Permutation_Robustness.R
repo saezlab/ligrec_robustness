@@ -1,43 +1,46 @@
-# 0.1 Overview: 
+# 0. Setup
 {
-# The Idea with this script is to:
-# .	run all methods on a single resource (OP)
-# .	take the topmost ranked interactions for each method -> R-zero
-# .	create a modified OP resource in which the topmost ranked interactions
-#     remain, but of the remainder x% of the interactions have been removed and 
-#     replaced with entirely random pairs of genes derived from the test data 
-#     that do not exist in the resource, x =10,20,40% etc.
-# .	Rerun methods on modified omnipath resource, get top ranks -> R-modified
-# .	plot percentage of R-zero in R-modified over x and investigate result
-}
-
-# 0.2 Loading Packages
-{
-  require(tidyverse)
-  require(Seurat)
-  require(liana)
+  # 0.1 Overview of Goals: 
+  {
+  # The Idea with this script is to:
+  # .	run all methods on a single resource (OP)
+  # .	take the topmost ranked interactions for each method -> R-zero
+  # .	create a modified OP resource in which the topmost ranked interactions
+  #     remain, but of the remainder x% of the interactions have been removed and 
+  #     replaced with entirely random pairs of genes derived from the test data 
+  #     that do not exist in the resource, x =10,20,40% etc.
+  # .	Rerun methods on modified omnipath resource, get top ranks -> R-modified
+  # .	plot percentage of R-zero in R-modified over x and investigate result
+  }
   
-  load(RobustRankAggreg)
+  # 0.2 Loading Packages
+  {
+    require(tidyverse)
+    require(Seurat)
+    require(liana)
+    
+    load(RobustRankAggreg)
+  }
 }
 
-# 1.1 Running LIANA wrapper
-# We use five methods with OmniPath on the liana test data (squidpy is not used as it's currently not functioning for me)
+# 1. Running LIANA wrapper
 
-  # 1.1.1 Get test data
+  # 1.1 Get test data
   {
       liana_path <- system.file(package = 'liana')                                    # get liana package filepath
       testdata <- 
         readRDS(file.path(liana_path, "testdata", "input", "testdata.rds"))           # retrieve testdata from filepath
 }
   
-  # 1.1.2 Run wrapper on testdata for omnipath x (cellchat, connectome, italk, natmi, sca), (starting out with just connectome for now)
-  {  
+  # 1.2 Run wrapper on testdata for omnipath x connectome
+  { 
+  # In future it should be OmniPath x (cellchat, connectome, italk, natmi, sca), squidpy won't be used until I get it to work on windows
   liana_results_OP_0 <- liana_wrap(testdata,
                              method = c('connectome'),
                              resource = c('OmniPath'))
   }
 
-# 1.2 Extract top x ranked interactions for a given method  
+# 2. Extract top x ranked interactions for a given method  
 {
   #' Get the top n ranked items of a method from the liana wrapper results
   #'
@@ -85,11 +88,12 @@
   
   # Format the top_ranks data frames for future processing steps. Other methods would need to be added here.
   top_ranks_OP_0$connectome <- unite(top_ranks_OP_0$connectome, "LR_Pair", 3:4, remove = FALSE, sep = "_")
+  top_ranks_OP_0$connectome <-  relocate(top_ranks_OP_0$connectome, "LR_Pair", .after = last_col())
 }
 
-# 2.1 Modifying OmniPath with random genes
+# 3. Modifying OmniPath with random genes
 
-  # 2.1.1 Format OmniPath_0 to be easier to work with and to pair it down to the columns relevant for the methods
+  # 3.1 Format OmniPath_0 to be easier to work with and to pair it down to the columns relevant for the methods
   {
   OmniPath_0 <- select_resource(c('OmniPath'))
   OmniPath_0 <- OmniPath_0[["OmniPath"]]
@@ -117,9 +121,10 @@
                        isRandom = FALSE)
   
   OmniPath_0 <- unite(OmniPath_0, "LR_Pair", 1:2, remove = FALSE, sep = "_")
+  OmniPath_0 <-  relocate(OmniPath_0, "LR_Pair", .after = last_col())
 }
   
-  # 2.1.2 Format the dilute_Resource Function to make diluted OP resources for each method
+  # 3.2 Format the dilute_Resource Function to make diluted OP resources for each method
   {
   #' Dilutes a resource with randomly generated interactions derived from specific genes
   #'
@@ -149,6 +154,7 @@
     # Determine how many rows of resource_bottom to dilute so that the overall dilution_prop is met
     # Additional Warning message and break if the dilution prop can't be met
     dilution_number <- round(nrow(resource)*dilution_prop)
+    
     if(dilution_number > nrow(resource_bottom)) {
       warning("Requested dilution proportion not attainable without overwriting 
               the given top-ranked interacions. Returning nothing instead.")
@@ -164,15 +170,15 @@
     
     # Sample random gene names from the gene list into the dilution candidates, creating random nonsensical relationships
     set.seed(123)
-    resource_dilute$source_genesymbol <- as.character(sample(gene_name_list, size = nrow(resource_dilute)))
+    resource_dilute$source_genesymbol <- as.character(sample(gene_name_list, size = nrow(resource_dilute), replace = TRUE))
     set.seed(123)
-    resource_dilute$target_genesymbol <- as.character(sample(gene_name_list, size = nrow(resource_dilute)))
+    resource_dilute$target_genesymbol <- as.character(sample(gene_name_list, size = nrow(resource_dilute), replace = TRUE))
     
     # Update the LR-Pair column with the new random "interaction partners", and mark the random interactions as such.
     resource_dilute <- select(resource_dilute, -LR_Pair)
     resource_dilute <- unite(resource_dilute, "LR_Pair", 1:2, remove = FALSE, sep = "_")
-    resource_dilute <- mutate(resource_dilute,
-                              isRandom = TRUE)
+    resource_dilute <- mutate(resource_dilute, isRandom = TRUE)
+    resource_dilute <-  relocate(resource_dilute, "LR_Pair", .after = last_col())
     
     # The new resource has top ranked interactions, non-top rank but still real interactions, and diluted random interactions.
     new_resource <- bind_rows(resource_top, resource_bottom, resource_dilute)
@@ -181,11 +187,71 @@
   }
 }
   
-  # 2.1.3 Apply dilute_Resource for connectome at dilution prop 10 %
+  # 3.3 Apply dilute_Resource for connectome at various dilution stages
   {
-OmniPath_10 <- dilute_Resource(resource = OmniPath_0, 
-                top_rank_list = liana_results_OP_0, 
-                dilution_prop = 0.1, 
-                data_set = testdata, 
-                used_method = "connectome")
+    
+    diluted_resources_OP <- list()
+    dilution_props <- as.list(seq(0.1, 0.6, 0.1))
+    
+    for(i in dilution_props) {
+      diluted_resources_OP[[str_glue("OmniPath_", as.character(i*100))]] <- dilute_Resource(resource = OmniPath_0, 
+                                                                           top_rank_list = liana_results_OP_0, 
+                                                                           dilution_prop = i, 
+                                                                           data_set = testdata, 
+                                                                           used_method = "connectome")
+    }
+    
   }
+
+# 4. Reapply individual call functions from Liana  with diluted resources and store top ranks
+
+liana_results_OP_diluted <- list()
+
+for(i in seq(1, length(diluted_resources_OP), 1)) {
+  dil_resource_name <- names(diluted_resources_OP[i])
+  liana_results_OP_diluted[[dil_resource_name]] <- list("connectome" = call_connectome(seurat_object = testdata, op_resource = diluted_resources_OP[[i]]))
+                                                    #,
+                                                    # "cellchat" = call_cellchat(seurat_object = testdata, op_resource = diluted_resources_OP[[i]]),
+                                                    # "italk" = call_italk(seurat_object = testdata, op_resource = diluted_resources_OP[[i]]),
+                                                    # "natmi"= call_natmi(seurat_object = testdata, op_resource = diluted_resources_OP[[i]]),
+                                                    # "sca"= call_sca(seurat_object = testdata, op_resource = diluted_resources_OP[[i]]))
+                                                    
+                                                
+  rm(dil_resource_name)
+}
+
+top_ranks_connectome_OP <- list(OmniPath_0 = top_ranks_OP_0$connectome)
+
+for(i in seq(1, length(diluted_resources_OP), 1)) {
+  dil_resource_name <- names(diluted_resources_OP[i])
+  top_ranks_connectome_OP[[dil_resource_name]] <- get_top_n_ranks(dat = liana_results_OP_diluted[[i]], met = "connectome", top_n = 200)
+  rm(dil_resource_name)
+}
+
+
+
+
+get_top_n_ranks(dat = liana_results_OP_diluted[[i]], met = "connectome", top_n = 200)
+
+top_ranks_OP_0$connectome <- unite(top_ranks_OP_0$connectome, "LR_Pair", 3:4, remove = FALSE, sep = "_")
+top_ranks_OP_0$connectome <-  relocate(top_ranks_OP_0$connectome, "LR_Pair", .after = last_col())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
