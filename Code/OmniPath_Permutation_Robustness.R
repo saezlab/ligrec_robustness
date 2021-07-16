@@ -28,7 +28,7 @@
       liana_path <- system.file(package = 'liana')                                    # get liana package filepath
       testdata <- 
         readRDS(file.path(liana_path, "testdata", "input", "testdata.rds"))           # retrieve testdata from filepath
-  }
+}
   
   # 1.1.2 Run wrapper on testdata for omnipath x (cellchat, connectome, italk, natmi, sca), (starting out with just connectome for now)
   {  
@@ -37,7 +37,7 @@
                              resource = c('OmniPath'))
   }
 
-# 1.2 Extract top x ranked interactions for a given method method  
+# 1.2 Extract top x ranked interactions for a given method  
 {
   #' Get the top n ranked items of a method from the liana wrapper results
   #'
@@ -48,31 +48,33 @@
   #' @return Returns a tibble with all the columns for this method in the liana wrapper output but only including the rows of the top n interactions (tied values at the boundary line are cut off, no ties).
 
   get_top_n_ranks <- function(dat, met, top_n) {
-  
+    
+    # generate a list that describes how to rank in each method to get what the method considers best
     rank_spec_list <- list("cellchat" = list(met_score = "pval",descending_order =  FALSE),
                            "connectome" = list(met_score = "weight_sc", descending_order =  TRUE),
                            "italk" = list(met_score = "weight_comb", descending_order =  TRUE),
                            "natmi" = list(met_score = "edge_specificity", descending_order =  TRUE),
                            "sca" = list(met_score = "LRscore", descending_order =  TRUE),
                            "squidpy" = list(met_score = "pvalue", descending_order =  FALSE))
-  
+    
+    # If its a p-value method, the code will go into this if statement
     if(rank_spec_list[[met]]$descending_order == FALSE) {
        topranks <- slice_min(dat[[met]], 
                              n = top_n, 
-                             order_by = !!sym(rank_spec_list[[met]]$met_score), 
+                             order_by = !!sym(rank_spec_list[[met]]$met_score), # order by the criterion dictated by rank_spec_list
                              with_ties = FALSE)
                                      
-     } else {
+     } else { # if it's not one of the p-value methods
        topranks <- slice_max(dat[[met]], 
                              n = top_n, 
-                             order_by = !!sym(rank_spec_list[[met]]$met_score), 
+                             order_by = !!sym(rank_spec_list[[met]]$met_score), # order by the criterion dictated by rank_spec_list
                              with_ties = FALSE)
     }
   
    return(topranks)
   }
   
-  
+  # Apply get_top_n_ranks for each method's results on OP_0. Other emthods currently commented out
   top_ranks_OP_0 <- list("connectome" = get_top_n_ranks(dat = liana_results_OP_0, top_n = 200, met = "connectome")
                        #  ,
                        #  "cellchat" = get_top_n_ranks(dat = liana_results_OP_0, top_n = 30, met = "cellchat"),
@@ -80,132 +82,110 @@
                        #  "natmi" = get_top_n_ranks(dat = liana_results_OP_0, top_n = 200, met = "natmi"),
                        #  "sca" = get_top_n_ranks(dat = liana_results_OP_0, top_n = 200, met = "sca"))
   )
+  
+  # Format the top_ranks data frames for future processing steps. Other methods would need to be added here.
+  top_ranks_OP_0$connectome <- unite(top_ranks_OP_0$connectome, "LR_Pair", 3:4, remove = FALSE, sep = "_")
 }
 
 # 2.1 Modifying OmniPath with random genes
 
-top_ranks_OP_0$connectome <- unite(top_ranks_OP_0$connectome, "LR_Pair", 3:4, remove = FALSE, sep = "_")
-
-OmniPath_0 <- select_resource(c('OmniPath'))
-OmniPath_0 <- OmniPath_0[["OmniPath"]]
-
-OmniPath_0 <- select(OmniPath_0, 
-  source_genesymbol,
-  target_genesymbol,
-  is_directed,
-  is_stimulation,
-  consensus_stimulation,
-  is_inhibition,
-  consensus_inhibition,
-  category_intercell_source,
-  category_intercell_target,
-  genesymbol_intercell_source,
-  genesymbol_intercell_target,
-  entity_type_intercell_target,
-  sources,
-  references,
-  entity_type_intercell_source,
-  entity_type_intercell_target
-)
-
-OmniPath_0 <- unite(OmniPath_0, "LR_Pair", 1:2, remove = FALSE, sep = "_")
-
-
-
-dilute_Resource <- function(resource, top_rank_list, permutation_prop, data_set, used_method){
-
-    gene_name_list  <- as.list(testdata@assays$RNA@var.features)
-  gene_name_list <- gene_name_list[!(gene_name_list %in% resource$source_genesymbol)]
-  gene_name_list <- gene_name_list[!(gene_name_list %in% resource$target_genesymbol)]
+  # 2.1.1 Format OmniPath_0 to be easier to work with and to pair it down to the columns relevant for the methods
+  {
+  OmniPath_0 <- select_resource(c('OmniPath'))
+  OmniPath_0 <- OmniPath_0[["OmniPath"]]
   
-  resource_top <- resource %>% 
-    filter(LR_Pair %in% top_rank_list[used_method]$LR_Pair)
+  OmniPath_0 <- select(OmniPath_0, 
+    source_genesymbol,
+    target_genesymbol,
+    is_directed,
+    is_stimulation,
+    consensus_stimulation,
+    is_inhibition,
+    consensus_inhibition,
+    category_intercell_source,
+    category_intercell_target,
+    genesymbol_intercell_source,
+    genesymbol_intercell_target,
+    entity_type_intercell_target,
+    sources,
+    references,
+    entity_type_intercell_source,
+    entity_type_intercell_target
+  )
   
- resource_bottom <- resource %>% 
-    filter(!(LR_Pair %in% top_rank_list[used_method]$LR_Pair))
+  OmniPath_0 <- mutate(OmniPath_0,
+                       isRandom = FALSE)
   
-  set.seed(123)
- resource_dilute <- slice_sample(resource_bottom, prop = permutation_prop)
-  resource_bottom <- anti_join(resource_bottom, resource_dilute)
-  
-  set.seed(123)
-  resource_dilute$source_genesymbol <- as.character(sample(gene_name_list, size = nrow(resource_dilute)))
-  set.seed(123)
-  resource_dilute$target_genesymbol <- as.character(sample(gene_name_list, size = nrow(resource_dilute)))
-  
-  resource_dilute <- select(resource_dilute, -LR_Pair)
-  resource_dilute <- unite(resource_dilute, "LR_Pair", 1:2, remove = FALSE, sep = "_")
-  
-  
-  new_resource <- bind_rows(resource_top, resource_bottom, resource_dilute)
-  
-  return(new_resource)
+  OmniPath_0 <- unite(OmniPath_0, "LR_Pair", 1:2, remove = FALSE, sep = "_")
 }
+  
+  # 2.1.2 Format the dilute_Resource Function to make diluted OP resources for each method
+  {
+  #' Dilutes a resource with randomly generated interactions derived from specific genes
+  #'
+  #' @param resource The resource (as a tibble) which you would like to falsify / dilute with random gene relationships.
+  #' @param data_set The data set (as a Seurat object) from which you will draw genes. Diluting the resource with genes that are actually found in the data set the resource will be used with guarantees that the random relationships will be relevant to the method. This function excludes dilution with genes already present in the base resource and by extension genes in the top ranking.
+  #' @param top_rank_list As a list of tibbles. Each tibble in the list is named after the method that generated it and contains the top ranked rows of the liana_wrapper output. Since we are comparing how resource dilution affects top ranked interactions, this list of top rankings using the undiluted resource ensures that the top interactions can still be caught in the same way. It's the effect of surrounding diluted noise that we'll be picking up on.
+  #' @param dilution_prop As a number between 0-1. The proportion of rows of the resource to dilute. Top ranked rows can't be diluted. If attaining the requested dilution proportion requires overwriting top ranked interactions, the function throws an error and returns nothing instead.
+  #' @param used_method As a string. The method used to generae the top ranked list.
+  #' 
+  #' @return Returns a tibble that can be used as a resource for the liana wrapper function but has a certain (marked) percentage of it replaced with random nonsensical interactions.
 
-
+  dilute_Resource <- function(resource, top_rank_list, dilution_prop, data_set, used_method){
+  
+    # Generate a list of gene names that will be relevant by getting them from the data_set
+    gene_name_list  <- as.list(testdata@assays$RNA@var.features)
+    # Remove items already in OmniPath to ensure nonsense relationships, and to not mess with the top_ranks
+    gene_name_list <- gene_name_list[!(gene_name_list %in% resource$source_genesymbol)]
+    gene_name_list <- gene_name_list[!(gene_name_list %in% resource$target_genesymbol)]
+    
+    # Separate top_rank parts of resource from non top rank parts of resource, we only want to dilute the latter
+    resource_top <- resource %>% 
+      filter(LR_Pair %in% top_rank_list[used_method]$LR_Pair)
+    
+    resource_bottom <- resource %>% 
+      filter(!(LR_Pair %in% top_rank_list[used_method]$LR_Pair))
+    
+    # Determine how many rows of resource_bottom to dilute so that the overall dilution_prop is met
+    # Additional Warning message and break if the dilution prop can't be met
+    dilution_number <- round(nrow(resource)*dilution_prop)
+    if(dilution_number > nrow(resource_bottom)) {
+      warning("Requested dilution proportion not attainable without overwriting 
+              the given top-ranked interacions. Returning nothing instead.")
+      return()
+    }
+    
+    # Select the candidates for dilution from resource_bottom
+    set.seed(123)
+    resource_dilute <- slice_sample(resource_bottom, n = dilution_number)
+    # Delete the dilution candidates from resource_bottom so we have an even split into dilution candidates and non-diluted candidates
+    resource_bottom <- anti_join(resource_bottom, resource_dilute)
+    
+    
+    # Sample random gene names from the gene list into the dilution candidates, creating random nonsensical relationships
+    set.seed(123)
+    resource_dilute$source_genesymbol <- as.character(sample(gene_name_list, size = nrow(resource_dilute)))
+    set.seed(123)
+    resource_dilute$target_genesymbol <- as.character(sample(gene_name_list, size = nrow(resource_dilute)))
+    
+    # Update the LR-Pair column with the new random "interaction partners", and mark the random interactions as such.
+    resource_dilute <- select(resource_dilute, -LR_Pair)
+    resource_dilute <- unite(resource_dilute, "LR_Pair", 1:2, remove = FALSE, sep = "_")
+    resource_dilute <- mutate(resource_dilute,
+                              isRandom = TRUE)
+    
+    # The new resource has top ranked interactions, non-top rank but still real interactions, and diluted random interactions.
+    new_resource <- bind_rows(resource_top, resource_bottom, resource_dilute)
+    
+    return(new_resource)
+  }
+}
+  
+  # 2.1.3 Apply dilute_Resource for connectome at dilution prop 10 %
+  {
 OmniPath_10 <- dilute_Resource(resource = OmniPath_0, 
                 top_rank_list = liana_results_OP_0, 
-                permutation_prop = 0.1, 
+                dilution_prop = 0.1, 
                 data_set = testdata, 
                 used_method = "connectome")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# OmniPath_0_top <- OmniPath_0 %>% 
-#   filter(LR_Pair %in% top_ranks_OP_0$connectome$LR_Pair)
-# 
-# OmniPath_0_bottom <- OmniPath_0 %>% 
-#   filter(!(LR_Pair %in% top_ranks_OP_0$connectome$LR_Pair))
-# 
-# 
-# gene_name_list  <- as.list(testdata@assays$RNA@var.features)
-# gene_name_list <- gene_name_list[!(gene_name_list %in% OmniPath_0$source_genesymbol)]
-# gene_name_list <- gene_name_list[!(gene_name_list %in% OmniPath_0$target_genesymbol)]
-# 
-# OmniPath_0_dilute <- slice_sample(OmniPath_0_bottom, prop = permutation_prop)
-# OmniPath_0_bottom <- anti_join(OmniPath_0_bottom, OmniPath_0_dilute)
-# 
-# OmniPath_0_dilute$source_genesymbol <- sample(gene_name_list, size = nrow(OmniPath_0_dilute))
-# OmniPath_0_dilute$target_genesymbol <- sample(gene_name_list, size = nrow(OmniPath_0_dilute))
-# 
-# OmniPath_0_dilute <- select(OmniPath_0_dilute, -LR_Pair)
-# OmniPath_0_dilute <- unite(OmniPath_0_dilute, "LR_Pair", 1:2, remove = FALSE, sep = "_")
-# 
-# 
-# OmniPath_10 <- bind_rows(OmniPath_0_top, OmniPath_0_bottom, OmniPath_0_dilute)
-
-
-
-
-
-
+  }
