@@ -191,45 +191,52 @@
   
   # 3.3 Apply dilute_Resource for connectome at various dilution stages
   {
-    
-    diluted_resources_OP <- list()
     dilution_props <- as.list(seq(0.1, 0.6, 0.1))
     
+    ## REPEAT for every method
+    diluted_resources_connectome_OP <- list(OmniPath_0 = OmniPath_0)
+    
     for(i in dilution_props) {
-      diluted_resources_OP[[str_glue("OmniPath_", as.character(i*100))]] <- dilute_Resource(resource = OmniPath_0, 
+      diluted_resources_connectome_OP[[str_glue("OmniPath_", as.character(i*100))]] <- dilute_Resource(resource = OmniPath_0, 
                                                                            top_rank_list = liana_results_OP_0, 
                                                                            dilution_prop = i, 
                                                                            data_set = testdata, 
                                                                            used_method = "connectome")
     }
     
+    ## Repeat for every method
+    OmniPath_dilutions <- list("connectome" = diluted_resources_connectome_OP)
+    
+    ## delete uneccesary values
+    rm(OmniPath_0, diluted_resources_connectome_OP)
+    
   }
 
 # 4. Reapply individual call functions from Liana  with diluted resources and store top ranks
 
-liana_results_OP_diluted <- list()
+liana_results_OP <- list(OmniPath_0  = liana_results_OP_0)
 
 for(i in seq(1, length(dilution_props), 1)) {
-  dil_resource_name <- names(diluted_resources_OP[i])
-  liana_results_OP_diluted[[dil_resource_name]] <- list("connectome" = call_connectome(seurat_object = testdata, op_resource = diluted_resources_OP[[i]]))
+  dil_resource_name <- names(OmniPath_dilutions$connectome[i+1])
+  liana_results_OP[[dil_resource_name]] <- list("connectome" = call_connectome(seurat_object = testdata, op_resource = OmniPath_dilutions$connectome[[i+1]]))
                                                     #,
-                                                    # "cellchat" = call_cellchat(seurat_object = testdata, op_resource = diluted_resources_OP[[i]]),
-                                                    # "italk" = call_italk(seurat_object = testdata, op_resource = diluted_resources_OP[[i]]),
-                                                    # "natmi"= call_natmi(seurat_object = testdata, op_resource = diluted_resources_OP[[i]]),
-                                                    # "sca"= call_sca(seurat_object = testdata, op_resource = diluted_resources_OP[[i]]))
+                                                    # "cellchat" = call_cellchat(seurat_object = testdata, op_resource = OmniPath_dilutions$cellchat[[i]]),
+                                                    # "italk" = call_italk(seurat_object = testdata, op_resource = OmniPath_dilutions$italk[[i]]),
+                                                    # "natmi"= call_natmi(seurat_object = testdata, op_resource = OmniPath_dilutions$natmi[[i]]),
+                                                    # "sca"= call_sca(seurat_object = testdata, op_resource = OmniPath_dilutions$sca[[i]]))
                                                     
                                                 
   rm(dil_resource_name)
 }
 
-rm(i)
+rm(i, liana_results_OP_0)
 
 ## repeat this code for every method
 top_ranks_connectome_OP <- list(OmniPath_0 = top_ranks_OP_0$connectome)
 
 for(i in seq(1, length(dilution_props), 1)) {
-  dil_resource_name <- names(diluted_resources_OP[i])
-  top_ranks_list <- get_top_n_ranks(dat = liana_results_OP_diluted[[i]], met = "connectome", top_n = 200)
+  dil_resource_name <- names(OmniPath_dilutions$connectome[i+1])
+  top_ranks_list <- get_top_n_ranks(dat = liana_results_OP[[i+1]], met = "connectome", top_n = 200)
   
   top_ranks_list <- unite(top_ranks_list, "LR_Pair", 3:4, remove = FALSE, sep = "_")
   top_ranks_list <-  relocate(top_ranks_list, "LR_Pair", .after = last_col())
@@ -238,6 +245,21 @@ for(i in seq(1, length(dilution_props), 1)) {
   rm(dil_resource_name, top_ranks_list)
 }
 
-rm(i, dilution_props)
+top_ranks_OP <- list("connectome" = top_ranks_connectome_OP)
+
+rm(i, top_ranks_connectome_OP)
+
+## delete uneccesary values
+rm(top_ranks_OP_0)
+
+## restructure liana_results_OP, REPEAT for every method
+liana_results_OP_2 <- list("connectome" = list())
+
+for(i in seq(1, length(dilution_props)+1, 1)) {
+  liana_results_OP_2$connectome[[names(liana_results_OP[i])]] <- liana_results_OP[[i]]$connectome
+}
+
+liana_results_OP <- liana_results_OP_2
+rm(i, liana_results_OP_2)
 
 
