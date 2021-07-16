@@ -30,6 +30,8 @@
       liana_path <- system.file(package = 'liana')                                    # get liana package filepath
       testdata <- 
         readRDS(file.path(liana_path, "testdata", "input", "testdata.rds"))           # retrieve testdata from filepath
+      
+      rm(liana_path)
 }
   
   # 1.2 Run wrapper on testdata for omnipath x connectome
@@ -207,7 +209,7 @@
 
 liana_results_OP_diluted <- list()
 
-for(i in seq(1, length(diluted_resources_OP), 1)) {
+for(i in seq(1, length(dilution_props), 1)) {
   dil_resource_name <- names(diluted_resources_OP[i])
   liana_results_OP_diluted[[dil_resource_name]] <- list("connectome" = call_connectome(seurat_object = testdata, op_resource = diluted_resources_OP[[i]]))
                                                     #,
@@ -220,38 +222,22 @@ for(i in seq(1, length(diluted_resources_OP), 1)) {
   rm(dil_resource_name)
 }
 
+rm(i)
+
+## repeat this code for every method
 top_ranks_connectome_OP <- list(OmniPath_0 = top_ranks_OP_0$connectome)
 
-for(i in seq(1, length(diluted_resources_OP), 1)) {
+for(i in seq(1, length(dilution_props), 1)) {
   dil_resource_name <- names(diluted_resources_OP[i])
-  top_ranks_connectome_OP[[dil_resource_name]] <- get_top_n_ranks(dat = liana_results_OP_diluted[[i]], met = "connectome", top_n = 200)
-  rm(dil_resource_name)
+  top_ranks_list <- get_top_n_ranks(dat = liana_results_OP_diluted[[i]], met = "connectome", top_n = 200)
+  
+  top_ranks_list <- unite(top_ranks_list, "LR_Pair", 3:4, remove = FALSE, sep = "_")
+  top_ranks_list <-  relocate(top_ranks_list, "LR_Pair", .after = last_col())
+  
+  top_ranks_connectome_OP[[dil_resource_name]] <- top_ranks_list
+  rm(dil_resource_name, top_ranks_list)
 }
 
-
-
-
-get_top_n_ranks(dat = liana_results_OP_diluted[[i]], met = "connectome", top_n = 200)
-
-top_ranks_OP_0$connectome <- unite(top_ranks_OP_0$connectome, "LR_Pair", 3:4, remove = FALSE, sep = "_")
-top_ranks_OP_0$connectome <-  relocate(top_ranks_OP_0$connectome, "LR_Pair", .after = last_col())
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+rm(i, dilution_props)
 
 
