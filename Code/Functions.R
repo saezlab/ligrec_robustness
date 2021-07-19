@@ -45,6 +45,9 @@
 
   # dilute_Resource()
   {
+    
+    
+    
   #' Dilutes a resource with randomly generated interactions derived from specific genes
   #'
   #' @param resource The resource (as a tibble) which you would like to falsify / dilute with random gene relationships.
@@ -55,24 +58,24 @@
   #' @return Returns a tibble that can be used as a resource for the liana call_method functions but has a certain (marked) percentage of it replaced with random nonsensical interactions.
   
   # Format the dilute_Resource Function to make diluted OP resources for each method
-  dilute_Resource <- function(resource, top_rank_df, dilution_prop, data_set){
+  dilute_Resource <- function(resource_to_dil, top_rank_df, dilution_prop, data_set){
     
     # Generate a list of gene names that will be relevant by getting them from the data_set
     gene_name_list  <- as.list(rownames(data_set@assays$RNA@data))
     
     # Remove items already in OmniPath to ensure nonsense relationships, and to not mess with the top_ranks
-    gene_name_list <- gene_name_list[!(gene_name_list %in% resource$source_genesymbol)]
-    gene_name_list <- gene_name_list[!(gene_name_list %in% resource$target_genesymbol)]
+    gene_name_list <- gene_name_list[!(gene_name_list %in% resource_to_dil$source_genesymbol)]
+    gene_name_list <- gene_name_list[!(gene_name_list %in% resource_to_dil$target_genesymbol)]
     
     # Separate top_rank parts of resource from non top rank parts of resource, we only want to dilute the latter
-    resource_top <- resource %>% 
+    resource_top <- resource_to_dil %>% 
       filter(LR_Pair %in% top_rank_df$LR_Pair)
     
-    resource_bottom <- resource %>% 
+    resource_bottom <- resource_to_dil %>% 
       filter(!(LR_Pair %in% top_rank_df$LR_Pair))
     
     # Determine how many rows of resource_bottom to dilute so that the overall dilution_prop is met
-    dilution_number <- round(nrow(resource)*dilution_prop)
+    dilution_number <- round(nrow(resource_to_dil)*dilution_prop)
     
     # Additional Warning message and break if the dilution prop can't be met
     if(dilution_number > nrow(resource_bottom)) {
@@ -102,9 +105,13 @@
     
     # The new resource has top ranked interactions, non-top rank but still real interactions, and diluted random interactions.
     new_resource <- bind_rows(resource_top, resource_bottom, resource_dilute)
-    
+
+    #return output
     return(new_resource)
   }
+    
+    
+    
   }
 
 
