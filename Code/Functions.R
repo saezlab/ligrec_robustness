@@ -96,7 +96,7 @@
     
     # Update the LR-Pair column with the new random "interaction partners", and mark the random interactions as such.
     resource_dilute <- select(resource_dilute, -LR_Pair)
-    resource_dilute <- unite(resource_dilute, "LR_Pair", 1:2, remove = FALSE, sep = "_")
+    resource_dilute <- unite(resource_dilute, "LR_Pair", c(source_genesymbol, target_genesymbol), remove = FALSE, sep = "_")
     resource_dilute <- mutate(resource_dilute, isRandom = TRUE)
     resource_dilute <-  relocate(resource_dilute, "LR_Pair", .after = last_col())
     
