@@ -2,35 +2,35 @@
 # A. For OmniPath_Permutation_Robustness
   # get_top_n_ranks()
   {
-    #' Get the top n ranked items of a method from the liana wrapper results
+    #' Get the top n ranked items of a method from the tibble liana wrapper or call_x results
     #'
-    #' @param dat The list of tibbles output by the liana wrapper function.
-    #' @param met The method for which you would like to extract the top ranked interactions, as a string.
+    #' @param data_set The tibble output by the liana wrapper function or call_x functions.
+    #' @param method The method for which you would like to extract the top ranked interactions, as a string.
     #' @param top_n The number of items to return, returns items ranked #1 to #n.
     #'
-    #' @return Returns a tibble with all the columns for this method in the liana wrapper output but only including the rows of the top n interactions (tied values at the boundary line are cut off, no ties).
+    #' @return Returns the tibble input cut down to the top n highest ranked interactions.
     
-    get_top_n_ranks <- function(dat, met, top_n) {
+    get_top_n_ranks <- function(data_set, method, top_n) {
       
       # generate a list that describes how to rank in each method to get what the method considers best
-      rank_spec_list <- list("cellchat" = list(met_score = "pval",descending_order =  FALSE),
-                             "connectome" = list(met_score = "weight_sc", descending_order =  TRUE),
-                             "italk" = list(met_score = "weight_comb", descending_order =  TRUE),
-                             "natmi" = list(met_score = "edge_specificity", descending_order =  TRUE),
-                             "sca" = list(met_score = "LRscore", descending_order =  TRUE),
-                             "squidpy" = list(met_score = "pvalue", descending_order =  FALSE))
+      rank_spec_list <- list("cellchat" = list(method_score = "pval",descending_order =  FALSE),
+                             "connectome" = list(method_score = "weight_sc", descending_order =  TRUE),
+                             "italk" = list(method_score = "weight_comb", descending_order =  TRUE),
+                             "natmi" = list(method_score = "edge_specificity", descending_order =  TRUE),
+                             "sca" = list(method_score = "LRscore", descending_order =  TRUE),
+                             "squidpy" = list(method_score = "pvalue", descending_order =  FALSE))
       
       # If its a p-value method, the code will go into this if statement
-      if(rank_spec_list[[met]]$descending_order == FALSE) {
-        topranks <- slice_min(dat[[met]], 
+      if(rank_spec_list[[method]]$descending_order == FALSE) {
+        topranks <- slice_min(data_set, 
                               n = top_n, 
-                              order_by = !!sym(rank_spec_list[[met]]$met_score), # order by the criterion dictated by rank_spec_list
+                              order_by = !!sym(rank_spec_list[[method]]$method_score), # order by the criterion dictated by rank_spec_list
                               with_ties = FALSE)
         
       } else { # if it's not one of the p-value methods
-        topranks <- slice_max(dat[[met]], 
+        topranks <- slice_max(data_set, 
                               n = top_n, 
-                              order_by = !!sym(rank_spec_list[[met]]$met_score), # order by the criterion dictated by rank_spec_list
+                              order_by = !!sym(rank_spec_list[[method]]$method_score), # order by the criterion dictated by rank_spec_list
                               with_ties = FALSE)
       }
       
@@ -43,6 +43,7 @@
     }
   }
 
+  
   # dilute_Resource()
   {
     
@@ -58,24 +59,25 @@
   #' @return Returns a tibble that can be used as a resource for the liana call_method functions but has a certain (marked) percentage of it replaced with random nonsensical interactions.
   
   # Format the dilute_Resource Function to make diluted OP resources for each method
-  dilute_Resource <- function(resource_to_dil, top_rank_df, dilution_prop, data_set){
+  dilute_Resource <- function(resource, top_rank_df, dilution_prop, data_set){
     
     # Generate a list of gene names that will be relevant by getting them from the data_set
     gene_name_list  <- as.list(rownames(data_set@assays$RNA@data))
     
     # Remove items already in OmniPath to ensure nonsense relationships, and to not mess with the top_ranks
-    gene_name_list <- gene_name_list[!(gene_name_list %in% resource_to_dil$source_genesymbol)]
-    gene_name_list <- gene_name_list[!(gene_name_list %in% resource_to_dil$target_genesymbol)]
+    gene_name_list <- gene_name_list %>% 
+      discard(~ .x %in% resource$source_genesymbol) %>%
+      discard(~ .x %in% resource$target_genesymbol)
     
     # Separate top_rank parts of resource from non top rank parts of resource, we only want to dilute the latter
-    resource_top <- resource_to_dil %>% 
+    resource_top <- resource %>% 
       filter(LR_Pair %in% top_rank_df$LR_Pair)
     
-    resource_bottom <- resource_to_dil %>% 
+    resource_bottom <- resource %>% 
       filter(!(LR_Pair %in% top_rank_df$LR_Pair))
     
     # Determine how many rows of resource_bottom to dilute so that the overall dilution_prop is met
-    dilution_number <- round(nrow(resource_to_dil)*dilution_prop)
+    dilution_number <- round(nrow(resource)*dilution_prop)
     
     # Additional Warning message and break if the dilution prop can't be met
     if(dilution_number > nrow(resource_bottom)) {
@@ -98,10 +100,11 @@
     resource_dilute$target_genesymbol <- as.character(sample(gene_name_list, size = nrow(resource_dilute), replace = TRUE))
     
     # Update the LR-Pair column with the new random "interaction partners", and mark the random interactions as such.
-    resource_dilute <- select(resource_dilute, -LR_Pair)
-    resource_dilute <- unite(resource_dilute, "LR_Pair", c(source_genesymbol, target_genesymbol), remove = FALSE, sep = "_")
-    resource_dilute <- mutate(resource_dilute, isRandom = TRUE)
-    resource_dilute <-  relocate(resource_dilute, "LR_Pair", .after = last_col())
+    resource_dilute <- resource_dilute %>%
+      select(-LR_Pair) %>%
+      unite("LR_Pair", c(source_genesymbol, target_genesymbol), remove = FALSE, sep = "_") %>%
+      mutate(isRandom = TRUE) %>%
+      relocate("LR_Pair", .after = last_col())
     
     # The new resource has top ranked interactions, non-top rank but still real interactions, and diluted random interactions.
     new_resource <- bind_rows(resource_top, resource_bottom, resource_dilute)
@@ -114,8 +117,51 @@
     
   }
 
-
-
+  
+  # top_rank_overlap() # not really
+  {
+    #' Takes get_n_top_ranks outputs that have an LR_ID and determines their overlap
+    #'
+    #' @param dat A tible of interactions generated by liana_wrap or call_X.
+    #' @param met The method for which you would like to extract the top ranked interactions, as a string.
+    #' @param top_n The number of items to return, returns items ranked #1 to #n.
+    #'
+    #' @return As get_top_n_ranks, but the user needs to provide the correct data frame in dat as a reference.
+    
+    top_rank_overlap <- function(original, met, top_n) {
+      
+      # generate a list that describes how to rank in each method to get what the method considers best
+      rank_spec_list <- list("cellchat" = list(met_score = "pval",descending_order =  FALSE),
+                             "connectome" = list(met_score = "weight_sc", descending_order =  TRUE),
+                             "italk" = list(met_score = "weight_comb", descending_order =  TRUE),
+                             "natmi" = list(met_score = "edge_specificity", descending_order =  TRUE),
+                             "sca" = list(met_score = "LRscore", descending_order =  TRUE),
+                             "squidpy" = list(met_score = "pvalue", descending_order =  FALSE))
+      
+      # If its a p-value method, the code will go into this if statement
+      if(rank_spec_list[[met]]$descending_order == FALSE) {
+        topranks <- slice_min(dat, 
+                              n = top_n, 
+                              order_by = !!sym(rank_spec_list[[met]]$met_score), # order by the criterion dictated by rank_spec_list
+                              with_ties = FALSE)
+        
+      } else { # if it's not one of the p-value methods
+        topranks <- slice_max(dat, 
+                              n = top_n, 
+                              order_by = !!sym(rank_spec_list[[met]]$met_score), # order by the criterion dictated by rank_spec_list
+                              with_ties = FALSE)
+      }
+      
+      # Format the top_ranks data frame for future processing steps.
+      topranks <- topranks %>% 
+        unite("LR_Pair", c(ligand, receptor), remove = FALSE, sep = "_") %>%
+        relocate("LR_Pair", .after = last_col())
+      
+      return(topranks)
+    }
+  }
+  
+  
 
 
 
