@@ -86,21 +86,30 @@ filter_connectome <- call_connectome(op_resource = OmniPath_filter, seurat_objec
 all.equal(arrange_at(liana_results_OP$connectome$OmniPath_0, vars(everything())), filter_connectome)
 
 
-filter_cellchat <- call_cellchat(op_resource = OmniPath_filter, seurat_object = testdata) %>%
-  arrange_at(vars(everything()))
-
-all.equal(arrange_at(liana_results_OP$cellchat$OmniPath_0, vars(everything())), filter_cellchat)
-
-
 filter_italk <- call_italk(op_resource = OmniPath_filter, seurat_object = testdata) %>%
   arrange_at(vars(everything()))
 
 all.equal(arrange_at(liana_results_OP$italk$OmniPath_0, vars(everything())), filter_italk)
 
 
-filter_sca <- call_sca(op_resource = OmniPath_filter, seurat_object = testdata) %>%
+
+
+
+OmniPath_filter_OR <- resources_OP$connectome$OmniPath_0 %>%
+  filter((source_genesymbol %in% gene_names) | (target_genesymbol %in% gene_names)) 
+
+
+filter_cellchat <- call_cellchat(op_resource = OmniPath_filter_OR, seurat_object = testdata) %>%
+  arrange_at(vars(everything()))
+
+all.equal(arrange_at(liana_results_OP$cellchat$OmniPath_0, vars(everything())), filter_cellchat)
+
+
+
+filter_sca <- call_sca(op_resource = OmniPath_filter_OR, seurat_object = testdata) %>%
   arrange_at(vars(everything()))
 
 all.equal(arrange_at(liana_results_OP$sca$OmniPath_0, vars(everything())), filter_sca)
 
-## works for italk and connectome but not the rest
+
+## works for italk and connectome but not the others, not even using an OR instead of AND makes a difference
