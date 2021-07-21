@@ -73,7 +73,7 @@ all.equal(normal_connectome, filter_connectome_0)
 ## Checking if a filtered (but undiluted) OP resource produces the same as the standard non-filtered one
 ## filtered means it only includes genes that are also present in the data you're going to use it with
 ## since gene interactions for genes not in the data should have no impact, this should make no difference.
-## run when dilutionsare in env
+## run when dilutions are in env
 
 gene_names <- rownames(testdata@assays$RNA@data)
 OmniPath_filter <- resources_OP$connectome$OmniPath_0 %>%
@@ -91,25 +91,35 @@ filter_italk <- call_italk(op_resource = OmniPath_filter, seurat_object = testda
 
 all.equal(arrange_at(liana_results_OP$italk$OmniPath_0, vars(everything())), filter_italk)
 
-
-
-
-
-OmniPath_filter_OR <- resources_OP$connectome$OmniPath_0 %>%
-  filter((source_genesymbol %in% gene_names) | (target_genesymbol %in% gene_names)) 
-
-
-filter_cellchat <- call_cellchat(op_resource = OmniPath_filter_OR, seurat_object = testdata) %>%
+## works for italk and connectome when comparing to liana_wrap but not the others, but this is because liana_wrap and call_x don't work the same somehow
+#### cellchat and sca are a bit different. I have to use the call function here but then the result is the same. See more in section below
+filter_cellchat <- call_cellchat(op_resource = OmniPath_filter, seurat_object = testdata) %>%
+  arrange_at(vars(everything()))
+filter_cellchat_call <- call_cellchat(op_resource = select_resource(c("OmniPath"))[[1]], seurat_object = testdata) %>%
   arrange_at(vars(everything()))
 
-all.equal(arrange_at(liana_results_OP$cellchat$OmniPath_0, vars(everything())), filter_cellchat)
+all.equal(filter_cellchat_call, filter_cellchat)
 
 
-
-filter_sca <- call_sca(op_resource = OmniPath_filter_OR, seurat_object = testdata) %>%
+filter_sca <- call_sca(op_resource = OmniPath_filter, seurat_object = testdata) %>%
+  arrange_at(vars(everything()))
+filter_sca_call <- call_sca(op_resource = select_resource(c("OmniPath"))[[1]], seurat_object = testdata) %>%
   arrange_at(vars(everything()))
 
-all.equal(arrange_at(liana_results_OP$sca$OmniPath_0, vars(everything())), filter_sca)
+all.equal(filter_sca_call, filter_sca)
 
 
-## works for italk and connectome but not the others, not even using an OR instead of AND makes a difference
+
+
+#5.
+#### Call_X and liana wrap don't produce the same results even when same resource, same method, same data
+## not the same output somehow
+filter_sca_call <- call_sca(op_resource = select_resource(c("OmniPath"))[[1]], seurat_object = testdata)
+filter_sca_wrap <- liana_wrap(seurat_object = testdata, method = c("sca"), resource = c("OmniPath"))[[1]]
+## not the same output somehow
+filter_cellchat_call <- call_cellchat(op_resource = select_resource(c("OmniPath"))[[1]], seurat_object = testdata)
+filter_cellchat_wrap <- liana_wrap(seurat_object = testdata, method = c("cellchat"), resource = c("OmniPath"))[[1]]
+
+
+
+
