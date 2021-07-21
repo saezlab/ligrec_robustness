@@ -62,3 +62,45 @@ filter_connectome_0 <- call_connectome(seurat_object = testdata, op_resource = O
 
 all.equal(normal_connectome, filter_connectome_0)
 # the two results are identical
+
+
+
+
+
+
+
+#4.
+## Checking if a filtered (but undiluted) OP resource produces the same as the standard non-filtered one
+## filtered means it only includes genes that are also present in the data you're going to use it with
+## since gene interactions for genes not in the data should have no impact, this should make no difference.
+## run when dilutionsare in env
+
+gene_names <- rownames(testdata@assays$RNA@data)
+OmniPath_filter <- resources_OP$connectome$OmniPath_0 %>%
+  filter(source_genesymbol %in% gene_names) %>%
+  filter(target_genesymbol %in% gene_names)
+
+filter_connectome <- call_connectome(op_resource = OmniPath_filter, seurat_object = testdata) %>%
+                      arrange_at(vars(everything()))
+
+all.equal(arrange_at(liana_results_OP$connectome$OmniPath_0, vars(everything())), filter_connectome)
+
+
+filter_cellchat <- call_cellchat(op_resource = OmniPath_filter, seurat_object = testdata) %>%
+  arrange_at(vars(everything()))
+
+all.equal(arrange_at(liana_results_OP$cellchat$OmniPath_0, vars(everything())), filter_cellchat)
+
+
+filter_italk <- call_italk(op_resource = OmniPath_filter, seurat_object = testdata) %>%
+  arrange_at(vars(everything()))
+
+all.equal(arrange_at(liana_results_OP$italk$OmniPath_0, vars(everything())), filter_italk)
+
+
+filter_sca <- call_sca(op_resource = OmniPath_filter, seurat_object = testdata) %>%
+  arrange_at(vars(everything()))
+
+all.equal(arrange_at(liana_results_OP$sca$OmniPath_0, vars(everything())), filter_sca)
+
+## works for italk and connectome but not the rest
