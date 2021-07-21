@@ -65,7 +65,7 @@
                           "cellchat" = get_top_n_ranks(dat = liana_results_OP_0$cellchat, top_n = 30, met = "cellchat"), ## doesn't produce that many more interactions
                           "italk" = get_top_n_ranks(dat = liana_results_OP_0$italk, top_n = 100, met = "italk"), ## doesn't produce that many more interactions
                         #  "natmi" = get_top_n_ranks(dat = liana_results_OP_0$natmi, top_n = 200, met = "natmi"),
-                          "sca" = get_top_n_ranks(dat = liana_results_OP_0$sca, top_n = 200, met = "sca"))
+                          "sca" = get_top_n_ranks(dat = liana_results_OP_0$sca, top_n = 80, met = "sca")) ## produces variable result nrows at higher dilutions, some of them are low
     }
   
   
@@ -176,19 +176,18 @@
   
   # Lapply call functions from liana over every dilution. Different method every line
   liana_dilutions_OP[["connectome"]] <- lapply(resources_OP$connectome[-1], call_connectome, seurat_object = testdata)
-  liana_dilutions_OP[["cellchat"]] <- lapply(resources_OP$cellchat[-1], call_cellchat, seurat_object = testdata, .do_parallel = TRUE)
+  liana_dilutions_OP[["cellchat"]] <- lapply(resources_OP$cellchat[-1], call_cellchat, seurat_object = testdata)
   liana_dilutions_OP[["italk"]] <- lapply(resources_OP$italk[-1], call_italk, seurat_object = testdata)
-#  liana_dilutions_OP[["natmi"]] <- call_natmi(seurat_object = testdata, op_resource = resources_OP$natmi[-1]) # automatically iterates over list because of hurdles of conda env
+  #liana_dilutions_OP[["natmi"]] <- call_natmi(seurat_object = testdata, op_resource = resources_OP$natmi[-1]) # automatically iterates over list because of hurdles of conda env
   liana_dilutions_OP[["sca"]] <- lapply(resources_OP$sca[-1], call_sca, seurat_object = testdata) 
   
-  # Merge with undiluted results
+  # Merge with undiluted results, could use mapply but its less consistent
   for (i in c('connectome', 'cellchat', 'italk', 'sca')) {
     for (j in names(dilution_props)) {
       liana_results_OP[[i]][[j]] <- liana_dilutions_OP[[i]][[j]]
     }
   }
 
-  liana_results_OP <- mapply(c, liana_results_OP, liana_dilutions_OP, SIMPLIFY=FALSE)
   
   # Remove uneccesary Variables
   rm(liana_dilutions_OP)
@@ -212,7 +211,7 @@
   top_dilutions_OP[["sca"]] <- lapply(liana_results_OP$sca[-1], 
                                              get_top_n_ranks, met = "sca", top_n = 200)  
   
-  
+  # Merge with undiluted results, could use mapply but its less consistent
   for (i in c('connectome', 'cellchat', 'italk', 'sca')) {
     for (j in names(dilution_props)) {
       top_ranks_OP[[i]][[j]] <- top_dilutions_OP[[i]][[j]]
@@ -228,7 +227,7 @@
   top_ranks_OP$connectome <- lapply(top_ranks_OP$connectome, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
   top_ranks_OP$cellchat <- lapply(top_ranks_OP$cellchat, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
   top_ranks_OP$italk <- lapply(top_ranks_OP$italk, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
- # top_ranks_OP$natmi <- lapply(top_ranks_OP$natmi, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
+  #top_ranks_OP$natmi <- lapply(top_ranks_OP$natmi, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
   top_ranks_OP$sca <- lapply(top_ranks_OP$sca, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
   
   
