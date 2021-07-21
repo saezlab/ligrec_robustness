@@ -51,10 +51,10 @@
     
     # 1.2 Generate Undiluted liana results
     { 
-    # Run wrapper on testdata for omnipath x (cellchat, connectome, italk, natmi, sca)
+    # Run wrapper on testdata for omnipath x (cellchat, connectome, italk, sca) no natmi because it doesn't work right and its being reimplemented
     #squidpy won't be used until I get it to work on windows
     liana_results_OP_0 <- liana_wrap(testdata,
-                               method = c('connectome', 'cellchat', 'italk', 'natmi', 'sca'),
+                               method = c('connectome', 'cellchat', 'italk', 'sca'),
                                resource = c('OmniPath'))
   }
   
@@ -64,7 +64,7 @@
     top_ranks_OP_0 <- list("connectome" = get_top_n_ranks(dat = liana_results_OP_0$connectome, top_n = 200, met = "connectome"),
                           "cellchat" = get_top_n_ranks(dat = liana_results_OP_0$cellchat, top_n = 30, met = "cellchat"), ## doesn't produce that many more interactions
                           "italk" = get_top_n_ranks(dat = liana_results_OP_0$italk, top_n = 100, met = "italk"), ## doesn't produce that many more interactions
-                          "natmi" = get_top_n_ranks(dat = liana_results_OP_0$natmi, top_n = 200, met = "natmi"),
+                        #  "natmi" = get_top_n_ranks(dat = liana_results_OP_0$natmi, top_n = 200, met = "natmi"),
                           "sca" = get_top_n_ranks(dat = liana_results_OP_0$sca, top_n = 200, met = "sca"))
     }
   
@@ -121,19 +121,19 @@
   resources_OP <- list("connectome" = list(OmniPath_0 = OmniPath_0),
                          "cellchat" = list(OmniPath_0 = OmniPath_0),
                          "italk" = list(OmniPath_0 = OmniPath_0),
-                         "natmi" = list(OmniPath_0 = OmniPath_0),
+                     #    "natmi" = list(OmniPath_0 = OmniPath_0),
                          "sca" = list(OmniPath_0 = OmniPath_0))
     
   liana_results_OP <- list("connectome" = list(OmniPath_0 = liana_results_OP_0$connectome),
                            "cellchat" = list(OmniPath_0 = liana_results_OP_0$cellchat),
                            "italk" = list(OmniPath_0 = liana_results_OP_0$italk),
-                           "natmi" = list(OmniPath_0 = liana_results_OP_0$natmi),
+                      #     "natmi" = list(OmniPath_0 = liana_results_OP_0$natmi),
                            "sca" = list(OmniPath_0 = liana_results_OP_0$sca))
   
   top_ranks_OP <- list("connectome" = list(OmniPath_0 = top_ranks_OP_0$connectome),
                        "cellchat" = list(OmniPath_0 = top_ranks_OP_0$cellchat),
                        "italk" = list(OmniPath_0 = top_ranks_OP_0$italk),
-                       "natmi" = list(OmniPath_0 = top_ranks_OP_0$natmi),
+                   #    "natmi" = list(OmniPath_0 = top_ranks_OP_0$natmi),
                        "sca" = list(OmniPath_0 = top_ranks_OP_0$sca))
   
   # remove old data frames
@@ -152,7 +152,7 @@
   dilutions_OP <- list()
   
   # Iterate over every method, lapply over every dilution proportion
-  for(i in c('connectome', 'cellchat', 'italk', 'natmi', 'sca')){
+  for(i in c('connectome', 'cellchat', 'italk', 'sca')){
   dilutions_OP[[i]] <- lapply(dilution_props, 
                        dilute_Resource, resource = resources_OP[[i]]$OmniPath_0, 
                                        top_rank_df = top_ranks_OP[[i]]$OmniPath_0, 
@@ -171,24 +171,24 @@
   {
  
      
-  # Initialize a list for liana results of dilutions
+  # Initialize a list for liana results using diluted resources
   liana_dilutions_OP <- list()
   
   # Lapply call functions from liana over every dilution. Different method every line
   liana_dilutions_OP[["connectome"]] <- lapply(resources_OP$connectome[-1], call_connectome, seurat_object = testdata)
-  #  liana_dilutions_OP[["cellchat"]] <- lapply(resources_OP$cellchat[-1], call_cellchat, seurat_object = testdata) # error I think in cellchatformatDB and the select call
+  liana_dilutions_OP[["cellchat"]] <- lapply(resources_OP$cellchat[-1], call_cellchat, seurat_object = testdata, .do_parallel = TRUE)
   liana_dilutions_OP[["italk"]] <- lapply(resources_OP$italk[-1], call_italk, seurat_object = testdata)
-  liana_dilutions_OP[["natmi"]] <- call_natmi(seurat_object = testdata, op_resource = resources_OP$natmi[-1])
-  liana_dilutions_OP[["sca"]] <- lapply(resources_OP$sca[-1], call_sca, seurat_object = testdata, assay = "RNA") # has default argument assay = "SCT", we use RNA instead. Error message claims SCT is not an assay.
+#  liana_dilutions_OP[["natmi"]] <- call_natmi(seurat_object = testdata, op_resource = resources_OP$natmi[-1]) # automatically iterates over list because of hurdles of conda env
+  liana_dilutions_OP[["sca"]] <- lapply(resources_OP$sca[-1], call_sca, seurat_object = testdata) 
   
   # Merge with undiluted results
-  for (i in c('connectome', 'cellchat', 'italk', 'natmi', 'sca')) {
+  for (i in c('connectome', 'cellchat', 'italk', 'sca')) {
     for (j in names(dilution_props)) {
       liana_results_OP[[i]][[j]] <- liana_dilutions_OP[[i]][[j]]
     }
   }
 
-#  liana_results_OP <- mapply(c, liana_results_OP, liana_dilutions_OP, SIMPLIFY=FALSE)
+  liana_results_OP <- mapply(c, liana_results_OP, liana_dilutions_OP, SIMPLIFY=FALSE)
   
   # Remove uneccesary Variables
   rm(liana_dilutions_OP)
@@ -203,8 +203,8 @@
 
   top_dilutions_OP[["connectome"]] <- lapply(liana_results_OP$connectome[-1], 
                                 get_top_n_ranks, met = "connectome", top_n = 200)
-  # top_dilutions_OP[["cellchat"]] <- lapply(liana_results_OP$cellchat[-1], 
-  #                                            get_top_n_ranks, met = "cellchat", top_n = 30)  
+  top_dilutions_OP[["cellchat"]] <- lapply(liana_results_OP$cellchat[-1], 
+                                              get_top_n_ranks, met = "cellchat", top_n = 30)  
   top_dilutions_OP[["italk"]] <- lapply(liana_results_OP$italk[-1], 
                                              get_top_n_ranks, met = "italk", top_n = 100)  
   # top_dilutions_OP[["natmi"]] <- lapply(liana_results_OP$natmi[-1], 
@@ -213,7 +213,7 @@
                                              get_top_n_ranks, met = "sca", top_n = 200)  
   
   
-  for (i in c('connectome', 'cellchat', 'italk', 'natmi', 'sca')) {
+  for (i in c('connectome', 'cellchat', 'italk', 'sca')) {
     for (j in names(dilution_props)) {
       top_ranks_OP[[i]][[j]] <- top_dilutions_OP[[i]][[j]]
     }
@@ -228,13 +228,13 @@
   top_ranks_OP$connectome <- lapply(top_ranks_OP$connectome, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
   top_ranks_OP$cellchat <- lapply(top_ranks_OP$cellchat, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
   top_ranks_OP$italk <- lapply(top_ranks_OP$italk, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
-  top_ranks_OP$natmi <- lapply(top_ranks_OP$natmi, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
+ # top_ranks_OP$natmi <- lapply(top_ranks_OP$natmi, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
   top_ranks_OP$sca <- lapply(top_ranks_OP$sca, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
   
   
   # add a column to see if an interaction is fake
   
-  for (i in c('connectome', 'cellchat', 'italk', 'natmi', 'sca')) {
+  for (i in c('connectome', 'cellchat', 'italk', 'sca')) {
     for (j in c("OmniPath_0", names(dilution_props))) {
       if( !(is_null(top_ranks_OP[[i]][[j]]))) {
       top_ranks_OP[[i]][[j]] <- mutate(top_ranks_OP[[i]][[j]], isRandom = 
