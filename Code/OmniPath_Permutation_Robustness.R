@@ -154,7 +154,7 @@
   # Iterate over every method, lapply over every dilution proportion
   for(i in c('connectome', 'cellchat', 'italk', 'natmi', 'sca')){
   dilutions_OP[[i]] <- lapply(dilution_props, 
-                       dilute_Resource, resource_to_dil = resources_OP[[i]]$OmniPath_0, 
+                       dilute_Resource, resource = resources_OP[[i]]$OmniPath_0, 
                                        top_rank_df = top_ranks_OP[[i]]$OmniPath_0, 
                                        data_set = testdata)
   }
