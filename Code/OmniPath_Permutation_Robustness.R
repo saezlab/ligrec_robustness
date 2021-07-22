@@ -37,7 +37,7 @@
   } # end of subpoint
   
 }
-
+# set top_n, set methods, set dilution props
 
 #------------------------------------------------------------------------------#
 # B. Preparing necessary inputs to dilute Resources
@@ -88,8 +88,7 @@
   # Format OmniPath_0 to be easier to work with and to pair it down to the columns relevant for the methods
   # also add the isRandom column which indicates whether an interaction has been randomly generated and the LR_Pair columsn, which helps identify individual interactions
   OmniPath_0 <- select_resource(c('OmniPath'))[["OmniPath"]] %>%
-                select(OmniPath_0, 
-                       source_genesymbol,
+                select(source_genesymbol,
                        target_genesymbol,
                        is_directed,
                        is_stimulation,
