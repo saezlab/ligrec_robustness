@@ -224,7 +224,8 @@
   liana_dilutions_OP[["cellchat"]] <- lapply(resources_OP$cellchat[-1], call_cellchat, seurat_object = testdata, thresh = 1)
   liana_dilutions_OP[["italk"]] <- lapply(resources_OP$italk[-1], call_italk, seurat_object = testdata)
   #liana_dilutions_OP[["natmi"]] <- call_natmi(seurat_object = testdata, op_resource = resources_OP$natmi[-1]) # automatically iterates over list because of hurdles of conda env
-  liana_dilutions_OP[["sca"]] <- lapply(resources_OP$sca[-1], call_sca, seurat_object = testdata, s.score = 0) 
+  liana_dilutions_OP[["sca"]] <- lapply(resources_OP$sca[-1], call_sca, seurat_object = testdata, s.score = 0, logFC = 0.5849625) 
+  # for some reason sca still goes up, we're unsure why
   
   # Merge with undiluted results, could use mapply but its less consistent
   for (method in c('connectome', 'cellchat', 'italk', 'sca')) {
@@ -252,7 +253,7 @@
   
 
   top_dilutions_OP[["connectome"]] <- lapply(liana_results_OP$connectome[-1], 
-                                get_top_n_ranks, mthod = "connectome", top_n = 200)
+                                get_top_n_ranks, method = "connectome", top_n = 200)
   top_dilutions_OP[["cellchat"]] <- lapply(liana_results_OP$cellchat[-1], 
                                               get_top_n_ranks, method = "cellchat", top_n = 45)  
   top_dilutions_OP[["italk"]] <- lapply(liana_results_OP$italk[-1], 
