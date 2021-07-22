@@ -152,10 +152,10 @@
   dilutions_OP <- list()
   
   # Iterate over every method, lapply over every dilution proportion
-  for(i in c('connectome', 'cellchat', 'italk', 'sca')){
-  dilutions_OP[[i]] <- lapply(dilution_props, 
-                       dilute_Resource, resource = resources_OP[[i]]$OmniPath_0, 
-                                       top_rank_df = top_ranks_OP[[i]]$OmniPath_0, 
+  for(method in c('connectome', 'cellchat', 'italk', 'sca')){
+  dilutions_OP[[method]] <- lapply(dilution_props, 
+                       dilute_Resource, resource = resources_OP[[method]]$OmniPath_0, 
+                                       top_rank_df = top_ranks_OP[[method]]$OmniPath_0, 
                                        data_set = testdata)
   }
   
@@ -163,7 +163,7 @@
   resources_OP <- mapply(c, resources_OP, dilutions_OP, SIMPLIFY=FALSE)
   
   # Remove uneccesary Variables
-  rm(dilutions_OP, i)
+  rm(dilutions_OP, method)
       
   }
   
@@ -182,21 +182,26 @@
   liana_dilutions_OP[["sca"]] <- lapply(resources_OP$sca[-1], call_sca, seurat_object = testdata) 
   
   # Merge with undiluted results, could use mapply but its less consistent
-  for (i in c('connectome', 'cellchat', 'italk', 'sca')) {
-    for (j in names(dilution_props)) {
-      liana_results_OP[[i]][[j]] <- liana_dilutions_OP[[i]][[j]]
+  for (method in c('connectome', 'cellchat', 'italk', 'sca')) {
+    for (dilution in names(dilution_props)) {
+      
+      liana_results_OP[[method]][[dilution]] <- liana_dilutions_OP[[method]][[dilution]]
+      
     }
   }
 
   
   # Remove uneccesary Variables
-  rm(liana_dilutions_OP)
+  rm(liana_dilutions_OP, method, dilution)
 
   
   } 
   
   #7. Get top_n_ranks and evaluate ranks
-
+  {
+  
+  
+  # lapply get_top_n_ranks over the dilution stages and save results in top_dilutions list
   top_dilutions_OP <- list()
   
 
@@ -209,21 +214,26 @@
   # top_dilutions_OP[["natmi"]] <- lapply(liana_results_OP$natmi[-1], 
   #                                            get_top_n_ranks, met = "natmi", top_n = 200)  
   top_dilutions_OP[["sca"]] <- lapply(liana_results_OP$sca[-1], 
-                                             get_top_n_ranks, met = "sca", top_n = 200)  
+                                             get_top_n_ranks, met = "sca", top_n = 80)  
   
   # Merge with undiluted results, could use mapply but its less consistent
-  for (i in c('connectome', 'cellchat', 'italk', 'sca')) {
-    for (j in names(dilution_props)) {
-      top_ranks_OP[[i]][[j]] <- top_dilutions_OP[[i]][[j]]
+  for (method in c('connectome', 'cellchat', 'italk', 'sca')) {
+    for (dilution in names(dilution_props)) {
+      
+      top_ranks_OP[[method]][[dilution]] <- top_dilutions_OP[[method]][[dilution]]
+      
     }
   }
   
-  rm(top_dilutions_OP)
+  # Remove superfluous values
+  rm(top_dilutions_OP, method, dilution)
   
   
+  
+  }
   #8. Evaluate how many of the top 200 interactions overlap
   
-  # format top_ranks to have an ID that marks each specific interaction
+  # format top_ranks to have an ID that marks each specific interaction (LR and the source and target cell)
   top_ranks_OP$connectome <- lapply(top_ranks_OP$connectome, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
   top_ranks_OP$cellchat <- lapply(top_ranks_OP$cellchat, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
   top_ranks_OP$italk <- lapply(top_ranks_OP$italk, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
@@ -232,20 +242,24 @@
   
   
   # add a column to see if an interaction is fake
-  
-  for (i in c('connectome', 'cellchat', 'italk', 'sca')) {
-    for (j in c("OmniPath_0", names(dilution_props))) {
-      if( !(is_null(top_ranks_OP[[i]][[j]]))) {
-      top_ranks_OP[[i]][[j]] <- mutate(top_ranks_OP[[i]][[j]], isRandom = 
-                                         !(top_ranks_OP[[i]][[j]]$LR_Pair %in% resources_OP[[i]]$OmniPath_0$LR_Pair))
+  for (method in c('connectome', 'cellchat', 'italk', 'sca')) {
+    for (dilution in c("OmniPath_0", names(dilution_props))) {
+      if( !(is_null(top_ranks_OP[[method]][[dilution]]))) {
+          
+          top_ranks_OP[[method]][[dilution]] <- top_ranks_OP[[method]][[dilution]] %>%
+                                                  mutate(isRandom = !(LR_Pair %in% resources_OP[[method]]$OmniPath_0$LR_Pair))
+      } else {
+        
+        warning("One of the top_rank tibbles is missing! Moving on.")
+        
       }
     }
   }
   
+  # remove superfluous values
+  rm(method,dilution)
   
-  rm(i,j)
   
-  
-  
+  # lapply top_rank_overlap 
   
   
