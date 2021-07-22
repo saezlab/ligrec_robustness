@@ -69,7 +69,7 @@
     # Generate a list of gene names that will be relevant by getting them from the data_set
     gene_name_list  <- as.list(rownames(data_set@assays$RNA@data))
     
-    # Remove items already in OmniPath to ensure nonsense relationships, and to not mess with the top_ranks
+    # Remove gene names already present in OmniPath to ensure that each diluted relationship is not a top ranked CCI and is definetly new to OmniPath
     gene_name_list <- gene_name_list %>% 
       discard(~ .x %in% resource$source_genesymbol) %>%
       discard(~ .x %in% resource$target_genesymbol)
