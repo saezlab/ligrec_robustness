@@ -2,51 +2,56 @@
 # A. For OmniPath_Permutation_Robustness
   # get_top_n_ranks()
   {
-    #' Get the top n ranked items of a method from the tibble liana wrapper or call_x results
-    #'
-    #' @param data_set The tibble output by the liana wrapper function or call_x functions.
-    #' @param method The method for which you would like to extract the top ranked interactions, as a string.
-    #' @param top_n The number of items to return, returns items ranked #1 to #n.
-    #'
-    #' @return Returns the tibble input cut down to the top n highest ranked interactions.
     
-    get_top_n_ranks <- function(data_set, method, top_n) {
+    
+  #' Get the top n ranked items of a method from the tibble liana wrapper or call_x results
+  #'
+  #' @param data_set The tibble output by the liana wrapper function or call_x functions.
+  #' @param method The method for which you would like to extract the top ranked interactions, as a string.
+  #' @param top_n The number of items to return, returns items ranked #1 to #n.
+  #'
+  #' @return Returns the tibble input cut down to the top n highest ranked interactions.
+  
+  get_top_n_ranks <- function(data_set, method, top_n) {
+    
+    # generate a list that describes how to rank in each method to get what the method considers best
+    rank_spec_list <- list("cellchat" = list(method_score = "pval",descending_order =  FALSE),
+                           "connectome" = list(method_score = "weight_sc", descending_order =  TRUE),
+                           "italk" = list(method_score = "weight_comb", descending_order =  TRUE),
+                           "natmi" = list(method_score = "edge_specificity", descending_order =  TRUE),
+                           "sca" = list(method_score = "LRscore", descending_order =  TRUE),
+                           "squidpy" = list(method_score = "pvalue", descending_order =  FALSE))
+    
+    # If its a p-value method, the code will go into this if statement
+    if(rank_spec_list[[method]]$descending_order == FALSE) {
+      topranks <- slice_min(data_set, 
+                            n = top_n, 
+                            order_by = !!sym(rank_spec_list[[method]]$method_score), # order by the criterion dictated by rank_spec_list
+                            with_ties = FALSE)
       
-      # generate a list that describes how to rank in each method to get what the method considers best
-      rank_spec_list <- list("cellchat" = list(method_score = "pval",descending_order =  FALSE),
-                             "connectome" = list(method_score = "weight_sc", descending_order =  TRUE),
-                             "italk" = list(method_score = "weight_comb", descending_order =  TRUE),
-                             "natmi" = list(method_score = "edge_specificity", descending_order =  TRUE),
-                             "sca" = list(method_score = "LRscore", descending_order =  TRUE),
-                             "squidpy" = list(method_score = "pvalue", descending_order =  FALSE))
-      
-      # If its a p-value method, the code will go into this if statement
-      if(rank_spec_list[[method]]$descending_order == FALSE) {
-        topranks <- slice_min(data_set, 
-                              n = top_n, 
-                              order_by = !!sym(rank_spec_list[[method]]$method_score), # order by the criterion dictated by rank_spec_list
-                              with_ties = FALSE)
-        
-      } else { # if it's not one of the p-value methods
-        topranks <- slice_max(data_set, 
-                              n = top_n, 
-                              order_by = !!sym(rank_spec_list[[method]]$method_score), # order by the criterion dictated by rank_spec_list
-                              with_ties = FALSE)
-      }
-      
-      # Format the top_ranks data frame for future processing steps.
-      topranks <- topranks %>% 
-        unite("LR_Pair", c(ligand, receptor), remove = FALSE, sep = "_") %>%
-        relocate("LR_Pair", .after = last_col())
-      
-      return(topranks)
+    } else { # if it's not one of the p-value methods
+      topranks <- slice_max(data_set, 
+                            n = top_n, 
+                            order_by = !!sym(rank_spec_list[[method]]$method_score), # order by the criterion dictated by rank_spec_list
+                            with_ties = FALSE)
     }
+    
+    # Format the top_ranks data frame for future processing steps.
+    topranks <- topranks %>% 
+      unite("LR_Pair", c(ligand, receptor), remove = FALSE, sep = "_") %>%
+      relocate("LR_Pair", .after = last_col())
+    
+    return(topranks)
+    
+  } #end of function
+    
+    
+    
   }
 
   
   # dilute_Resource()
   {
-    
     
     
   #' Dilutes a resource with randomly generated interactions derived from specific genes
@@ -111,46 +116,52 @@
 
     #return output
     return(new_resource)
-  }
+    
+  } #end of function
     
     
     
   }
 
   
-  # rank_overlap() # not really
-  
-    #' Takes get_n_top_ranks outputs that have an LR_ID and determines their overlap
-    #'
-    #' @param main_ranks A tibble of 
-    #' @param met The method for which you would like to extract the top ranked interactions, as a string.
-    #' @param verbose Should the function describe the overlap to you or not?
-    #'
-    #' @return The overlap (0-1) between the two input frames in contents of the LR_ID column, as well as an optional print statement that gives more detail.
+  # rank_overlap()
+  {
     
-    rank_overlap <- function(main_ranks, comparison_ranks, verbose = TRUE) {
-      
-      # calculate overlap between LR_IDs
-      overlap <- sum(comparison_ranks$LR_ID %in% main_ranks$LR_ID)
-      percentage_overlap <- overlap/nrow(main_ranks)
-      
-      # describe the output to the user
-      if(verbose == TRUE) {
-        print(str_glue("The main ranking and the comparison ranking have ",
-                       as.character(overlap),
-                       " LR_IDs in common. Which corrsponds to a ",
-                       as.character(percentage_overlap*100),
-                       "% overlap."))        
-      }
-
-      # put out a warning if the rankings are not of the same length, in this case the overlap percentage is only based on the main_ranks, which might catch the user off-guard
-      if(nrow(main_ranks) != nrow(comparison_ranks)) {
-        warning("Rankings are not of same length. Percentage based on main_ranks argument.")
-      }
-      
-      return(percentage_overlap)
+    
+  #' Takes get_n_top_ranks outputs that have an LR_ID and determines their overlap
+  #'
+  #' @param main_ranks A tibble of 
+  #' @param met The method for which you would like to extract the top ranked interactions, as a string.
+  #' @param verbose Should the function describe the overlap to you or not?
+  #'
+  #' @return The overlap (0-1) between the two input frames in contents of the LR_ID column, as well as an optional print statement that gives more detail.
+  
+  rank_overlap <- function(main_ranks, comparison_ranks, verbose = TRUE) {
+    
+    # calculate overlap between LR_IDs
+    overlap <- sum(comparison_ranks$LR_ID %in% main_ranks$LR_ID)
+    percentage_overlap <- overlap/nrow(main_ranks)
+    
+    # describe the output to the user
+    if(verbose == TRUE) {
+      print(str_glue("The main ranking and the comparison ranking have ",
+                     as.character(overlap),
+                     " LR_IDs in common. Which corrsponds to a ",
+                     as.character(percentage_overlap*100),
+                     "% overlap."))        
     }
-  
+
+    # put out a warning if the rankings are not of the same length, in this case the overlap percentage is only based on the main_ranks, which might catch the user off-guard
+    if(nrow(main_ranks) != nrow(comparison_ranks)) {
+      warning("Rankings are not of same length. Percentage based on main_ranks argument.")
+    }
+    
+    return(percentage_overlap)
+    
+  } #end of function
+
+    
+  }
   
 
 
