@@ -1,4 +1,5 @@
-# 0. Setup
+#------------------------------------------------------------------------------#
+# A. Setup
 {
   # 0.1 Overview of Goals: 
   {
@@ -11,7 +12,7 @@
   #     that do not exist in the resource, x =10,20,40% etc.
   # .	Rerun methods on modified omnipath resource, get top ranks -> R-modified
   # .	plot percentage of R-zero in R-modified over x and investigate result
-  }
+  } # end of subpoint
   
   # 0.2 Script Structure:
   {
@@ -24,84 +25,101 @@
     # We compare the percentage overlap of the undiluted top_ranks to the top_ranks at each stage of dilution (for each method).
   
     # We visualize the results.
-  }
+  } # end of subpoint
     
-  # 0.2 Loading Packages
+  # 0.3 Loading Packages
   {
     require(tidyverse)
     require(Seurat)
     require(liana)
     
     load(RobustRankAggreg)
-  }
+  } # end of subpoint
+  
 }
 
+
 #------------------------------------------------------------------------------#
-# A. Preparing necessary inputs to dilute Resources
+# B. Preparing necessary inputs to dilute Resources
 {
   # 1. Running LIANA wrapper
-    # 1.1 Get test data
-    {
-        liana_path <- system.file(package = 'liana')                                    # get liana package filepath
-        testdata <- 
-          readRDS(file.path(liana_path, "testdata", "input", "testdata.rds"))           # retrieve testdata from filepath
-        
-        rm(liana_path)
-}
+  {
     
-    # 1.2 Generate Undiluted liana results
-    { 
-    # Run wrapper on testdata for omnipath x (cellchat, connectome, italk, sca) no natmi because it doesn't work right and its being reimplemented
-    #squidpy won't be used until I get it to work on windows
-    liana_results_OP_0 <- liana_wrap(testdata,
-                               method = c('connectome', 'cellchat', 'italk', 'sca'),
-                               resource = c('OmniPath'))
-  }
+    
+  # Get test data
+  liana_path <- system.file(package = 'liana')                                  
+  testdata <- 
+    readRDS(file.path(liana_path, "testdata", "input", "testdata.rds"))           
+  
+  rm(liana_path)
+
+  # Generate Undiluted liana results by running wrapper function
+  # Omnipath x (cellchat, connectome, italk, sca) on testdata
+  # no natmi because it doesn't work right and its being reimplemented
+  # squidpy won't be used until I get it to work on windows
+  liana_results_OP_0 <- liana_wrap(testdata,
+                             method = c('connectome', 'cellchat', 'italk', 'sca'),
+                             resource = c('OmniPath'))
+  
+  
+  
+  } # end of subpoint
   
   # 2. Get highest ranked interactions for undiluted conditions 
-    # 2.2 Apply get_top_n_ranks for each method's results on OP_0 (i.e. undiluted)
-    {
-    top_ranks_OP_0 <- list("connectome" = get_top_n_ranks(dat = liana_results_OP_0$connectome, top_n = 200, met = "connectome"),
-                          "cellchat" = get_top_n_ranks(dat = liana_results_OP_0$cellchat, top_n = 30, met = "cellchat"), ## doesn't produce that many more interactions
-                          "italk" = get_top_n_ranks(dat = liana_results_OP_0$italk, top_n = 100, met = "italk"), ## doesn't produce that many more interactions
-                        #  "natmi" = get_top_n_ranks(dat = liana_results_OP_0$natmi, top_n = 200, met = "natmi"),
-                          "sca" = get_top_n_ranks(dat = liana_results_OP_0$sca, top_n = 80, met = "sca")) ## produces variable result nrows at higher dilutions, some of them are low
-    }
-  
+  {
+    
+    
+  # Apply get_top_n_ranks for each method's results on OP_0 (i.e. undiluted)
+  top_ranks_OP_0 <- list("connectome" = get_top_n_ranks(dat = liana_results_OP_0$connectome, top_n = 200, met = "connectome"),
+                         "cellchat" = get_top_n_ranks(dat = liana_results_OP_0$cellchat, top_n = 30, met = "cellchat"),
+                         "italk" = get_top_n_ranks(dat = liana_results_OP_0$italk, top_n = 100, met = "italk"), 
+                         #"natmi" = get_top_n_ranks(dat = liana_results_OP_0$natmi, top_n = 200, met = "natmi"),
+                         "sca" = get_top_n_ranks(dat = liana_results_OP_0$sca, top_n = 80, met = "sca"))
+  ## top n ranks are chosen in this case to accomodate the number of results produced. In future it would be the same given number for all of them
+
+    
+    
+  } # end of subpoint
   
   # 3. Prepare to Modify OmniPath with random genes
-    # 3.1 Format OmniPath_0 to be easier to work with and to pair it down to the columns relevant for the methods
-    {
-    OmniPath_0 <- select_resource(c('OmniPath'))
-    OmniPath_0 <- OmniPath_0[["OmniPath"]]
+  {
     
-    OmniPath_0 <- select(OmniPath_0, 
-      source_genesymbol,
-      target_genesymbol,
-      is_directed,
-      is_stimulation,
-      consensus_stimulation,
-      is_inhibition,
-      consensus_inhibition,
-      category_intercell_source,
-      category_intercell_target,
-      genesymbol_intercell_source,
-      genesymbol_intercell_target,
-      entity_type_intercell_target,
-      sources,
-      references,
-      entity_type_intercell_source,
-      entity_type_intercell_target)
     
-    OmniPath_0 <- mutate(OmniPath_0,
-                         isRandom = FALSE)
+  # Format OmniPath_0 to be easier to work with and to pair it down to the columns relevant for the methods
+  # also add the isRandom column which indicates whether an interaction has been randomly generated and the LR_Pair columsn, which helps identify individual interactions
+  OmniPath_0 <- select_resource(c('OmniPath'))[["OmniPath"]] %>%
+                select(OmniPath_0, 
+                       source_genesymbol,
+                       target_genesymbol,
+                       is_directed,
+                       is_stimulation,
+                       consensus_stimulation,
+                       is_inhibition,
+                       consensus_inhibition,
+                       category_intercell_source,
+                       category_intercell_target,
+                       genesymbol_intercell_source,
+                       genesymbol_intercell_target,
+                       entity_type_intercell_target,
+                       sources,
+                       references,
+                       entity_type_intercell_source,
+                       entity_type_intercell_target) %>%
+                mutate(isRandom = FALSE) %>%
+                unite("LR_Pair", 
+                      c(source_genesymbol, target_genesymbol), 
+                      remove = FALSE, 
+                      sep = "_") %>%
+                relocate("LR_Pair", .after = last_col())
+  
     
-    OmniPath_0 <- unite(OmniPath_0, "LR_Pair", c(source_genesymbol, target_genesymbol), remove = FALSE, sep = "_")
-    OmniPath_0 <-  relocate(OmniPath_0, "LR_Pair", .after = last_col())
-}
+    
+  } # end of subpoint
     
   # 4. Listify Data sets in the face of dilution steps
   {
+    
+    
   # Since we are about to perform the same analysis in the steps above but multiplied by each dilution step, we will turn our data sets into named lists sorted by method and sub categorized by dilution.
   
   # define dilution proportions
@@ -138,15 +156,20 @@
   
   # remove old data frames
   rm(OmniPath_0, liana_results_OP_0, top_ranks_OP_0)
-}
+  
+  
+  
+  } # end of subpoint
+  
 }
 
 
 #------------------------------------------------------------------------------#
-# B. Diluting Resources and comparing Top Ranks
-  
+# C. Diluting Resources and comparing Top Ranks
+{
   # 5. Generate diluted Resources for all methods
   {
+    
     
   # Initiating a list of all dilutions
   dilutions_OP <- list()
@@ -164,17 +187,19 @@
   
   # Remove uneccesary Variables
   rm(dilutions_OP, method)
-      
-  }
+    
   
-  # 6. Reapply individual call functions from Liana  with diluted resources and store top ranks
+    
+  } # end of subpoint
+  
+  # 6. Reapply individual methods with diluted resources
   {
- 
-     
+    
+    
   # Initialize a list for liana results using diluted resources
   liana_dilutions_OP <- list()
   
-  # Lapply call functions from liana over every dilution. Different method every line
+  # Lapply call_x functions from liana over every dilution. Different method every line
   liana_dilutions_OP[["connectome"]] <- lapply(resources_OP$connectome[-1], call_connectome, seurat_object = testdata)
   liana_dilutions_OP[["cellchat"]] <- lapply(resources_OP$cellchat[-1], call_cellchat, seurat_object = testdata)
   liana_dilutions_OP[["italk"]] <- lapply(resources_OP$italk[-1], call_italk, seurat_object = testdata)
@@ -195,12 +220,13 @@
   rm(liana_dilutions_OP, method, dilution)
 
   
-  } 
   
-  #7. Get top_n_ranks and evaluate ranks
+  } # end of subpoint
+  
+  # 7. Get top_n_ranks for each method and dilution
   {
-  
-  
+    
+    
   # lapply get_top_n_ranks over the dilution stages and save results in top_dilutions list
   top_dilutions_OP <- list()
   
@@ -230,9 +256,12 @@
   
   
   
-  }
-  #8. Evaluate how many of the top 200 interactions overlap
-  
+  } # end of subpoint
+
+  #8. Evaluate how many of the top 200 interactions overlap between the original and the dilutions
+  {
+    
+    
   # format top_ranks to have an ID that marks each specific interaction (LR and the source and target cell)
   top_ranks_OP$connectome <- lapply(top_ranks_OP$connectome, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
   top_ranks_OP$cellchat <- lapply(top_ranks_OP$cellchat, unite, col = "LR_ID", c(source, target, ligand, receptor), remove = FALSE)
@@ -260,6 +289,33 @@
   rm(method,dilution)
   
   
-  # lapply top_rank_overlap 
+  # lapply rank_overlap over the top rank tibbles, comparing the dilutions to the OP_0 at each stage.
+  overlap_connectome <- lapply(top_ranks_OP$connectome[-1], rank_overlap, main_ranks = top_ranks_OP$connectome$OmniPath_0)
+  overlap_cellchat <- lapply(top_ranks_OP$cellchat[-1], rank_overlap, main_ranks = top_ranks_OP$cellchat$OmniPath_0)
+  overlap_italk <- lapply(top_ranks_OP$italk[-1], rank_overlap, main_ranks = top_ranks_OP$italk$OmniPath_0)
+  overlap_sca <- lapply(top_ranks_OP$sca[-1], rank_overlap, main_ranks = top_ranks_OP$sca$OmniPath_0)
+  # overlap_natmi <- lapply(top_ranks_OP$natmi[-1], rank_overlap, main_ranks = top_ranks_OP$natmi$OmniPath_0)
+  
+  # reformatting overlap as a tibble
+  top_rank_overlap <- tibble("connectome" = overlap_connectome,
+                             "cellchat" = overlap_cellchat,
+                             "italk" = overlap_italk,
+                             "sca" = overlap_sca) %>%
+          unnest(cols = c(connectome, cellchat, italk, sca)) %>%
+          mutate(dilution_prop = dilution_props) %>%
+          relocate("dilution_prop")
+  
+  # removing superfluous values
+  rm(overlap_connectome, overlap_cellchat, overlap_italk, overlap_sca)
+  
+  } # end of subpoint
+  
+}
+
+
+#------------------------------------------------------------------------------#
+# D. Visualizing the results
+  
+  
   
   
