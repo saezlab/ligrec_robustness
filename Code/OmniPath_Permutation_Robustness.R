@@ -38,7 +38,7 @@
   
 }
 
-# set top_n, set methods, set dilution props
+# Make sure to set top_n, set methods, set dilution props
 
 #------------------------------------------------------------------------------#
 # B. Preparing necessary inputs to dilute Resources
@@ -71,11 +71,11 @@
     
     
   # Apply get_top_n_ranks for each method's results on OP_0 (i.e. undiluted)
-  top_ranks_OP_0 <- list("connectome" = get_top_n_ranks(dat = liana_results_OP_0$connectome, top_n = 200, met = "connectome"),
-                         "cellchat" = get_top_n_ranks(dat = liana_results_OP_0$cellchat, top_n = 45, met = "cellchat"),
-                         "italk" = get_top_n_ranks(dat = liana_results_OP_0$italk, top_n = 110, met = "italk"), 
-                         #"natmi" = get_top_n_ranks(dat = liana_results_OP_0$natmi, top_n = 200, met = "natmi"),
-                         "sca" = get_top_n_ranks(dat = liana_results_OP_0$sca, top_n = 200, met = "sca"))
+  top_ranks_OP_0 <- list("connectome" = get_top_n_ranks(data_set = liana_results_OP_0$connectome, top_n = 200, method = "connectome"),
+                         "cellchat" = get_top_n_ranks(data_set = liana_results_OP_0$cellchat, top_n = 45, method = "cellchat"),
+                         "italk" = get_top_n_ranks(data_set = liana_results_OP_0$italk, top_n = 110, method = "italk"), 
+                         #"natmi" = get_top_n_ranks(data_set = liana_results_OP_0$natmi, top_n = 200, method = "natmi"),
+                         "sca" = get_top_n_ranks(data_set = liana_results_OP_0$sca, top_n = 200, method = "sca"))
   ## top n ranks are chosen in this case to accomodate the number of results produced. In future it would be the same given number for all of them
 
     
@@ -252,15 +252,15 @@
   
 
   top_dilutions_OP[["connectome"]] <- lapply(liana_results_OP$connectome[-1], 
-                                get_top_n_ranks, met = "connectome", top_n = 200)
+                                get_top_n_ranks, mthod = "connectome", top_n = 200)
   top_dilutions_OP[["cellchat"]] <- lapply(liana_results_OP$cellchat[-1], 
-                                              get_top_n_ranks, met = "cellchat", top_n = 45)  
+                                              get_top_n_ranks, method = "cellchat", top_n = 45)  
   top_dilutions_OP[["italk"]] <- lapply(liana_results_OP$italk[-1], 
-                                             get_top_n_ranks, met = "italk", top_n = 110)  
+                                             get_top_n_ranks, method = "italk", top_n = 110)  
   # top_dilutions_OP[["natmi"]] <- lapply(liana_results_OP$natmi[-1], 
-  #                                            get_top_n_ranks, met = "natmi", top_n = 200)  
+  #                                            get_top_n_ranks, method = "natmi", top_n = 200)  
   top_dilutions_OP[["sca"]] <- lapply(liana_results_OP$sca[-1], 
-                                             get_top_n_ranks, met = "sca", top_n = 200)  
+                                             get_top_n_ranks, method = "sca", top_n = 200)  
   
   # Merge with undiluted results, could use mapply but its less consistent
   for (method in c('connectome', 'cellchat', 'italk', 'sca')) {
