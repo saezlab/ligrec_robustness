@@ -37,6 +37,7 @@
   } # end of subpoint
   
 }
+
 # set top_n, set methods, set dilution props
 
 #------------------------------------------------------------------------------#
@@ -71,10 +72,10 @@
     
   # Apply get_top_n_ranks for each method's results on OP_0 (i.e. undiluted)
   top_ranks_OP_0 <- list("connectome" = get_top_n_ranks(dat = liana_results_OP_0$connectome, top_n = 200, met = "connectome"),
-                         "cellchat" = get_top_n_ranks(dat = liana_results_OP_0$cellchat, top_n = 30, met = "cellchat"),
-                         "italk" = get_top_n_ranks(dat = liana_results_OP_0$italk, top_n = 100, met = "italk"), 
+                         "cellchat" = get_top_n_ranks(dat = liana_results_OP_0$cellchat, top_n = 45, met = "cellchat"),
+                         "italk" = get_top_n_ranks(dat = liana_results_OP_0$italk, top_n = 110, met = "italk"), 
                          #"natmi" = get_top_n_ranks(dat = liana_results_OP_0$natmi, top_n = 200, met = "natmi"),
-                         "sca" = get_top_n_ranks(dat = liana_results_OP_0$sca, top_n = 80, met = "sca"))
+                         "sca" = get_top_n_ranks(dat = liana_results_OP_0$sca, top_n = 200, met = "sca"))
   ## top n ranks are chosen in this case to accomodate the number of results produced. In future it would be the same given number for all of them
 
     
@@ -83,7 +84,7 @@
   
   # 3. Prepare to Modify OmniPath with random genes
   {
-    
+  
     
   # Format OmniPath_0 to be easier to work with and to pair it down to the columns relevant for the methods
   # also add the isRandom column which indicates whether an interaction has been randomly generated and the LR_Pair columsn, which helps identify individual interactions
@@ -110,7 +111,21 @@
                       remove = FALSE, 
                       sep = "_") %>%
                 relocate("LR_Pair", .after = last_col())
-  
+    
+    # Filter OmniPath to only include interactions between genes that are both represented in the data
+    # This has no impact on the results, since the removed interactions can't be evaluated by the methods as the necessary genes are missing.
+    # The advantage here is that dilution later replaces genes from the resource with genes in the data set
+    # If we consider genes in the resource that are also represented in the data 'hits', then we are diluting the resource by inserting hits.
+    # Making sure OP only had hits to begin with ensures we dilute hits with other hits, a fairer comparison than the alternative, which would be diluting hits and non-hits from OP with hits from the data.
+    gene_names <- rownames(testdata@assays$RNA@data)
+    
+    OmniPath_0 <- OmniPath_0 %>%
+      filter(source_genesymbol %in% gene_names) %>%
+      filter(target_genesymbol %in% gene_names)
+    
+    # removing superfluous values
+    rm(gene_names)
+    
     
     
   } # end of subpoint
@@ -181,11 +196,17 @@
                                        data_set = testdata)
   }
   
-  # Merge OP_0 with the rest of the dilutions
-  resources_OP <- mapply(c, resources_OP, dilutions_OP, SIMPLIFY=FALSE)
+  # Merge OP_0 with the rest of the dilutions, could use mapply but its less consistent
+  for (method in c('connectome', 'cellchat', 'italk', 'sca')) {
+    for (dilution in names(dilution_props)) {
+      
+      resources_OP[[method]][[dilution]] <- dilutions_OP[[method]][[dilution]]
+      
+    }
+  }
   
   # Remove uneccesary Variables
-  rm(dilutions_OP, method)
+  rm(dilutions_OP, method, dilution)
     
   
     
@@ -200,10 +221,10 @@
   
   # Lapply call_x functions from liana over every dilution. Different method every line
   liana_dilutions_OP[["connectome"]] <- lapply(resources_OP$connectome[-1], call_connectome, seurat_object = testdata)
-  liana_dilutions_OP[["cellchat"]] <- lapply(resources_OP$cellchat[-1], call_cellchat, seurat_object = testdata)
+  liana_dilutions_OP[["cellchat"]] <- lapply(resources_OP$cellchat[-1], call_cellchat, seurat_object = testdata, thresh = 1)
   liana_dilutions_OP[["italk"]] <- lapply(resources_OP$italk[-1], call_italk, seurat_object = testdata)
   #liana_dilutions_OP[["natmi"]] <- call_natmi(seurat_object = testdata, op_resource = resources_OP$natmi[-1]) # automatically iterates over list because of hurdles of conda env
-  liana_dilutions_OP[["sca"]] <- lapply(resources_OP$sca[-1], call_sca, seurat_object = testdata) 
+  liana_dilutions_OP[["sca"]] <- lapply(resources_OP$sca[-1], call_sca, seurat_object = testdata, s.score = 0) 
   
   # Merge with undiluted results, could use mapply but its less consistent
   for (method in c('connectome', 'cellchat', 'italk', 'sca')) {
@@ -233,13 +254,13 @@
   top_dilutions_OP[["connectome"]] <- lapply(liana_results_OP$connectome[-1], 
                                 get_top_n_ranks, met = "connectome", top_n = 200)
   top_dilutions_OP[["cellchat"]] <- lapply(liana_results_OP$cellchat[-1], 
-                                              get_top_n_ranks, met = "cellchat", top_n = 30)  
+                                              get_top_n_ranks, met = "cellchat", top_n = 45)  
   top_dilutions_OP[["italk"]] <- lapply(liana_results_OP$italk[-1], 
-                                             get_top_n_ranks, met = "italk", top_n = 100)  
+                                             get_top_n_ranks, met = "italk", top_n = 110)  
   # top_dilutions_OP[["natmi"]] <- lapply(liana_results_OP$natmi[-1], 
   #                                            get_top_n_ranks, met = "natmi", top_n = 200)  
   top_dilutions_OP[["sca"]] <- lapply(liana_results_OP$sca[-1], 
-                                             get_top_n_ranks, met = "sca", top_n = 80)  
+                                             get_top_n_ranks, met = "sca", top_n = 200)  
   
   # Merge with undiluted results, could use mapply but its less consistent
   for (method in c('connectome', 'cellchat', 'italk', 'sca')) {
