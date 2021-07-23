@@ -3,3 +3,10 @@
 .RData
 .Ruserdata
 *.Rproj
+*.html
+
+Data/*
+!Data/.gitkeep 
+
+Outputs/*
+!Outputs/.gitkeep 
