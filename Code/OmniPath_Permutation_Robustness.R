@@ -53,7 +53,7 @@
 #------------------------------------------------------------------------------#
 # B. Set top_n, dilution props, testdata type ----------------------------------
 {
-  dilution_props <- c(seq(0.30, 0.6, 0.30))
+  dilution_props <- c(seq(0.30, 0.6, 0.60))
   
   number_ranks   <- list("connectome" = 20, 
                          "cellchat"   = 20,
@@ -62,10 +62,11 @@
                          "natmi"      = 20,
                          "squidpy"    = 20)
   
-  testdata_type  <- c("liana") # choose "liana" or "seurat tutorial"
+  testdata_type  <- c("liana_test") # choose "liana_test" or "seurat_pbmc"
  
   
 }   
+
 
   
 #------------------------------------------------------------------------------#
@@ -77,13 +78,13 @@
   {
     
   # Get seurat or liana test data
-  if (testdata_type == "seurat tutorial") {
+  if (testdata_type == "seurat_pbmc") {
     
     testdata <- readRDS(file = "Data/pbmc3k_final.rds")     
     
     
     
-  } else if (testdata_type == "liana") {
+  } else if (testdata_type == "liana_test") {
     
     liana_path <- system.file(package = 'liana')       
     testdata <- 
@@ -251,6 +252,7 @@
   } # end of subpoint
   
 }
+
 
 
 #------------------------------------------------------------------------------#
@@ -495,12 +497,12 @@
   
   # reformatting overlap as a tibble
   top_rank_overlap <- tibble("connectome" = overlap_connectome,
-                             "cellchat" = overlap_cellchat,
-                             "italk" = overlap_italk,
-                             "sca" = overlap_sca) %>%
-                           unnest(cols = c(connectome, cellchat, italk, sca)) %>%
-                           mutate(dilution_prop = dilution_props) %>%
-                           relocate("dilution_prop")
+                             "cellchat"   = overlap_cellchat,
+                             "italk"      = overlap_italk,
+                             "sca"        = overlap_sca) %>%
+                      unnest(cols = c(connectome, cellchat, italk, sca)) %>%
+                      mutate(dilution_prop = dilution_props) %>%
+                      relocate("dilution_prop")
   
   # removing superfluous values
   rm(overlap_connectome, overlap_cellchat, overlap_italk, overlap_sca)
@@ -510,9 +512,28 @@
 }
 
 
+
 #------------------------------------------------------------------------------#
 # E. Visualizing the results ---------------------------------------------------
   
+
+
+
+
+#------------------------------------------------------------------------------#
+# F. Saving the results --------------------------------------------------------
+
+
+
   runtime[["end"]] <- Sys.time()
+  
+  save.image(file = str_glue("Outputs/DilutionEnv_", 
+                             testdata_type, 
+                             "_top",
+                             as.character(median(unlist(number_ranks))),
+                             "_",
+                             as.character(last(dilution_props)*100),
+                             "%.RData"))
+
   
   
