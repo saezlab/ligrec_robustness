@@ -14,3 +14,4 @@ probably now that, but I wanted to test using a link in markdown).
 ## Subfolders:
 1. **Code**: All the code can be found here, including the code that collects the right data for you.
 2. **Data**: When you run the code that collects the right data it will be stored here.
+3. **Outputs**: This  is where scripts will drop their results if they're saving them to the PC.
