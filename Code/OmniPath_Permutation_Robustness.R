@@ -53,7 +53,7 @@
 #------------------------------------------------------------------------------#
 # B. Set top_n, dilution props, testdata type ----------------------------------
 {
-  dilution_props <- c(seq(0.30, 0.6, 0.60))
+  dilution_props <- c(seq(0.30, 0.6, 0.60)) # should be consistent between tests
   
   number_ranks   <- list("connectome" = 20, 
                          "cellchat"   = 20,
@@ -64,6 +64,12 @@
   
   testdata_type  <- c("liana_test") # choose "liana_test" or "seurat_pbmc"
  
+  feature_type <- c("generic") # choose "generic" or "variable"
+  # If feature_type is generic, dilution will be completed with any genes
+  # in the seurat count matrix. If dilution is variable, only the variable
+  # features are used for dilution.
+  
+  
   
 }   
 
@@ -272,7 +278,8 @@
       lapply(dilution_props, dilute_Resource, 
              resource = resources_OP[[method]]$OmniPath_0, 
              top_rank_df = top_ranks_OP[[method]]$OmniPath_0, 
-             data_set = testdata)
+             data_set = testdata,
+             dilution_type = feature_type)
     
   }
   
@@ -532,8 +539,8 @@
                              "_top",
                              as.character(median(unlist(number_ranks))),
                              "_",
-                             as.character(last(dilution_props)*100),
-                             "%.RData"))
+                             feature_type,
+                             ".RData"))
 
   
   
