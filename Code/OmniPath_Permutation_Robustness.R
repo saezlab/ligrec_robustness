@@ -122,7 +122,7 @@
   
   for(method in c('connectome', 'cellchat', 'italk', 'sca')){
     
-    top_ranks_OP[[method]] <- get_top_n_ranks(data_set = 
+    top_ranks_OP_0[[method]] <- get_top_n_ranks(data_set = 
                                                 liana_results_OP_0[[method]],
                                               top_n = number_ranks[[method]],
                                               method = method)
@@ -494,7 +494,7 @@
   
   
   # reformatting overlap as a tibble
-  top_rank_overlap_1000 <- tibble("connectome" = overlap_connectome,
+  top_rank_overlap <- tibble("connectome" = overlap_connectome,
                              "cellchat" = overlap_cellchat,
                              "italk" = overlap_italk,
                              "sca" = overlap_sca) %>%
