@@ -60,14 +60,32 @@
   #' @param data_set The data set (as a Seurat object) from which you will draw genes. Diluting the resource with genes that are actually found in the data set the resource will be used with guarantees that the random relationships will be relevant to the method. This function excludes dilution with genes already present in the base resource and by extension genes in the top ranking.
   #' @param top_rank_df As a tibble. Ideally the output of get_top_n_ranks. Should contain the top ranked rows of the liana_wrapper output for the method you are diluting for (using the undiluted resource). Since we are comparing how resource dilution affects top ranked interactions, this list of top rankings using the undiluted resource ensures that the top interactions can still be caught in the same way. It's the effect of surrounding diluted noise that we'll be picking up on.
   #' @param dilution_prop As a number between 0-1. The proportion of rows of the resource to dilute. Top ranked rows can't be diluted. If attaining the requested dilution proportion requires overwriting top ranked interactions, the function throws an error and returns nothing instead.
+  #' @param dilution_type Choose "generic" or "variable". Generic dilutes with generic genes from the count matrix, variable dilutes from variable features.
   #' 
   #' @return Returns a tibble that can be used as a resource for the liana call_method functions but has a certain (marked) percentage of it replaced with random nonsensical interactions.
   
   # Format the dilute_Resource Function to make diluted OP resources for each method
-  dilute_Resource <- function(resource, top_rank_df, dilution_prop, data_set){
-    
+  dilute_Resource <- function(resource, top_rank_df, dilution_prop, data_set, dilution_type){
     # Generate a list of gene names that will be relevant by getting them from the data_set
+    # Depending on what type of dilution is requested, we pull our genes from 
+    # the variable or normal section of the seurat object
+    if (dilution_type == "generic") {
+    
     gene_name_list  <- as.list(rownames(data_set@assays$RNA@data))
+    
+    
+    } else if (dilution_type == "variable") {
+      
+      gene_name_list <- as.list(data_set@assays$RNA@var.features)
+      
+      
+    } else {
+      
+      warning("Type of dilution was not set properly. Returning null.")
+      return()
+      
+    }
+    
     
     # Remove gene names already present in OmniPath to ensure that each diluted relationship is not a top ranked CCI and is definetly new to OmniPath
     gene_name_list <- gene_name_list %>% 
