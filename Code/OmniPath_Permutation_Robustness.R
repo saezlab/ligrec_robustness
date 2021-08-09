@@ -42,8 +42,6 @@
     require(tidyverse)
     require(Seurat)
     require(liana)
-    
-    
   } # end of subpoint
   
 }
@@ -53,7 +51,7 @@
 #------------------------------------------------------------------------------#
 # B. Set top_n, dilution props, testdata type ----------------------------------
 {
-  dilution_props <- c(seq(0.30, 0.6, 0.60)) # should be consistent between tests
+  dilution_props <- c(seq(0.30, 0.6, 0.30)) # should be consistent between tests
   
   number_ranks   <- list("connectome" = 20, 
                          "cellchat"   = 20,
@@ -64,7 +62,7 @@
   
   testdata_type  <- c("liana_test") # choose "liana_test" or "seurat_pbmc"
  
-  feature_type <- c("generic") # choose "generic" or "variable"
+  feature_type <- c("variable") # choose "generic" or "variable"
   # If feature_type is generic, dilution will be completed with any genes
   # in the seurat count matrix. If dilution is variable, only the variable
   # features are used for dilution.
@@ -309,6 +307,7 @@
     
   # Initialize a list for liana results using diluted resources
   liana_dilutions_OP <- list()
+    
   runtime[["methods_start"]] <- Sys.time()
     
   
@@ -481,23 +480,23 @@
   
   # lapply rank_overlap over the top rank tibbles, comparing the dilutions to 
   # the OP_0 at each stage.
-  overlap_connectome <- lapply(top_ranks_OP$connectome[-1], rank_overlap, 
+  overlap_connectome <- lapply(top_ranks_OP$connectome, rank_overlap, 
                                main_ranks = top_ranks_OP$connectome$OmniPath_0)
   
   
-  overlap_cellchat   <- lapply(top_ranks_OP$cellchat[-1], rank_overlap, 
+  overlap_cellchat   <- lapply(top_ranks_OP$cellchat, rank_overlap, 
                                main_ranks = top_ranks_OP$cellchat$OmniPath_0)
   
   
-  overlap_italk      <- lapply(top_ranks_OP$italk[-1], rank_overlap, 
+  overlap_italk      <- lapply(top_ranks_OP$italk, rank_overlap, 
                                main_ranks = top_ranks_OP$italk$OmniPath_0)
   
   
-  overlap_sca        <- lapply(top_ranks_OP$sca[-1], rank_overlap,
+  overlap_sca        <- lapply(top_ranks_OP$sca, rank_overlap,
                                main_ranks = top_ranks_OP$sca$OmniPath_0)
   
   
-  #overlap_natmi    <- lapply(top_ranks_OP$natmi[-1], rank_overlap, 
+  #overlap_natmi    <- lapply(top_ranks_OP$natmi, rank_overlap, 
   #                            main_ranks = top_ranks_OP$natmi$OmniPath_0)
   
   
@@ -508,7 +507,8 @@
                              "italk"      = overlap_italk,
                              "sca"        = overlap_sca) %>%
                       unnest(cols = c(connectome, cellchat, italk, sca)) %>%
-                      mutate(dilution_prop = dilution_props) %>%
+                      mutate(dilution_prop = c(0, dilution_props)) %>%
+                      unnest(cols = c(dilution_prop)) %>%
                       relocate("dilution_prop")
   
   # removing superfluous values
@@ -523,16 +523,87 @@
 #------------------------------------------------------------------------------#
 # E. Visualizing the results ---------------------------------------------------
   
-
-
-
-
+  # The plot is better in percent than proportion
+  top_rank_overlap_plot <- top_rank_overlap * 100
+  
+  # Automatically assemble a file name and plot subtitle
+  plotting_subtitle <- str_glue(feature_type,
+                                " dilution, top ",
+                                as.character(median(unlist(number_ranks))),
+                                " ranks, ",
+                                testdata_type,
+                                " data")
+  
+  plot_png_name <- str_glue(testdata_type, 
+                            "_top",
+                            as.character(median(unlist(number_ranks))),
+                            "_",
+                            feature_type,
+                            ".png")
+  
+  # Plot top_rank_overlap with lines and points at each value
+  ggplot(data = top_rank_overlap_plot) + 
+    geom_line(mapping = aes(dilution_prop, connectome, color =  "Connectome")) +
+    geom_line(mapping = aes(dilution_prop, cellchat, color = "CellChat")) +
+    geom_line(mapping = aes(dilution_prop, italk, color = "iTALK")) +
+    geom_line(mapping = aes(dilution_prop, sca, color = "SCA")) +
+    
+    geom_point(mapping = aes(dilution_prop, connectome, color =  "Connectome")) +
+    geom_point(mapping = aes(dilution_prop, cellchat, color = "CellChat")) +
+    geom_point(mapping = aes(dilution_prop, italk, color = "iTALK")) +
+    geom_point(mapping = aes(dilution_prop, sca, color = "SCA")) +
+    
+    # Show full breadth of 100-0 percent overlap
+    ylim(0, 100) +
+    
+    ggtitle("Robustness of Method Predictions") +
+    ylab("Overlap of Top Ranks [%]") +
+    xlab("Dilution of Resource [%]") +
+    labs(subtitle = plotting_subtitle,
+         color = "Method")
+  
+  # Save the plot automatically to the outputs folder
+  ggsave(plot_png_name, 
+         height = 5, width = 8, 
+         path = "Outputs")
+  
+  # Remove unnecessary variables
+  rm(top_rank_overlap_plot)
+  
 #------------------------------------------------------------------------------#
 # F. Saving the results --------------------------------------------------------
-
-
-
+  
+  
+  
   runtime[["end"]] <- Sys.time()
+  
+  runtime_numeric <- as.numeric(runtime)
+  
+  seconds_elapsed <- c(0, 
+                       runtime_numeric[[2]] - runtime_numeric [[1]],
+                       runtime_numeric[[3]] - runtime_numeric [[2]],
+                       runtime_numeric[[4]] - runtime_numeric [[3]],
+                       runtime_numeric[[5]] - runtime_numeric [[4]],
+                       runtime_numeric[[6]] - runtime_numeric [[5]],
+                       runtime_numeric[[7]] - runtime_numeric [[6]])
+
+  minutes_elapsed <- seconds_elapsed / 60
+  hours_elapsed <- minutes_elapsed / 60
+  
+  seconds_elapsed <- round(seconds_elapsed, 2)
+  minutes_elapsed <- round(minutes_elapsed, 2)
+  hours_elapsed <- round(hours_elapsed, 2)
+  
+  runtime <- runtime %>%
+    as_tibble_col() %>%
+    unnest(cols = c(value)) %>%
+    add_column(seconds_elapsed) %>%
+    add_column(minutes_elapsed) %>%
+    add_column(hours_elapsed)
+  
+  rm(runtime_numeric, seconds_elapsed, minutes_elapsed, hours_elapsed)
+  
+  
   
   save.image(file = str_glue("Outputs/DilutionEnv_", 
                              testdata_type, 
@@ -541,6 +612,4 @@
                              "_",
                              feature_type,
                              ".RData"))
-
-  
   
