@@ -123,3 +123,78 @@ filter_cellchat_wrap <- liana_wrap(seurat_object = testdata, method = c("cellcha
 
 
 
+# 6. Plot and save results for dilution, top 250 and top 1000 ranks -------------------------
+
+load("C:/Users/plabu/OneDrive/Documents/GitHub/ligrec_robustness/Data/env_after_1000.RData")
+
+top_rank_overlap_1000 <- top_rank_overlap_1000 %>%
+  unnest(dilution_prop) %>%
+  add_row(dilution_prop = 0, 
+          connectome = 1, 
+          cellchat = 1, 
+          italk = 1, 
+          sca = 1, 
+          .before = 1) %>%
+  "*"(100)
+
+
+
+ggplot(data = top_rank_overlap_1000) + 
+  geom_line(mapping = aes(dilution_prop, connectome, color =  "Connectome")) +
+  geom_line(mapping = aes(dilution_prop, cellchat, color = "CellChat")) +
+  geom_line(mapping = aes(dilution_prop, italk, color = "iTALK")) +
+  geom_line(mapping = aes(dilution_prop, sca, color = "SCA")) +
+  
+  geom_point(mapping = aes(dilution_prop, connectome, color =  "Connectome")) +
+  geom_point(mapping = aes(dilution_prop, cellchat, color = "CellChat")) +
+  geom_point(mapping = aes(dilution_prop, italk, color = "iTALK")) +
+  geom_point(mapping = aes(dilution_prop, sca, color = "SCA")) +
+  
+  ylim(0, 100) +
+  
+  ggtitle("Robustness of Method Predictions") +
+  ylab("Overlap of Top Ranks [%]") +
+  xlab("Dilution of Resource [%]") +
+  labs(subtitle = "Generic dilution, top 1000 ranks",
+       color = "Method")
+
+ggsave("top_rank_overlap_1000_plot.png", 
+       height = 5, width = 8, 
+       path = "Outputs")
+
+load("C:/Users/plabu/OneDrive/Documents/GitHub/ligrec_robustness/Data/env_after_250_high_res.RData")
+
+top_rank_overlap_250 <- top_rank_overlap_250 %>%
+  unnest(dilution_prop) %>%
+  add_row(dilution_prop = 0, 
+          connectome = 1, 
+          cellchat = 1, 
+          italk = 1, 
+          sca = 1, 
+          .before = 1) %>%
+  "*"(100)
+
+
+
+ggplot(data = top_rank_overlap_250) + 
+  geom_line(mapping = aes(dilution_prop, connectome, color =  "Connectome")) +
+  geom_line(mapping = aes(dilution_prop, cellchat, color = "CellChat")) +
+  geom_line(mapping = aes(dilution_prop, italk, color = "iTALK")) +
+  geom_line(mapping = aes(dilution_prop, sca, color = "SCA")) +
+  
+  geom_point(mapping = aes(dilution_prop, connectome, color =  "Connectome")) +
+  geom_point(mapping = aes(dilution_prop, cellchat, color = "CellChat")) +
+  geom_point(mapping = aes(dilution_prop, italk, color = "iTALK")) +
+  geom_point(mapping = aes(dilution_prop, sca, color = "SCA")) +
+  
+  ylim(0, 100) +
+  
+  ggtitle("Robustness of Method Predictions") +
+  ylab("Overlap of Top Ranks [%]") +
+  xlab("Dilution of Resource [%]") +
+  labs(subtitle = "Generic dilution, top 250 ranks",
+       color = "Method")
+
+ggsave("top_rank_overlap_250_plot.png", 
+       height = 5, width = 8, 
+       path = "Outputs")
