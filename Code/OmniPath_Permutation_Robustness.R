@@ -76,7 +76,7 @@
 #------------------------------------------------------------------------------#
 # C. Preparing necessary inputs to dilute Resources ----------------------------
 {
-  runtime <- list("start" = Sys.time())
+  runtime <- list("start_of_script" = Sys.time())
   
   # 1. Running LIANA wrapper
   {
@@ -597,7 +597,7 @@
   {
     
   # stop the stopwatch
-  runtime[["end"]] <- Sys.time()
+  runtime[["end_of_script"]] <- Sys.time()
   
   # save the names of the time-points for later
   runtime_labels <- names(runtime)
