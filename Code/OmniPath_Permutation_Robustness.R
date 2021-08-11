@@ -53,12 +53,12 @@
 {
   dilution_props <- c(seq(0.20, 0.8, 0.20)) # should be consistent between tests
   
-  number_ranks   <- list("connectome" = 1000, 
-                         "cellchat"   = 1000,
-                         "italk"      = 1000,
-                         "sca"        = 1000,
-                         "natmi"      = 1000,
-                         "squidpy"    = 1000)
+  number_ranks   <- list("connectome" = 20, 
+                         "cellchat"   = 20,
+                         "italk"      = 20,
+                         "sca"        = 20,
+                         "natmi"      = 20,
+                         "squidpy"    = 20)
   
   testdata_type  <- c("liana_test") # choose "liana_test" or "seurat_pbmc"
  
@@ -221,7 +221,7 @@
   resources_OP <- list("connectome" = list(OmniPath_0 = OmniPath_0),
                          "cellchat" = list(OmniPath_0 = OmniPath_0),
                          "italk"    = list(OmniPath_0 = OmniPath_0),
-                        #"natmi"    = list(OmniPath_0 = OmniPath_0),
+                         #"natmi"    = list(OmniPath_0 = OmniPath_0),
                          "sca"      = list(OmniPath_0 = OmniPath_0))
   
   
@@ -340,11 +340,13 @@
   runtime[["italk_end"]] <- Sys.time()
   
   # automatically iterates over list because of hurdles of conda env
-  #liana_dilutions_OP[["natmi"]] <- 
-  #  call_natmi(seurat_object = testdata, op_resource = resources_OP$natmi[-1]) 
-  
-  #runtime[["natmi_end"]] <- Sys.time()
-  
+  # instead of returning results it dumps them in a separate folder or just 
+  # returns named list()
+  # liana_dilutions_OP[["natmi"]] <- 
+  #   call_natmi(seurat_object = testdata, op_resource = resources_OP$natmi[-1]) 
+  # 
+  # runtime[["natmi_end"]] <- Sys.time()
+  # 
   
   liana_dilutions_OP[["sca"]] <- 
     lapply(resources_OP$sca[-1], call_sca, 
