@@ -51,14 +51,14 @@
 #------------------------------------------------------------------------------#
 # B. Set top_n, dilution props, testdata type ----------------------------------
 {
-  dilution_props <- c(seq(0.30, 0.6, 0.30)) # should be consistent between tests
+  dilution_props <- c(seq(0.20, 0.8, 0.20)) # should be consistent between tests
   
-  number_ranks   <- list("connectome" = 20, 
-                         "cellchat"   = 20,
-                         "italk"      = 20,
-                         "sca"        = 20,
-                         "natmi"      = 20,
-                         "squidpy"    = 20)
+  number_ranks   <- list("connectome" = 1000, 
+                         "cellchat"   = 1000,
+                         "italk"      = 1000,
+                         "sca"        = 1000,
+                         "natmi"      = 1000,
+                         "squidpy"    = 1000)
   
   testdata_type  <- c("liana_test") # choose "liana_test" or "seurat_pbmc"
  
@@ -539,6 +539,8 @@
                             as.character(median(unlist(number_ranks))),
                             "_",
                             feature_type,
+                            "_",
+                            as.character(Sys.Date()),
                             ".png")
   
   # Plot top_rank_overlap with lines and points at each value
@@ -603,13 +605,15 @@
   
   rm(runtime_numeric, seconds_elapsed, minutes_elapsed, hours_elapsed)
   
+  env_save_path <- str_glue("Outputs/DilutionEnv_", 
+                            testdata_type, 
+                            "_top",
+                            as.character(median(unlist(number_ranks))),
+                            "_",
+                            feature_type,                            
+                            "_",
+                            as.character(Sys.Date()),
+                            ".RData")
   
-  
-  save.image(file = str_glue("Outputs/DilutionEnv_", 
-                             testdata_type, 
-                             "_top",
-                             as.character(median(unlist(number_ranks))),
-                             "_",
-                             feature_type,
-                             ".RData"))
+  save.image(file = env_save_path)
   
