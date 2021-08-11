@@ -1,7 +1,7 @@
 #------------------------------------------------------------------------------#
 # A. Setup ---------------------------------------------------------------------
 {
-  # 0.1 Overview of Goals:  ---
+  # 0.1 Overview of Goals:
   {
   # The Idea with this script is to:
   # .	run all methods on a single resource (OP)
@@ -260,7 +260,7 @@
 
 
 #------------------------------------------------------------------------------#
-# D. Diluting Resources and comparing Top Ranks --------------------------------
+# D. Diluting Resources --------------------------------------------------------
 {
   # 5. Generate diluted Resources for all methods
   {
@@ -296,11 +296,18 @@
   
   # Remove uneccesary Variables
   rm(dilutions_OP, method, dilution)
-    
   
-    
+  
+  
   } # end of subpoint
   
+}    
+  
+
+
+#------------------------------------------------------------------------------#
+# E. Rerunning Liana and comparing  top ranks ----------------------------------
+{
   # 6. Reapply individual methods with diluted resources
   {
     
@@ -521,8 +528,12 @@
 
 
 #------------------------------------------------------------------------------#
-# E. Visualizing the results ---------------------------------------------------
-  
+# F. Visualizing the results ---------------------------------------------------
+{ 
+  # 9. Plotting, labeling and saving top_rank_overlap 
+  {
+    
+    
   # The plot is better in percent than proportion
   top_rank_overlap_plot <- top_rank_overlap * 100
   
@@ -572,13 +583,26 @@
   # Remove unnecessary variables
   rm(top_rank_overlap_plot)
   
+  
+  } # end of subpoint
+  
+}
+
+
+
 #------------------------------------------------------------------------------#
-# F. Saving the results --------------------------------------------------------
-  
-  
-  
+# G. Saving the results --------------------------------------------------------
+{
+  # 10. Calculating run time of script
+  {
+    
+  # stop the stopwatch
   runtime[["end"]] <- Sys.time()
   
+  # save the names of the time-points for later
+  runtime_labels <- names(runtime)
+  
+  # convert run time to do subtractions, to get the time elapsed between points
   runtime_numeric <- as.numeric(runtime)
   
   seconds_elapsed <- c(0, 
@@ -589,22 +613,41 @@
                        runtime_numeric[[6]] - runtime_numeric [[5]],
                        runtime_numeric[[7]] - runtime_numeric [[6]])
 
+  # if the script runs long, minutes or hours are a better unit to look at the
+  # elapsed time in
   minutes_elapsed <- seconds_elapsed / 60
   hours_elapsed <- minutes_elapsed / 60
   
+  # for convenience
   seconds_elapsed <- round(seconds_elapsed, 2)
   minutes_elapsed <- round(minutes_elapsed, 2)
   hours_elapsed <- round(hours_elapsed, 2)
   
+  # summarize all the runtime data in a tibble
   runtime <- runtime %>%
     as_tibble_col() %>%
     unnest(cols = c(value)) %>%
+    add_column(runtime_labels, .before = 1) %>%
     add_column(seconds_elapsed) %>%
     add_column(minutes_elapsed) %>%
-    add_column(hours_elapsed)
+    add_column(hours_elapsed) 
   
-  rm(runtime_numeric, seconds_elapsed, minutes_elapsed, hours_elapsed)
+  # remove uneccesary variables
+  rm(runtime_numeric, 
+     seconds_elapsed, 
+     minutes_elapsed, 
+     hours_elapsed, 
+     runtime_labels)
   
+  
+  
+  
+  } # end of subpoint
+  
+  # 11. Saving R environment to Outputs under custom name
+  {
+    
+    
   env_save_path <- str_glue("Outputs/DilutionEnv_", 
                             testdata_type, 
                             "_top",
@@ -617,3 +660,8 @@
   
   save.image(file = env_save_path)
   
+  
+  
+  } # end of subpoint
+  
+}
