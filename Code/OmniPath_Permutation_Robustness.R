@@ -51,14 +51,13 @@
 #------------------------------------------------------------------------------#
 # B. Set top_n, dilution props, testdata type ----------------------------------
 {
-  dilution_props <- c(seq(0.20, 0.8, 0.20)) # should be consistent between tests
+  dilution_props <- c(seq(0.20, 0.6, 0.20)) # should be consistent between tests
   
-  number_ranks   <- list("connectome" = 20, 
-                         "cellchat"   = 20,
-                         "italk"      = 20,
-                         "sca"        = 20,
-                         "natmi"      = 20,
-                         "squidpy"    = 20)
+  number_ranks   <- list("call_connectome" = 20, 
+                         "call_natmi"      = 20,
+                         "call_italk"      = 20,
+                         "call_sca"        = 20,
+                         "cellchat"        = 20)
   
   testdata_type  <- c("liana_test") # choose "liana_test" or "seurat_pbmc"
  
@@ -67,6 +66,15 @@
   # in the seurat count matrix. If dilution is variable, only the variable
   # features are used for dilution.
   
+  # All the methods we're using (almsot all six of liana)
+  # squidpy won't be used unthetil I get it to work on windows
+  methods_vector <- c('call_connectome',
+                      'call_natmi', 
+                      'call_italk',
+                      'call_sca',
+                      'cellchat')
+  
+  cellchat_nperms <- 10
   
   
 }   
@@ -104,17 +112,31 @@
     
   }
   
-
+ 
   # Generate Undiluted liana results by running wrapper function
-  # Omnipath x (cellchat, connectome, italk, sca) on testdata
-  # no natmi because it doesn't work right and its being reimplemented
-  # squidpy won't be used until I get it to work on windows
-  liana_results_OP_0 <- liana_wrap(testdata,
-                                   method   = c('connectome', 'cellchat',
-                                                'italk', 'sca'),
-                                   resource = c('OmniPath'))
+  # Omnipath x the methods vector, on the selected data
+
+  # NATMI results are contaminated with results from earlier runs if you
+  # don't specify a special output folder for the results to go in
+    
+  natmi_output <-  Sys.time()           %>%
+                   as.character()       %>%
+                   gsub(':', '_', .)    %>% 
+                   gsub('-', '_', .)    %>% 
+                   gsub(' ', '_', .)    %>%
+                   str_glue('Test_', .)
+    
+  liana_results_OP_0 <- 
+    liana_wrap(testdata, 
+               method = methods_vector, 
+               resource = c('OmniPath'), 
+               expr_prop = 0,
+               cellchat.params = list(nboot = cellchat_nperms, 
+                                      expr_prop = 0,
+                                      thresh = 1),
+               call_natmi.params = list(output_dir = natmi_output))
   
-  
+  rm(natmi_output)
   
   } # end of subpoint
   
@@ -125,7 +147,7 @@
   # Apply get_top_n_ranks for each method's results on OP_0 (i.e. undiluted)
   top_ranks_OP_0 <- list()
   
-  for(method in c('connectome', 'cellchat', 'italk', 'sca')){
+  for(method in methods_vector){
     
     top_ranks_OP_0[[method]] <- get_top_n_ranks(data_set = 
                                                 liana_results_OP_0[[method]],
@@ -218,33 +240,37 @@
   rm(dilution_names, i)
   
   #relist all our data into three concise named lists of named lists
-  resources_OP <- list("connectome" = list(OmniPath_0 = OmniPath_0),
-                         "cellchat" = list(OmniPath_0 = OmniPath_0),
-                         "italk"    = list(OmniPath_0 = OmniPath_0),
-                         #"natmi"    = list(OmniPath_0 = OmniPath_0),
-                         "sca"      = list(OmniPath_0 = OmniPath_0))
+  resources_OP <- list("call_connectome" = list(OmniPath_0 = OmniPath_0),
+                       "call_natmi"      = list(OmniPath_0 = OmniPath_0),
+                       "call_italk"      = list(OmniPath_0 = OmniPath_0),
+                       "call_sca"        = list(OmniPath_0 = OmniPath_0),
+                       "cellchat"        = list(OmniPath_0 = OmniPath_0))
   
   
   
-  liana_results_OP <- list("connectome" = 
-                             list(OmniPath_0 = liana_results_OP_0$connectome),
+  liana_results_OP <- list("call_connectome" = 
+                             list(OmniPath_0 = liana_results_OP_0$call_connectome),
+                           "call_natmi"     = 
+                             list(OmniPath_0 = liana_results_OP_0$call_natmi),
+                           "call_italk" = 
+                             list(OmniPath_0 =  liana_results_OP_0$call_italk),
+                           "call_sca" = 
+                             list(OmniPath_0 = liana_results_OP_0$call_sca),
                            "cellchat" = 
-                             list(OmniPath_0 = liana_results_OP_0$cellchat),
-                           "italk" = 
-                             list(OmniPath_0 =  liana_results_OP_0$italk),
-                           #"natmi"     = 
-                           # list(OmniPath_0 = liana_results_OP_0$natmi),
-                           "sca" = 
-                             list(OmniPath_0 = liana_results_OP_0$sca))
+                             list(OmniPath_0 = liana_results_OP_0$cellchat))
 
   
   
   
-  top_ranks_OP <- list("connectome" = list(OmniPath_0 = top_ranks_OP_0$connectome),
-                       "cellchat"   = list(OmniPath_0 = top_ranks_OP_0$cellchat),
-                       "italk"      = list(OmniPath_0 = top_ranks_OP_0$italk),
-                       #"natmi"     = list(OmniPath_0 = top_ranks_OP_0$natmi),
-                       "sca"        = list(OmniPath_0 = top_ranks_OP_0$sca))
+  top_ranks_OP <- 
+    list("call_connectome" = list(OmniPath_0 = top_ranks_OP_0$call_connectome),
+         "call_natmi"      = list(OmniPath_0 = top_ranks_OP_0$call_natmi),
+         "call_italk"      = list(OmniPath_0 = top_ranks_OP_0$call_italk),
+         "call_sca"        = list(OmniPath_0 = top_ranks_OP_0$call_sca),
+         "cellchat"        = list(OmniPath_0 = top_ranks_OP_0$cellchat))
+
+
+
   
   
   
@@ -270,7 +296,7 @@
   dilutions_OP <- list()
   
   # Iterate over every method, lapply over every dilution proportion
-  for(method in c('connectome', 'cellchat', 'italk', 'sca')){
+  for(method in methods_vector){
     
     dilutions_OP[[method]] <- 
       lapply(dilution_props, dilute_Resource, 
@@ -285,7 +311,7 @@
   
   # Merge OP_0 with the rest of the dilutions, could use mapply but its less 
   # consistent
-  for (method in c('connectome', 'cellchat', 'italk', 'sca')) {
+  for (method in methods_vector) {
     for (dilution in names(dilution_props)) {
       
       resources_OP[[method]][[dilution]] <- dilutions_OP[[method]][[dilution]]
@@ -310,62 +336,57 @@
 {
   # 6. Reapply individual methods with diluted resources
   {
-    
+  # results still growing somehow, don't know why (natmi and others)
+  # in some cases the defaults assosciated with liana_wrap are explicitly applied
     
   # Initialize a list for liana results using diluted resources
   liana_dilutions_OP <- list()
     
   runtime[["methods_start"]] <- Sys.time()
+  
+  # lapply liana wrap accross the diluted resources for every method 
+  
+  # NATMI results are contaminated with results from earlier runs if you
+  # don't specify a special output folder for the results to go in
+  
+  natmi_output <-  Sys.time()           %>%
+                   as.character()       %>%
+                   gsub(':', '_', .)    %>% 
+                   gsub('-', '_', .)    %>% 
+                   gsub(' ', '_', .)    %>%
+                   str_glue('Test_', .)
+  
+  
+  
+  for (method in methods_vector) {
     
-  
-  # Lapply call_x functions from liana for each method over every dilution.
-  liana_dilutions_OP[["connectome"]] <- 
-    lapply(resources_OP$connectome[-1], call_connectome, 
-           seurat_object = testdata)
-  
-  runtime[["connectome_end"]] <- Sys.time()
-  
-  
-  liana_dilutions_OP[["cellchat"]] <- 
-    lapply(resources_OP$cellchat[-1], call_cellchat, 
-           seurat_object = testdata, thresh = 1)
-  
-  runtime[["cellchat_end"]] <- Sys.time()
-  
-  
-  liana_dilutions_OP[["italk"]] <- 
-    lapply(resources_OP$italk[-1], call_italk, 
-           seurat_object = testdata)
-  
-  runtime[["italk_end"]] <- Sys.time()
-  
-  # automatically iterates over list because of hurdles of conda env
-  # instead of returning results it dumps them in a separate folder or just 
-  # returns named list()
-  # liana_dilutions_OP[["natmi"]] <- 
-  #   call_natmi(seurat_object = testdata, op_resource = resources_OP$natmi[-1]) 
-  # 
-  # runtime[["natmi_end"]] <- Sys.time()
-  # 
-  
-  liana_dilutions_OP[["sca"]] <- 
-    lapply(resources_OP$sca[-1], call_sca, 
-           seurat_object = testdata, s.score = 0, logFC = 0.5849625) 
-  
-  runtime[["sca_end"]] <- Sys.time()
-  # for some reason the number of results with sca still goes up, we're unsure why
-  
-  
-  
+ 
+    
+    liana_dilutions_OP[[method]] <-
+      lapply(resources_OP[[method]][-1], 
+             liana_wrap,
+             seurat_object = testdata,
+             method = method,
+             resource = c('custom'),
+             expr_prop = 0,
+             cellchat.params = list(nboot = cellchat_nperms, 
+                                    expr_prop = 0,
+                                    thresh = 1),
+             call_natmi.params = list(output_dir = natmi_output))
+    
+    runtime[[str_glue(method, "_end")]] <- Sys.time()
+    
+  }
+
   
   
   
   # Merge with undiluted results, could use mapply but its less consistent
-  for (method in c('connectome', 'cellchat', 'italk', 'sca')) {
+  for (method in methods_vector) {
     for (dilution in names(dilution_props)) {
       
       liana_results_OP[[method]][[dilution]] <- 
-        liana_dilutions_OP[[method]][[dilution]]
+        liana_dilutions_OP[[method]][[dilution]][[method]]
       
     }
   }
@@ -387,33 +408,38 @@
   top_dilutions_OP <- list()
   
 
-  top_dilutions_OP[["connectome"]] <- 
-    lapply(liana_results_OP$connectome[-1], get_top_n_ranks, 
-           method = "connectome", top_n = number_ranks$connectome)
+  top_dilutions_OP[["call_connectome"]] <- 
+    lapply(liana_results_OP$call_connectome[-1], get_top_n_ranks, 
+           method = "call_connectome", top_n = number_ranks$call_connectome)
   
+  top_dilutions_OP[["call_natmi"]] <-
+    lapply(liana_results_OP$call_natmi[-1], get_top_n_ranks,
+           method = "call_natmi", top_n = number_ranks$call_natmi)
+  
+  top_dilutions_OP[["call_italk"]] <- 
+    lapply(liana_results_OP$call_italk[-1], get_top_n_ranks, 
+           method = "call_italk", top_n = number_ranks$call_italk)  
+  
+  top_dilutions_OP[["call_sca"]] <- 
+    lapply(liana_results_OP$call_sca[-1], get_top_n_ranks, 
+           method = "call_sca", top_n = number_ranks$call_sca)  
   
   top_dilutions_OP[["cellchat"]] <- 
     lapply(liana_results_OP$cellchat[-1], get_top_n_ranks, 
            method = "cellchat", top_n = number_ranks$cellchat)  
   
   
-  top_dilutions_OP[["italk"]] <- 
-    lapply(liana_results_OP$italk[-1], get_top_n_ranks, 
-           method = "italk", top_n = number_ranks$italk)  
+
   
-  # top_dilutions_OP[["natmi"]] <- 
-  # lapply(liana_results_OP$natmi[-1], get_top_n_ranks, 
-  #        method = "natmi", top_n = number_ranks$natmi) 
-  
-  top_dilutions_OP[["sca"]] <- 
-    lapply(liana_results_OP$sca[-1], get_top_n_ranks, 
-           method = "sca", top_n = number_ranks$sca)  
+
+
+
   
   
   
   
   # Merge with undiluted results, could use mapply but its less consistent
-  for (method in c('connectome', 'cellchat', 'italk', 'sca')) {
+  for (method in methods_vector) {
     for (dilution in names(dilution_props)) {
       
       top_ranks_OP[[method]][[dilution]] <- top_dilutions_OP[[method]][[dilution]]
@@ -435,8 +461,22 @@
     
   # format top_ranks to have an ID that marks each specific interaction (LR and 
   # the source and target cell)
-  top_ranks_OP$connectome <- 
-      lapply(top_ranks_OP$connectome, unite, col = "LR_ID", 
+  top_ranks_OP$call_connectome <- 
+      lapply(top_ranks_OP$call_connectome, unite, col = "LR_ID", 
+             c(source, target, ligand, receptor), remove = FALSE)
+    
+    top_ranks_OP$call_natmi <-
+      lapply(top_ranks_OP$call_natmi, unite, col = "LR_ID",
+             c(source, target, ligand, receptor), remove = FALSE)
+    
+    
+    top_ranks_OP$call_italk <- 
+      lapply(top_ranks_OP$call_italk, unite, col = "LR_ID", 
+             c(source, target, ligand, receptor), remove = FALSE)
+    
+    
+    top_ranks_OP$call_sca <- 
+      lapply(top_ranks_OP$call_sca, unite, col = "LR_ID", 
              c(source, target, ligand, receptor), remove = FALSE)
     
     
@@ -444,28 +484,11 @@
     lapply(top_ranks_OP$cellchat, unite, col = "LR_ID", 
             c(source, target, ligand, receptor), remove = FALSE)
   
-  
-  top_ranks_OP$italk <- 
-    lapply(top_ranks_OP$italk, unite, col = "LR_ID", 
-           c(source, target, ligand, receptor), remove = FALSE)
-  
-  
-  #top_ranks_OP$natmi <-
-  # lapply(top_ranks_OP$natmi, unite, col = "LR_ID",
-  #        c(source, target, ligand, receptor), remove = FALSE)
-  
-  
-  top_ranks_OP$sca <- 
-    lapply(top_ranks_OP$sca, unite, col = "LR_ID", 
-           c(source, target, ligand, receptor), remove = FALSE)
-  
-  
-  
-  
+
   
   
   # add a column to see if an interaction is fake
-  for (method in c('connectome', 'cellchat', 'italk', 'sca')) {
+  for (method in methods_vector) {
     for (dilution in c("OmniPath_0", names(dilution_props))) {
       if( !(is_null(top_ranks_OP[[method]][[dilution]]))) {
           
@@ -489,39 +512,49 @@
   
   # lapply rank_overlap over the top rank tibbles, comparing the dilutions to 
   # the OP_0 at each stage.
-  overlap_connectome <- lapply(top_ranks_OP$connectome, rank_overlap, 
-                               main_ranks = top_ranks_OP$connectome$OmniPath_0)
+  overlap_call_connectome <- lapply(top_ranks_OP$call_connectome, rank_overlap, 
+                                    main_ranks = top_ranks_OP$call_connectome$OmniPath_0)
   
   
-  overlap_cellchat   <- lapply(top_ranks_OP$cellchat, rank_overlap, 
-                               main_ranks = top_ranks_OP$cellchat$OmniPath_0)
+  overlap_call_natmi      <- lapply(top_ranks_OP$call_natmi, rank_overlap,
+                                    main_ranks = top_ranks_OP$call_natmi$OmniPath_0)
   
   
-  overlap_italk      <- lapply(top_ranks_OP$italk, rank_overlap, 
-                               main_ranks = top_ranks_OP$italk$OmniPath_0)
+  overlap_call_italk      <- lapply(top_ranks_OP$call_italk, rank_overlap, 
+                                    main_ranks = top_ranks_OP$call_italk$OmniPath_0)
   
   
-  overlap_sca        <- lapply(top_ranks_OP$sca, rank_overlap,
-                               main_ranks = top_ranks_OP$sca$OmniPath_0)
+  overlap_call_sca        <- lapply(top_ranks_OP$call_sca, rank_overlap,
+                                    main_ranks = top_ranks_OP$call_sca$OmniPath_0)
   
   
-  #overlap_natmi    <- lapply(top_ranks_OP$natmi, rank_overlap, 
-  #                            main_ranks = top_ranks_OP$natmi$OmniPath_0)
+  overlap_cellchat        <- lapply(top_ranks_OP$cellchat, rank_overlap, 
+                                    main_ranks = top_ranks_OP$cellchat$OmniPath_0)
   
   
+
+  
+  
+
+  
+  
+
+
+
   
   # reformatting overlap as a tibble
-  top_rank_overlap <- tibble("connectome" = overlap_connectome,
-                             "cellchat"   = overlap_cellchat,
-                             "italk"      = overlap_italk,
-                             "sca"        = overlap_sca) %>%
-                      unnest(cols = c(connectome, cellchat, italk, sca)) %>%
+  top_rank_overlap <- tibble("call_connectome" = overlap_call_connectome,
+                             "call_natmi"      = overlap_call_natmi,
+                             "call_italk"      = overlap_call_italk,
+                             "call_sca"        = overlap_call_sca,
+                             "cellchat"        = overlap_cellchat) %>%
+                      unnest(cols = all_of(methods_vector))        %>%
                       mutate(dilution_prop = c(0, dilution_props)) %>%
-                      unnest(cols = c(dilution_prop)) %>%
+                      unnest(cols = c(dilution_prop))              %>%
                       relocate("dilution_prop")
   
   # removing superfluous values
-  rm(overlap_connectome, overlap_cellchat, overlap_italk, overlap_sca)
+  rm(overlap_call_connectome, overlap_cellchat, overlap_call_italk, overlap_call_sca, overlap_call_natmi)
   
   } # end of subpoint
   
@@ -558,15 +591,18 @@
   
   # Plot top_rank_overlap with lines and points at each value
   ggplot(data = top_rank_overlap_plot) + 
-    geom_line(mapping = aes(dilution_prop, connectome, color =  "Connectome")) +
+    geom_line(mapping = aes(dilution_prop, call_connectome, color =  "Connectome")) +
+    geom_line(mapping = aes(dilution_prop, call_natmi, color = "NATMI")) + 
+    geom_line(mapping = aes(dilution_prop, call_italk, color = "iTALK")) +
+    geom_line(mapping = aes(dilution_prop, call_sca, color = "SCA")) +
     geom_line(mapping = aes(dilution_prop, cellchat, color = "CellChat")) +
-    geom_line(mapping = aes(dilution_prop, italk, color = "iTALK")) +
-    geom_line(mapping = aes(dilution_prop, sca, color = "SCA")) +
     
-    geom_point(mapping = aes(dilution_prop, connectome, color =  "Connectome")) +
+    geom_point(mapping = aes(dilution_prop, call_connectome, color =  "Connectome")) +
+    geom_point(mapping = aes(dilution_prop, call_natmi, color = "NATMI")) +
+    geom_point(mapping = aes(dilution_prop, call_italk, color = "iTALK")) +
+    geom_point(mapping = aes(dilution_prop, call_sca, color = "SCA")) +
     geom_point(mapping = aes(dilution_prop, cellchat, color = "CellChat")) +
-    geom_point(mapping = aes(dilution_prop, italk, color = "iTALK")) +
-    geom_point(mapping = aes(dilution_prop, sca, color = "SCA")) +
+
     
     # Show full breadth of 100-0 percent overlap
     ylim(0, 100) +
@@ -613,7 +649,8 @@
                        runtime_numeric[[4]] - runtime_numeric [[3]],
                        runtime_numeric[[5]] - runtime_numeric [[4]],
                        runtime_numeric[[6]] - runtime_numeric [[5]],
-                       runtime_numeric[[7]] - runtime_numeric [[6]])
+                       runtime_numeric[[7]] - runtime_numeric [[6]],
+                       runtime_numeric[[8]] - runtime_numeric [[7]])
 
   # if the script runs long, minutes or hours are a better unit to look at the
   # elapsed time in
