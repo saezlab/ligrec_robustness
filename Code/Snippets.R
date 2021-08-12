@@ -1,6 +1,6 @@
 
 # 1.
-### Does the percentage of OmniPath genes in the results rise as OmniPath becomes more diluted?
+### Does the percentage of OmniPath genes in the results rise as OmniPath becomes more diluted? ----
 # run after liana results after dilution are in env
 gene_names_results <- unique(c(liana_results_OP$connectome$OmniPath_0$ligand, liana_results_OP$connectome$OmniPath_0$receptor))
 gene_names_resource <- unique(c(resources_OP$connectome$OmniPath_0$source_genesymbol, resources_OP$connectome$OmniPath_0$target_genesymbol))
@@ -24,7 +24,7 @@ rm(i, gene_names_resource, gene_names_results, percentage_resource_in_results)
 
 
 # 2. 
-## does the number of interactions rise when lapplying over multiple OP resources regardless of dilution?
+## does the number of interactions rise when lapplying over multiple OP resources regardless of dilution? ----
 # run after dilutions are in env
 test_list <- list(OmniPath_0 = resources_OP$connectome$OmniPath_0, 
                   OmniPath_0 = resources_OP$connectome$OmniPath_0, 
@@ -38,7 +38,7 @@ lapply(test_result_list, all.equal, test_result_list$OmniPath_0)
 ## the results is the same all four times, and have the same number of rows
 
 
-# 3.
+# 3. does the number of interactions in connectome rise when diluting only hits? ----
 ## if we filter OP_0 to be just hits and then dilute hits with more hits the number of rows, reflecting the number of interactions, shouldn't rise
 # run after dilutions are in env
 gene_names <- rownames(testdata@assays$RNA@data)
@@ -70,7 +70,7 @@ all.equal(normal_connectome, filter_connectome_0)
 
 
 #4.
-## Checking if a filtered (but undiluted) OP resource produces the same as the standard non-filtered one
+## Checking if a filtered (but undiluted) OP resource produces the same as the standard non-filtered one ----
 ## filtered means it only includes genes that are also present in the data you're going to use it with
 ## since gene interactions for genes not in the data should have no impact, this should make no difference.
 ## run when dilutions are in env
@@ -112,7 +112,8 @@ all.equal(filter_sca_call, filter_sca)
 
 
 #5.
-#### Call_X and liana wrap don't produce the same results even when same resource, same method, same data
+#### Call_X and liana wrap don't produce the same results ----
+#### even when same resource, same method, same data
 ## not the same output somehow
 filter_sca_call <- call_sca(op_resource = select_resource(c("OmniPath"))[[1]], seurat_object = testdata)
 filter_sca_wrap <- liana_wrap(seurat_object = testdata, method = c("sca"), resource = c("OmniPath"))[[1]]
@@ -198,3 +199,125 @@ ggplot(data = top_rank_overlap_250) +
 ggsave("top_rank_overlap_250_plot.png", 
        height = 5, width = 8, 
        path = "Outputs")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## what is the unification of top ranks ----
+
+
+unification_top_ranks <- top_ranks_OP_0$call_connectome[1:4] %>%
+  add_row(top_ranks_OP_0$call_natmi[1:4]) %>%
+  add_row(top_ranks_OP_0$call_italk[1:4]) %>%
+  add_row(top_ranks_OP_0$call_sca[1:4]) %>%
+  add_row(top_ranks_OP_0$cellchat[1:4])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## are tow rsult outputs idetical when ordered? ----
+all.equal(arrange_at(t, vars(everything())), 
+          arrange_at(liana_results_OP$call_connectome$OmniPath_0, vars(everything()))
+          )
+
+
+
+
+
+
+
+
+## Investigating the relationship of OP source and target genesymbols ----
+#get OP_resource and construct LR Pairs
+op <- select_resource(c('OmniPath'))[["OmniPath"]] %>%
+  select(source_genesymbol,
+         target_genesymbol,
+         is_directed,
+         is_stimulation,
+         consensus_stimulation,
+         is_inhibition,
+         consensus_inhibition,
+         category_intercell_source,
+         category_intercell_target,
+         genesymbol_intercell_source,
+         genesymbol_intercell_target,
+         entity_type_intercell_target,
+         sources,
+         references,
+         entity_type_intercell_source,
+         entity_type_intercell_target) %>%
+  mutate(isRandom = FALSE) %>%
+  unite("LR_Pair", 
+        c(source_genesymbol, target_genesymbol), 
+        remove = FALSE, 
+        sep = "_") %>%
+  relocate("LR_Pair", .after = last_col())
+
+
+
+# Are there duplicate Ligand-receptor pairs?
+LR_Pair_list <- op$LR_Pair
+length(unique(LR_Pair_list)) - length(LR_Pair_list) # No, every LR pair is unique
+
+# Are there genes that are both source and target?
+source_list <- op$source_genesymbol
+target_list <- op$target_genesymbol
+
+length(intersect(source_list, target_list)) # yes there are this many genes that occur as both source and target
+length(unique(c(source_list, target_list))) # there are this many unique genesymbols in OP
+length(intersect(source_list, target_list)) / length(unique(c(source_list, target_list))) # this proportion of genes in OP occur as both sources and targets
+
+
+# Are any of these gene symbols source and target to themselves?
+sum(source_list == target_list) # no, even though some genes appear in both lists they never appear twice in the same row, i.e. in relationship to themselves
+
+
+
+
+# is thres = 1 actually a standard parameter of liana_wrap? ----
+test_thing_no_thresh <- 
+  liana_wrap(testdata, 
+             method = c('cellchat'), 
+             resource = c('OmniPath'), 
+             expr_prop = 0,
+             cellchat.params = list(nboot = cellchat_nperms, 
+                                    expr_prop = 0),
+             call_natmi.params = list(output_dir = natmi_output))
+
+test_thing <- 
+  liana_wrap(testdata, 
+             method = c('cellchat'), 
+             resource = c('OmniPath'), 
+             expr_prop = 0,
+             cellchat.params = list(nboot = cellchat_nperms, 
+                                    expr_prop = 0,
+                                    thresh = 1),
+             call_natmi.params = list(output_dir = natmi_output))
