@@ -29,11 +29,11 @@ devtools::install_github('saezlab/liana')
 
 # 1.2 Updating Liana
 {
-# #### UPDATING LIANA ON WINDOWS: remove.packages('liana'), delete the liana folder from "C:\Users\plabu\OneDrive\Documents\R\win-library\4.1", restart computer, then:
-# library(devtools)
-# Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS = TRUE) # ignore warning from iTALK
-# devtools::install_github('saezlab/liana')
-# ### and ignore any calls to update more packages on the way
+#### UPDATING LIANA ON WINDOWS: remove.packages('liana'), delete the liana folder from "C:\Users\plabu\OneDrive\Documents\R\win-library\4.1", restart computer, then:
+library(devtools)
+Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS = TRUE) # ignore warning from iTALK
+devtools::install_github('saezlab/liana')
+### and ignore any calls to update more packages on the way
 }
 
 # 2. Load Packages
