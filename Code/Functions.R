@@ -24,16 +24,16 @@
       list("cellchat"   = list(method_score = "pval",
                                descending_order =  FALSE),
            
-           "connectome" = list(method_score = "weight_sc",
+           "call_connectome" = list(method_score = "weight_sc",
                                descending_order =  TRUE),
            
-           "italk"      = list(method_score = "weight_comb",
+           "call_italk"      = list(method_score = "logfc_comb",
                                descending_order =  TRUE),
            
-           "natmi"      = list(method_score = "edge_specificity",
+           "call_natmi"      = list(method_score = "edge_specificity",
                                descending_order =  TRUE),
            
-           "sca"        = list(method_score = "LRscore",
+           "call_sca"        = list(method_score = "LRscore",
                                descending_order =  TRUE),
            
            "squidpy"    = list(method_score = "pvalue",
