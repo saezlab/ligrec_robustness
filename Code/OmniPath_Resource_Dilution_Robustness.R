@@ -86,7 +86,7 @@
   
   run_mode <- "trial_run" # select between trial_run and real
   
-  save_results <- FALSE # should results be saved?
+  save_results <- TRUE # should results be saved?
   
   
 }   
