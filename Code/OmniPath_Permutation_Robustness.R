@@ -747,10 +747,10 @@
   
   } # end of subpoint
   
-  # 11. Saving R environment to Outputs under custom name
+  # 11. Tidying R environment and saving to Outputs under custom name
   {
     
-  # Automaticall generate environment save file name
+  # Automatically generate environment save file name
   env_save_path <- str_glue("Outputs/DilutionEnv_", 
                             run_mode,
                             "_",
@@ -765,8 +765,23 @@
                             as.character(Sys.Date()),
                             ".RData")
   
+  # Summarizing important but somewhat scattered meta data
+  script_params <- list("dilution_props"  = dilution_props, 
+                        "number_ranks"    = number_ranks, 
+                        "runtime"         = runtime, 
+                        "cellchat_nperms" = cellchat_nperms, 
+                        "feature_type"    = feature_type, 
+                        "methods_vector"  = methods_vector, 
+                        "run_mode"        = run_mode, 
+                        "testdata_type"   = testdata_type,
+                        "save_names"      = list("plot_png_name" = plot_png_name,
+                                                 "env_save_path" = env_save_path))
+  # Removing now-superfluous meta data
+  rm(dilution_props, number_ranks, runtime, cellchat_nperms, feature_type, 
+     methods_vector, run_mode, testdata_type, plot_png_name, env_save_path)
+  
   # Save R environment and all the results within it
-  save.image(file = env_save_path)
+  save.image(file = script_params$save_names$env_save_path)
   
   
   
