@@ -39,11 +39,17 @@
     
   # 0.3 Loading Packages and Starting Runtime
   {
-    runtime <- list("start_of_script" = Sys.time())
+    runtime <- list("Script Start" = Sys.time())
     
     require(tidyverse)
     require(Seurat)
     require(liana)
+    
+    library(lubridate)
+    
+    runtime[["Load Packages"]] <- Sys.time() 
+    # each runtime is named after the section that it marks the conclusion of
+    
   } # end of subpoint
   
 }
@@ -138,6 +144,13 @@
                                         thresh = 1),
                call_natmi.params = list(output_dir = natmi_output))
   
+  
+  
+  # Update runtime
+  runtime[["First Liana"]] <- Sys.time()
+  
+  
+  # Remove superfluous variables
   rm(natmi_output)
   
   } # end of subpoint
@@ -348,7 +361,7 @@
   # Initialize a list for liana results using diluted resources
   liana_dilutions_OP <- list()
     
-  runtime[["methods_start"]] <- Sys.time()
+  runtime[["Resource Dilution"]] <- Sys.time()
   
   # lapply liana wrap accross the diluted resources for every method 
   
@@ -380,7 +393,7 @@
                                     thresh = 1),
              call_natmi.params = list(output_dir = natmi_output))
     
-    runtime[[str_glue(method, "_end")]] <- Sys.time()
+    runtime[[str_glue(str_to_title(method), " rerun")]] <- Sys.time()
     
   }
 
@@ -699,7 +712,7 @@
   {
     
   # stop the stopwatch
-  runtime[["end_of_script"]] <- Sys.time()
+  runtime[["Script Epilogue"]] <- Sys.time()
   
   # save the names of the time-points for later
   runtime_labels <- names(runtime)
@@ -707,39 +720,42 @@
   # convert run time to do subtractions, to get the time elapsed between points
   runtime_numeric <- as.numeric(runtime)
   
-  seconds_elapsed <- c(0, 
-                       runtime_numeric[[2]] - runtime_numeric [[1]],
-                       runtime_numeric[[3]] - runtime_numeric [[2]],
-                       runtime_numeric[[4]] - runtime_numeric [[3]],
-                       runtime_numeric[[5]] - runtime_numeric [[4]],
-                       runtime_numeric[[6]] - runtime_numeric [[5]],
-                       runtime_numeric[[7]] - runtime_numeric [[6]],
-                       runtime_numeric[[8]] - runtime_numeric [[7]])
-
-  # if the script runs long, minutes or hours are a better unit to look at the
-  # elapsed time in
-  minutes_elapsed <- seconds_elapsed / 60
-  hours_elapsed <- minutes_elapsed / 60
+  # We calculate the passage of time between checkpoints in the script, 
+  # Step duration is the duration of a step between neighboring checkpoints
+  # Time elapsed is the duration between the completion of a step and the 
+  # start of the script.
   
-  # for convenience
-  seconds_elapsed <- round(seconds_elapsed, 2)
-  minutes_elapsed <- round(minutes_elapsed, 2)
-  hours_elapsed <- round(hours_elapsed, 2)
+  step_duration <- c(0) # No time has passed when the script is initialized.
+  time_elapsed  <- c(0) # No time has passed when the script is initialized.
   
+  for (i in seq(2, length(runtime_numeric), 1)) {
+    
+    step_duration <- c(step_duration, 
+                       runtime_numeric[[i]] - runtime_numeric[[i-1]])
+    
+    time_elapsed  <- c(time_elapsed,
+                       runtime_numeric[[i]] - runtime_numeric[[1]])
+    
+  }
+  
+  # Turn seconds into time periods and round for simplicity
+  step_duration <- round(seconds_to_period(step_duration))
+  time_elapsed  <- round(seconds_to_period(time_elapsed))
+  
+ 
   # summarize all the runtime data in a tibble
-  runtime <- runtime %>%
-    as_tibble_col() %>%
-    unnest(cols = c(value)) %>%
-    add_column(runtime_labels, .before = 1) %>%
-    add_column(seconds_elapsed) %>%
-    add_column(minutes_elapsed) %>%
-    add_column(hours_elapsed) 
+  runtime <- runtime               %>%
+    as_tibble_col()                %>%
+    unnest(cols = c(value))        %>%
+    rename("Start Time" = "value") %>% 
+    add_column("Step Name" = runtime_labels, .before = 1) %>%
+    add_column("Step Duration"   = step_duration)         %>%
+    add_column("Time Elapsed"    = time_elapsed) 
   
   # remove uneccesary variables
   rm(runtime_numeric, 
-     seconds_elapsed, 
-     minutes_elapsed, 
-     hours_elapsed, 
+     step_duration, 
+     time_elapsed, 
      runtime_labels)
   
   
