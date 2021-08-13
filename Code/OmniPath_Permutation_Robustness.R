@@ -156,6 +156,14 @@
     
   }
     
+  # an interesting note here is that NATMI produces far more unique LR Pairs in 
+  # its top rankings than other methods. Cellchat identifies less for example, 
+  # filling its top 1000 (or n) by repeating those interactions between many
+  # combinations of source cell clusters and target cell clusters.
+  # NATMI repeats its interactions less, providing more unique LR pairs than
+  # cellchat. In exchange it only finds these interacting pairs more rarely 
+  # between cell clusters.
+    
     
     
   } # end of subpoint
@@ -512,49 +520,50 @@
   
   # lapply rank_overlap over the top rank tibbles, comparing the dilutions to 
   # the OP_0 at each stage.
-  overlap_call_connectome <- lapply(top_ranks_OP$call_connectome, rank_overlap, 
+  overlaps <- list()
+  
+  overlaps[['call_connectome']] <- lapply(top_ranks_OP$call_connectome, rank_overlap, 
                                     main_ranks = top_ranks_OP$call_connectome$OmniPath_0)
   
   
-  overlap_call_natmi      <- lapply(top_ranks_OP$call_natmi, rank_overlap,
+  overlaps[['call_natmi']]      <- lapply(top_ranks_OP$call_natmi, rank_overlap,
                                     main_ranks = top_ranks_OP$call_natmi$OmniPath_0)
   
   
-  overlap_call_italk      <- lapply(top_ranks_OP$call_italk, rank_overlap, 
+  overlaps[['call_italk']]    <- lapply(top_ranks_OP$call_italk, rank_overlap, 
                                     main_ranks = top_ranks_OP$call_italk$OmniPath_0)
   
   
-  overlap_call_sca        <- lapply(top_ranks_OP$call_sca, rank_overlap,
+  overlaps[['call_sca']]       <- lapply(top_ranks_OP$call_sca, rank_overlap,
                                     main_ranks = top_ranks_OP$call_sca$OmniPath_0)
   
   
-  overlap_cellchat        <- lapply(top_ranks_OP$cellchat, rank_overlap, 
+  overlaps[['cellchat']]      <- lapply(top_ranks_OP$cellchat, rank_overlap, 
                                     main_ranks = top_ranks_OP$cellchat$OmniPath_0)
   
-  
+
+  overlaps <- 
+    lapply(overlaps, 
+    function(x) { c(x, rep(NA, length(dilution_props)+1-length(x)))})
+    # add NAs to the end of the overlaps where dilution wasn't possible
+    # this way all the overlaps have the same length for tibble construction
 
   
-  
-
-  
-  
-
-
-
+ 
   
   # reformatting overlap as a tibble
-  top_rank_overlap <- tibble("call_connectome" = overlap_call_connectome,
-                             "call_natmi"      = overlap_call_natmi,
-                             "call_italk"      = overlap_call_italk,
-                             "call_sca"        = overlap_call_sca,
-                             "cellchat"        = overlap_cellchat) %>%
+  top_rank_overlap <- tibble("call_connectome" = overlaps$call_connectome,
+                             "call_natmi"      = overlaps$call_natmi,
+                             "call_italk"      = overlaps$call_italk,
+                             "call_sca"        = overlaps$call_sca,
+                             "cellchat"        = overlaps$cellchat) %>%
                       unnest(cols = all_of(methods_vector))        %>%
                       mutate(dilution_prop = c(0, dilution_props)) %>%
                       unnest(cols = c(dilution_prop))              %>%
                       relocate("dilution_prop")
   
   # removing superfluous values
-  rm(overlap_call_connectome, overlap_cellchat, overlap_call_italk, overlap_call_sca, overlap_call_natmi)
+  rm(overlaps)
   
   } # end of subpoint
   
