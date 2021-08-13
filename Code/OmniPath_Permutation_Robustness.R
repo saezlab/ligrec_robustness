@@ -51,15 +51,15 @@
 #------------------------------------------------------------------------------#
 # B. Set top_n, dilution props, testdata type ----------------------------------
 {
-  dilution_props <- c(seq(0.20, 0.6, 0.20)) # should be consistent between tests
+  dilution_props <- c(seq(0.10, 0.8, 0.10)) # should be consistent between tests
   
-  number_ranks   <- list("call_connectome" = 20, 
-                         "call_natmi"      = 20,
-                         "call_italk"      = 20,
-                         "call_sca"        = 20,
-                         "cellchat"        = 20)
+  number_ranks   <- list("call_connectome" = 500, 
+                         "call_natmi"      = 500,
+                         "call_italk"      = 500,
+                         "call_sca"        = 500,
+                         "cellchat"        = 500)
   
-  testdata_type  <- c("liana_test") # choose "liana_test" or "seurat_pbmc"
+  testdata_type  <- c("seurat_pbmc") # choose "liana_test" or "seurat_pbmc"
  
   feature_type <- c("variable") # choose "generic" or "variable"
   # If feature_type is generic, dilution will be completed with any genes
@@ -74,7 +74,9 @@
                       'call_sca',
                       'cellchat')
   
-  cellchat_nperms <- 10
+  cellchat_nperms <- 100
+  
+  run_mode <- "trial_run" # select between trial_run and real
   
   
 }   
@@ -550,6 +552,9 @@
 
   
  
+    
+    
+    
   
   # reformatting overlap as a tibble
   top_rank_overlap <- tibble("call_connectome" = overlaps$call_connectome,
@@ -587,16 +592,22 @@
                                 as.character(median(unlist(number_ranks))),
                                 " ranks, ",
                                 testdata_type,
-                                " data")
+                                " data, ",
+                                run_mode,
+                                " results")
   
-  plot_png_name <- str_glue(testdata_type, 
-                            "_top",
-                            as.character(median(unlist(number_ranks))),
-                            "_",
-                            feature_type,
-                            "_",
-                            as.character(Sys.Date()),
-                            ".png")
+  plot_png_name     <- str_glue(run_mode,
+                                "_",
+                                testdata_type, 
+                                "_top",
+                                s.character(median(unlist(number_ranks))),
+                                "_res",
+                                as.character(length(dilution_props)),
+                                "_",
+                                feature_type,
+                                "_dil_on_",
+                                as.character(Sys.Date()),
+                                ".png")
   
   # Plot top_rank_overlap with lines and points at each value
   ggplot(data = top_rank_overlap_plot) + 
@@ -695,14 +706,18 @@
   # 11. Saving R environment to Outputs under custom name
   {
     
-    
+  # Automaticall generate environment save file name
   env_save_path <- str_glue("Outputs/DilutionEnv_", 
+                            run_mode,
+                            "_",
                             testdata_type, 
                             "_top",
                             as.character(median(unlist(number_ranks))),
+                            "_res",
+                            as.character(length(dilution_props)),
                             "_",
                             feature_type,                            
-                            "_",
+                            "_dil_on_",
                             as.character(Sys.Date()),
                             ".RData")
   
