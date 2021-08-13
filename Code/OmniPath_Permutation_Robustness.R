@@ -133,9 +133,9 @@
                method = methods_vector, 
                resource = c('OmniPath'), 
                expr_prop = 0,
-               cellchat.params = list(nboot = cellchat_nperms, 
-                                      expr_prop = 0,
-                                      thresh = 1),
+               cellchat.params   = list(nboot = cellchat_nperms, 
+                                        expr_prop = 0,
+                                        thresh = 1),
                call_natmi.params = list(output_dir = natmi_output))
   
   rm(natmi_output)
@@ -149,12 +149,12 @@
   # Apply get_top_n_ranks for each method's results on OP_0 (i.e. undiluted)
   top_ranks_OP_0 <- list()
   
-  for(method in methods_vector){
+  for (method in methods_vector){
     
     top_ranks_OP_0[[method]] <- get_top_n_ranks(data_set = 
                                                 liana_results_OP_0[[method]],
-                                              top_n = number_ranks[[method]],
-                                              method = method)
+                                                top_n = number_ranks[[method]],
+                                                method = method)
     
   }
     
@@ -239,7 +239,7 @@
   # dilution props is a user defined sequence in the setup section
   dilution_names <- c()
   
-  for(i in dilution_props) {
+  for (i in dilution_props) {
     dilution_names <- 
       c(dilution_names, str_glue("OmniPath_", as.character(i*100)))
   }
@@ -258,16 +258,12 @@
   
   
   
-  liana_results_OP <- list("call_connectome" = 
-                             list(OmniPath_0 = liana_results_OP_0$call_connectome),
-                           "call_natmi"     = 
-                             list(OmniPath_0 = liana_results_OP_0$call_natmi),
-                           "call_italk" = 
-                             list(OmniPath_0 =  liana_results_OP_0$call_italk),
-                           "call_sca" = 
-                             list(OmniPath_0 = liana_results_OP_0$call_sca),
-                           "cellchat" = 
-                             list(OmniPath_0 = liana_results_OP_0$cellchat))
+  liana_results_OP <- 
+    list("call_connectome" = list(OmniPath_0 = liana_results_OP_0$call_connectome),
+         "call_natmi"      = list(OmniPath_0 = liana_results_OP_0$call_natmi),
+         "call_italk"      = list(OmniPath_0 = liana_results_OP_0$call_italk),
+         "call_sca"        = list(OmniPath_0 = liana_results_OP_0$call_sca),
+         "cellchat"        = list(OmniPath_0 = liana_results_OP_0$cellchat))
 
   
   
@@ -306,7 +302,7 @@
   dilutions_OP <- list()
   
   # Iterate over every method, lapply over every dilution proportion
-  for(method in methods_vector){
+  for (method in methods_vector){
     
     dilutions_OP[[method]] <- 
       lapply(dilution_props, dilute_Resource, 
@@ -452,7 +448,8 @@
   for (method in methods_vector) {
     for (dilution in names(dilution_props)) {
       
-      top_ranks_OP[[method]][[dilution]] <- top_dilutions_OP[[method]][[dilution]]
+      top_ranks_OP[[method]][[dilution]] <- 
+        top_dilutions_OP[[method]][[dilution]]
       
     }
   }
@@ -524,32 +521,43 @@
   # the OP_0 at each stage.
   overlaps <- list()
   
-  overlaps[['call_connectome']] <- lapply(top_ranks_OP$call_connectome, rank_overlap, 
-                                    main_ranks = top_ranks_OP$call_connectome$OmniPath_0)
+  overlaps[['call_connectome']] <- 
+    lapply(top_ranks_OP$call_connectome, 
+           rank_overlap, 
+           main_ranks = top_ranks_OP$call_connectome$OmniPath_0)
   
   
-  overlaps[['call_natmi']]      <- lapply(top_ranks_OP$call_natmi, rank_overlap,
-                                    main_ranks = top_ranks_OP$call_natmi$OmniPath_0)
+  overlaps[['call_natmi']]      <- 
+    lapply(top_ranks_OP$call_natmi, 
+           rank_overlap,
+           main_ranks = top_ranks_OP$call_natmi$OmniPath_0)
   
   
-  overlaps[['call_italk']]    <- lapply(top_ranks_OP$call_italk, rank_overlap, 
-                                    main_ranks = top_ranks_OP$call_italk$OmniPath_0)
+  overlaps[['call_italk']]    <- 
+    lapply(top_ranks_OP$call_italk, 
+           rank_overlap, 
+           main_ranks = top_ranks_OP$call_italk$OmniPath_0)
   
   
-  overlaps[['call_sca']]       <- lapply(top_ranks_OP$call_sca, rank_overlap,
-                                    main_ranks = top_ranks_OP$call_sca$OmniPath_0)
+  overlaps[['call_sca']]       <- 
+    lapply(top_ranks_OP$call_sca, 
+           rank_overlap,
+           main_ranks = top_ranks_OP$call_sca$OmniPath_0)
   
   
-  overlaps[['cellchat']]      <- lapply(top_ranks_OP$cellchat, rank_overlap, 
-                                    main_ranks = top_ranks_OP$cellchat$OmniPath_0)
+  overlaps[['cellchat']]      <- 
+    lapply(top_ranks_OP$cellchat, 
+           rank_overlap,
+           main_ranks = top_ranks_OP$cellchat$OmniPath_0)
   
-
-  overlaps <- 
+  
+  
+  # add NAs to the end of the overlaps where dilution wasn't possible
+  # this way all the overlaps have the same length for tibble construction
+    overlaps <- 
     lapply(overlaps, 
-    function(x) { c(x, rep(NA, length(dilution_props)+1-length(x)))})
-    # add NAs to the end of the overlaps where dilution wasn't possible
-    # this way all the overlaps have the same length for tibble construction
-
+           function(x) { c(x, rep(NA, length(dilution_props)+1-length(x)))})
+    
   
  
     
@@ -562,9 +570,9 @@
                              "call_italk"      = overlaps$call_italk,
                              "call_sca"        = overlaps$call_sca,
                              "cellchat"        = overlaps$cellchat) %>%
-                      unnest(cols = all_of(methods_vector))        %>%
-                      mutate(dilution_prop = c(0, dilution_props)) %>%
-                      unnest(cols = c(dilution_prop))              %>%
+                      unnest(cols = all_of(methods_vector))         %>%
+                      mutate(dilution_prop = c(0, dilution_props))  %>%
+                      unnest(cols = c(dilution_prop))               %>%
                       relocate("dilution_prop")
   
   # removing superfluous values
@@ -611,18 +619,49 @@
   
   # Plot top_rank_overlap with lines and points at each value
   ggplot(data = top_rank_overlap_plot) + 
-    geom_line(mapping = aes(dilution_prop, call_connectome, color =  "Connectome")) +
-    geom_line(mapping = aes(dilution_prop, call_natmi, color = "NATMI")) + 
-    geom_line(mapping = aes(dilution_prop, call_italk, color = "iTALK")) +
-    geom_line(mapping = aes(dilution_prop, call_sca, color = "SCA")) +
-    geom_line(mapping = aes(dilution_prop, cellchat, color = "CellChat")) +
+    geom_line(mapping = aes(dilution_prop, 
+                            call_connectome, 
+                            color =  "Connectome")) +
     
-    geom_point(mapping = aes(dilution_prop, call_connectome, color =  "Connectome")) +
-    geom_point(mapping = aes(dilution_prop, call_natmi, color = "NATMI")) +
-    geom_point(mapping = aes(dilution_prop, call_italk, color = "iTALK")) +
-    geom_point(mapping = aes(dilution_prop, call_sca, color = "SCA")) +
-    geom_point(mapping = aes(dilution_prop, cellchat, color = "CellChat")) +
-
+    geom_line(mapping = aes(dilution_prop, 
+                            call_natmi, 
+                            color = "NATMI")) + 
+    
+    geom_line(mapping = aes(dilution_prop,
+                            call_italk, 
+                            color = "iTALK")) +
+    
+    geom_line(mapping = aes(dilution_prop, 
+                            call_sca, 
+                            color = "SCA")) +
+    
+    geom_line(mapping = aes(dilution_prop, 
+                            cellchat, 
+                            color = "CellChat")) +
+    
+    
+    
+    geom_point(mapping = aes(dilution_prop, 
+                             call_connectome, 
+                             color =  "Connectome")) +
+    
+    geom_point(mapping = aes(dilution_prop,
+                             call_natmi, 
+                             color = "NATMI")) +
+    
+    geom_point(mapping = aes(dilution_prop, 
+                             call_italk,
+                             color = "iTALK")) +
+    
+    geom_point(mapping = aes(dilution_prop, 
+                             call_sca, 
+                             color = "SCA")) +
+    
+    geom_point(mapping = aes(dilution_prop, 
+                             cellchat, 
+                             color = "CellChat")) +
+    
+    
     
     # Show full breadth of 100-0 percent overlap
     ylim(0, 100) +
@@ -721,6 +760,7 @@
                             as.character(Sys.Date()),
                             ".RData")
   
+  # Save R environment and all the results within it
   save.image(file = env_save_path)
   
   
