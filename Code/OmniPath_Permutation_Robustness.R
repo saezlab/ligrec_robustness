@@ -37,8 +37,10 @@
     
   } # end of subpoint
     
-  # 0.3 Loading Packages
+  # 0.3 Loading Packages and Starting Runtime
   {
+    runtime <- list("start_of_script" = Sys.time())
+    
     require(tidyverse)
     require(Seurat)
     require(liana)
@@ -51,15 +53,15 @@
 #------------------------------------------------------------------------------#
 # B. Set top_n, dilution props, testdata type ----------------------------------
 {
-  dilution_props <- c(seq(0.10, 0.8, 0.10)) # should be consistent between tests
+  dilution_props <- c(seq(0.10, 0.3, 0.20)) # should be consistent between tests
   
-  number_ranks   <- list("call_connectome" = 500, 
-                         "call_natmi"      = 500,
-                         "call_italk"      = 500,
-                         "call_sca"        = 500,
-                         "cellchat"        = 500)
+  number_ranks   <- list("call_connectome" = 20, 
+                         "call_natmi"      = 20,
+                         "call_italk"      = 20,
+                         "call_sca"        = 20,
+                         "cellchat"        = 20)
   
-  testdata_type  <- c("seurat_pbmc") # choose "liana_test" or "seurat_pbmc"
+  testdata_type  <- c("liana_test") # choose "liana_test" or "seurat_pbmc"
  
   feature_type <- c("variable") # choose "generic" or "variable"
   # If feature_type is generic, dilution will be completed with any genes
@@ -74,7 +76,7 @@
                       'call_sca',
                       'cellchat')
   
-  cellchat_nperms <- 100
+  cellchat_nperms <- 10
   
   run_mode <- "trial_run" # select between trial_run and real
   
@@ -86,8 +88,6 @@
 #------------------------------------------------------------------------------#
 # C. Preparing necessary inputs to dilute Resources ----------------------------
 {
-  runtime <- list("start_of_script" = Sys.time())
-  
   # 1. Running LIANA wrapper
   {
     
@@ -399,7 +399,7 @@
 
   
   # Remove uneccesary Variables
-  rm(liana_dilutions_OP, method, dilution)
+  rm(liana_dilutions_OP, method, dilution, natmi_output)
 
   
   
@@ -565,15 +565,15 @@
     
   
   # reformatting overlap as a tibble
-  top_rank_overlap <- tibble("call_connectome" = overlaps$call_connectome,
+  top_ranks_overlap <- tibble("call_connectome" = overlaps$call_connectome,
                              "call_natmi"      = overlaps$call_natmi,
                              "call_italk"      = overlaps$call_italk,
                              "call_sca"        = overlaps$call_sca,
-                             "cellchat"        = overlaps$cellchat) %>%
-                      unnest(cols = all_of(methods_vector))         %>%
-                      mutate(dilution_prop = c(0, dilution_props))  %>%
-                      unnest(cols = c(dilution_prop))               %>%
-                      relocate("dilution_prop")
+                             "cellchat"        = overlaps$cellchat)  %>%
+                       unnest(cols = all_of(methods_vector))         %>%
+                       mutate(dilution_prop = c(0, dilution_props))  %>%
+                       unnest(cols = c(dilution_prop))               %>%
+                       relocate("dilution_prop")
   
   # removing superfluous values
   rm(overlaps)
@@ -587,12 +587,12 @@
 #------------------------------------------------------------------------------#
 # F. Visualizing the results ---------------------------------------------------
 { 
-  # 9. Plotting, labeling and saving top_rank_overlap 
+  # 9. Plotting, labeling and saving top_ranks_overlap 
   {
     
     
   # The plot is better in percent than proportion
-  top_rank_overlap_plot <- top_rank_overlap * 100
+  tr_overlap_for_plot <- top_ranks_overlap * 100
   
   # Automatically assemble a file name and plot subtitle
   plotting_subtitle <- str_glue(feature_type,
@@ -608,7 +608,7 @@
                                 "_",
                                 testdata_type, 
                                 "_top",
-                                s.character(median(unlist(number_ranks))),
+                                as.character(median(unlist(number_ranks))),
                                 "_res",
                                 as.character(length(dilution_props)),
                                 "_",
@@ -617,60 +617,65 @@
                                 as.character(Sys.Date()),
                                 ".png")
   
-  # Plot top_rank_overlap with lines and points at each value
-  ggplot(data = top_rank_overlap_plot) + 
-    geom_line(mapping = aes(dilution_prop, 
-                            call_connectome, 
-                            color =  "Connectome")) +
-    
-    geom_line(mapping = aes(dilution_prop, 
-                            call_natmi, 
-                            color = "NATMI")) + 
-    
-    geom_line(mapping = aes(dilution_prop,
-                            call_italk, 
-                            color = "iTALK")) +
-    
-    geom_line(mapping = aes(dilution_prop, 
-                            call_sca, 
-                            color = "SCA")) +
-    
-    geom_line(mapping = aes(dilution_prop, 
-                            cellchat, 
-                            color = "CellChat")) +
-    
-    
-    
-    geom_point(mapping = aes(dilution_prop, 
-                             call_connectome, 
-                             color =  "Connectome")) +
-    
-    geom_point(mapping = aes(dilution_prop,
-                             call_natmi, 
-                             color = "NATMI")) +
-    
-    geom_point(mapping = aes(dilution_prop, 
-                             call_italk,
-                             color = "iTALK")) +
-    
-    geom_point(mapping = aes(dilution_prop, 
-                             call_sca, 
-                             color = "SCA")) +
-    
-    geom_point(mapping = aes(dilution_prop, 
-                             cellchat, 
-                             color = "CellChat")) +
-    
-    
-    
-    # Show full breadth of 100-0 percent overlap
-    ylim(0, 100) +
-    
-    ggtitle("Robustness of Method Predictions") +
-    ylab("Overlap of Top Ranks [%]") +
-    xlab("Dilution of Resource [%]") +
-    labs(subtitle = plotting_subtitle,
-         color = "Method")
+  # Plot top_ranks_overlap with lines and points at each value
+  overlap_plot <-  ggplot(data = tr_overlap_for_plot) + 
+                    geom_line(mapping = aes(dilution_prop, 
+                                            call_connectome, 
+                                            color =  "Connectome")) +
+                    
+                    geom_line(mapping = aes(dilution_prop, 
+                                            call_natmi, 
+                                            color = "NATMI")) + 
+                    
+                    geom_line(mapping = aes(dilution_prop,
+                                            call_italk, 
+                                            color = "iTALK")) +
+                    
+                    geom_line(mapping = aes(dilution_prop, 
+                                            call_sca, 
+                                            color = "SCA")) +
+                    
+                    geom_line(mapping = aes(dilution_prop, 
+                                            cellchat, 
+                                            color = "CellChat")) +
+                    
+                    
+                    
+                    geom_point(mapping = aes(dilution_prop, 
+                                             call_connectome, 
+                                             color =  "Connectome")) +
+                    
+                    geom_point(mapping = aes(dilution_prop,
+                                             call_natmi, 
+                                             color = "NATMI")) +
+                    
+                    geom_point(mapping = aes(dilution_prop, 
+                                             call_italk,
+                                             color = "iTALK")) +
+                    
+                    geom_point(mapping = aes(dilution_prop, 
+                                             call_sca, 
+                                             color = "SCA")) +
+                    
+                    geom_point(mapping = aes(dilution_prop, 
+                                             cellchat, 
+                                             color = "CellChat")) +
+                    
+                    
+                    
+                    # Show full breadth of 100-0 percent overlap
+                    ylim(0, 100) +
+                    
+                    ggtitle("Robustness of Method Predictions") +
+                    ylab("Overlap of Top Ranks [%]") +
+                    xlab("Dilution of Resource [%]") +
+                    labs(subtitle = plotting_subtitle,
+                         color = "Method")
+                  
+
+  
+  # Print the Plot
+  print(overlap_plot)
   
   # Save the plot automatically to the outputs folder
   ggsave(plot_png_name, 
@@ -678,7 +683,7 @@
          path = "Outputs")
   
   # Remove unnecessary variables
-  rm(top_rank_overlap_plot)
+  rm(tr_overlap_for_plot, overlap_plot, plotting_subtitle)
   
   
   } # end of subpoint
