@@ -82,9 +82,11 @@
                       'call_sca',
                       'cellchat')
   
-  cellchat_nperms <- 10
+  cellchat_nperms <- 10 # number of cellchat permutations, default 100
   
   run_mode <- "trial_run" # select between trial_run and real
+  
+  save_results <- FALSE # should results be saved?
   
   
 }   
@@ -690,11 +692,16 @@
   # Print the Plot
   print(overlap_plot)
   
-  # Save the plot automatically to the outputs folder
-  ggsave(plot_png_name, 
-         height = 5, width = 8, 
-         path = "Outputs")
-  
+  # Save the plot automatically to the outputs folder, if desired
+  if (save_results) {
+    
+    ggsave(plot_png_name, 
+           height = 5, width = 8, 
+           path = "Outputs")
+    
+    print(str_glue("Plot saved at ~/Outputs/", plot_png_name, "."))
+    
+  }
   # Remove unnecessary variables
   rm(tr_overlap_for_plot, overlap_plot, plotting_subtitle)
   
@@ -717,7 +724,7 @@
   # save the names of the time-points for later
   runtime_labels <- names(runtime)
   
-  # convert run time to do subtractions, to get the time elapsed between points
+  # convert run time for subtractions, to calculate durations between checkpoints
   runtime_numeric <- as.numeric(runtime)
   
   # We calculate the passage of time between checkpoints in the script, 
@@ -756,7 +763,8 @@
   rm(runtime_numeric, 
      step_duration, 
      time_elapsed, 
-     runtime_labels)
+     runtime_labels,
+     i)
   
   
   
@@ -789,17 +797,25 @@
                         "feature_type"    = feature_type, 
                         "methods_vector"  = methods_vector, 
                         "run_mode"        = run_mode, 
+                        "save_results"    = save_results,
                         "testdata_type"   = testdata_type,
                         "save_names"      = list("plot_png_name" = plot_png_name,
                                                  "env_save_path" = env_save_path))
   # Removing now-superfluous meta data
   rm(dilution_props, number_ranks, runtime, cellchat_nperms, feature_type, 
-     methods_vector, run_mode, testdata_type, plot_png_name, env_save_path)
+     methods_vector, run_mode, save_results, testdata_type, plot_png_name, 
+     env_save_path)
   
   # Save R environment and all the results within it
-  save.image(file = script_params$save_names$env_save_path)
+  if (script_params$save_results) {
+    
+    save.image(file = script_params$save_names$env_save_path)
+    
+    print(str_glue("Environment saved at ~/", 
+                   script_params$save_names$env_save_path,
+                   "."))
   
-  
+  }
   
   } # end of subpoint
   
