@@ -321,3 +321,18 @@ test_thing <-
                                     expr_prop = 0,
                                     thresh = 1),
              call_natmi.params = list(output_dir = natmi_output))
+
+
+
+
+# 11. NATMI produces more unique LR Pairs in the top ranking than other methods ----
+# Other methods produce less unique LR Pairs and repeat them among more cluster combinations
+# NATMI has less repeats
+
+length(unique(top_ranks_OP$call_natmi$OmniPath_0$LR_Pair))
+
+# Compare to the others
+length(unique(top_ranks_OP$call_connectome$OmniPath_0$LR_Pair))
+length(unique(top_ranks_OP$call_italk$OmniPath_0$LR_Pair))
+length(unique(top_ranks_OP$call_sca$OmniPath_0$LR_Pair))
+length(unique(top_ranks_OP$cellchat$OmniPath_0$LR_Pair))
