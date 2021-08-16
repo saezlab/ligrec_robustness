@@ -6,10 +6,13 @@
 *.Rproj
 *.html
 
-Data/*
+Data/**
 !Data/.gitkeep 
 
-Outputs/*
+Outputs/**
 !Outputs/.gitkeep 
 
 omnipathr-log/
+filtered_gene_bc_matrices/hg19/barcodes.tsv
+filtered_gene_bc_matrices/hg19/genes.tsv
+filtered_gene_bc_matrices/hg19/matrix.mtx
