@@ -59,7 +59,7 @@
 #------------------------------------------------------------------------------#
 # B. Set top_n, dilution props, testdata type ----------------------------------
 {
-  dilution_props <- c(seq(0.10, 0.3, 0.20)) # should be consistent between tests
+  dilution_props <- c(seq(0.10, 0.20, 0.20)) # should be consistent between tests
   
   number_ranks   <- list("call_connectome" = 20, 
                          "call_natmi"      = 20,
@@ -86,7 +86,7 @@
   
   run_mode <- "trial_run" # select between trial_run and real
   
-  save_results <- TRUE # should results be saved?
+  save_results <- FALSE # should results be saved?
   
   
 }   
@@ -790,6 +790,7 @@
                             ".RData")
   
   # Summarizing important but somewhat scattered meta data
+  # Also attaches session info in case result replication needs it
   script_params <- list("dilution_props"  = dilution_props, 
                         "number_ranks"    = number_ranks, 
                         "runtime"         = runtime, 
@@ -799,6 +800,7 @@
                         "run_mode"        = run_mode, 
                         "save_results"    = save_results,
                         "testdata_type"   = testdata_type,
+                        "Session_Info"    = sessionInfo(),
                         "save_names"      = list("plot_png_name" = plot_png_name,
                                                  "env_save_path" = env_save_path))
   # Removing now-superfluous meta data
