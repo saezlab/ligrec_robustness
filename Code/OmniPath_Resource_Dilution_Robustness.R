@@ -59,7 +59,7 @@
 #------------------------------------------------------------------------------#
 # B. Set top_n, dilution props, testdata type ----------------------------------
 {
-  dilution_props <- c(seq(0.10, 0.20, 0.20)) # should be consistent between tests
+  dilution_props <- c(seq(0.10, 0.30, 0.20)) # should be consistent between tests
   
   number_ranks   <- list("call_connectome" = 20, 
                          "call_natmi"      = 20,
@@ -112,6 +112,7 @@
     testdata <- 
       readRDS(file.path(liana_path, "testdata", "input", "testdata.rds"))   
     
+    # removing superfluous values
     rm(liana_path)
     
     
@@ -407,7 +408,7 @@
     for (dilution in names(dilution_props)) {
       
       liana_results_OP[[method]][[dilution]] <- 
-        liana_dilutions_OP[[method]][[dilution]][[method]]
+        liana_dilutions_OP[[method]][[dilution]]
       
     }
   }
@@ -475,11 +476,28 @@
   
   
   } # end of subpoint
-
-  #8. Evaluate how many of the top 200 interactions overlap between the original
-  #   and the dilutions
+ 
+  #8. Analysis of top_ranks
   {
-    
+  # Legend to what factors we look to analyse. Overlap is most important, the
+  # rest interesting mostly in edge cases:
+  #
+  # Overlap               = What proportion of top ranked interactions 
+  #                         (L + R + Source + Target) are identical between the 
+  #                         results at dil = 0% and dil = *%.
+  #
+  # Mismatch              = 1 - Overlap, i.e. what proportion of top ranked 
+  #                         interactions (L + R + Source + Target) are different 
+  #                         between the results at dil = 0% and dil = *%.
+  #
+  # Randoms               = What proportion of top_ranked interactions at 
+  #                         dil = *% are random, dilution produced interactions.
+  #
+  # Mismatch_from_Randoms = What proportion of mismatch is due to random
+  #                         dilution based interactions that happen to be top 
+  #                         ranked.
+  # 
+  # All_mismatch_from_Randoms  =  At a glance, is all the mismatch from Randoms?
     
   # format top_ranks to have an ID that marks each specific interaction (LR and 
   # the source and target cell)
@@ -593,7 +611,74 @@
   # removing superfluous values
   rm(overlaps)
   
+
+  
+  # Top ranked interactions where isRandom = TRUE are products of dilutions.
+  # If the diminished top_rank_overlap is exactly equal to the proportion of 
+  # diluted interactions in the top_ranks, this indcates that dilution only 
+  # messes with top ranks by creating candidates for false detection.
+    
+  # It could also be possible though that the proportion of dilutions in the 
+  # top ranks doesn't fullly explain the diminishing overlap. In this case
+  # dilutions may also alter the context such that real interactions that were
+  # previously not top_ranked have become top_ranked.
+    
+  # Inaccuracy purely from random interactions being picked up on as top ranked
+  # vs Inaccuracy from pushing previously not top ranked interactions into the
+  # top ranks. This is an especially interesting comparison if top_ranked 
+  # interactions can e diluted in the resource, as here the removal of previous 
+  # top_ranks is felt greater.
+  
+  # We apply the prop_isRandom function, over every top_rank_df
+  # Using sapply twice gives a convenient data frame layout that makes the 
+  # formatting easier. 
+  # We add a dilution props column the same as in top_ranks_overlap.
+  top_ranks_randoms <- sapply(top_ranks_OP, sapply, prop_isRandom) %>%
+      data.frame()                                  %>%
+      tibble()                                      %>%
+      mutate(dilution_prop = c(0, dilution_props))  %>%
+      unnest(cols = c(dilution_prop))               %>%
+      relocate("dilution_prop")                     %>%
+      data.frame() #because we plan to do arithmetic operations with this tibble
+  
+  # The proportion of mismatch between top_rank_dfs is 1- the overlap
+  # In order to perform this calculation top_ranks_overlap can't be a tibble
+  top_ranks_mismatch                  <- 1 - data.frame(top_ranks_overlap)
+  # We correct the dilutions column
+  top_ranks_mismatch$dilution_prop    <- top_ranks_overlap$dilution_prop
+  
+  
+  # What proportion of the mismatch is from diluted interactions picked up om
+  # as top ranked? NaN = There was no mismatch here.
+  mismatch_from_randoms               <- top_ranks_randoms / top_ranks_mismatch
+  # Correct the dilutions column
+  mismatch_from_randoms$dilution_prop <- top_ranks_randoms$dilution_prop
+  
+  
+  # We store this variable in the environment so the user can find it more easily.
+  All_mismatch_from_Randoms <- all.equal(top_ranks_randoms, 
+                                    top_ranks_mismatch)
+  
+  
+  # Summarizing all this information in one list makes things clear. 
+  # Reconvert everything to tibbles as arithmetic operations should be over
+  top_ranks_analysis <- 
+    list("Overlap"                   = tibble(top_ranks_overlap),
+         "Mismatch"                  = tibble(top_ranks_mismatch),
+         "Randoms"                   = tibble(top_ranks_randoms),
+         "Mismatch_from_Randoms"     = tibble(mismatch_from_randoms),
+         "All_mismatch_from_Randoms" = All_mismatch_from_Randoms)
+  
+  
+  # Get rid of superfluous values
+  rm(top_ranks_overlap, 
+     top_ranks_mismatch, 
+     top_ranks_randoms, 
+     mismatch_from_randoms, 
+     All_mismatch_from_Randoms)
+  
   } # end of subpoint
+  
   
 }
 
@@ -607,7 +692,7 @@
     
     
   # The plot is better in percent than proportion
-  tr_overlap_for_plot <- top_ranks_overlap * 100
+  tr_overlap_for_plot <- top_ranks_analysis$Overlap * 100
   
   # Automatically assemble a file name and plot subtitle
   plotting_subtitle <- str_glue(feature_type,
