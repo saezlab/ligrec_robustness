@@ -229,9 +229,8 @@
     
   #' Takes get_n_top_ranks outputs that have an LR_ID and determines their overlap
   #'
-  #' @param main_ranks A tibble of 
-  #' @param met The method for which you would like to extract the top ranked 
-  #' interactions, as a string.
+  #' @param main_ranks A tibble of of top ranked interactions
+  #' @param comparison_ranks A tibble of top ranked interactions
   #' @param verbose Should the function describe the overlap to you or not?
   #'
   #' @return The overlap (0-1) between the two input frames in contents of the 
@@ -267,6 +266,26 @@
     
   } #end of function
 
+    
+  }
+  
+  # prop_isRandom()
+  {
+    #' Takes top_rank tibbles and checks what proportion are diluted interactions
+    #'
+    #' @param top_rank_df A tibble of top ranked interactions. get_top_n_ranks 
+    #' output. Requires isRandom column
+    #'
+    #' @return The proportion of interactions within the top_rank_df that are 
+    #' diluted interactions.
+    
+    prop_isRandom <- function(top_rank_df) {
+      
+     FP_rate <- sum(top_rank_df$isRandom) / nrow(top_rank_df)
+     
+     return(FP_rate)
+      
+    } #end of function
     
   }
   
