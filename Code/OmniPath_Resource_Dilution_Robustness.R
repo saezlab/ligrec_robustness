@@ -69,11 +69,13 @@
   
   testdata_type  <- c("liana_test") # choose "liana_test" or "seurat_pbmc"
  
-  feature_type <- c("variable") # choose "generic" or "variable"
-  # If feature_type is generic, dilution will be completed with any genes
+  # If dilution_feature_type is generic, dilution will be completed with any genes
   # in the seurat count matrix. If dilution is variable, only the variable
   # features are used for dilution.
+  dilution_feature_type <- c("variable") # choose "generic" or "variable"
   
+  preserve_topology <- FALSE  # choose TRUE to preserve and FALSE to not
+
   # All the methods we're using (almsot all six of liana)
   # squidpy won't be used unthetil I get it to work on windows
   methods_vector <- c('call_connectome',
@@ -325,7 +327,8 @@
              resource = resources_OP[[method]]$OmniPath_0, 
              top_rank_df = top_ranks_OP[[method]]$OmniPath_0, 
              data_set = testdata,
-             dilution_type = feature_type)
+             dilution_feature_type = dilution_feature_type,
+             preserve_topology = preserve_topology)
     
   }
   
@@ -695,7 +698,7 @@
   tr_overlap_for_plot <- top_ranks_analysis$Overlap * 100
   
   # Automatically assemble a file name and plot subtitle
-  plotting_subtitle <- str_glue(feature_type,
+  plotting_subtitle <- str_glue(dilution_feature_type,
                                 " dilution, top ",
                                 as.character(median(unlist(number_ranks))),
                                 " ranks, ",
@@ -712,7 +715,7 @@
                                 "_res",
                                 as.character(length(dilution_props)),
                                 "_",
-                                feature_type,
+                                dilution_feature_type,
                                 "_dil_on_",
                                 as.character(Sys.Date()),
                                 ".png")
@@ -869,7 +872,7 @@
                             "_res",
                             as.character(length(dilution_props)),
                             "_",
-                            feature_type,                            
+                            dilution_feature_type,                            
                             "_dil_on_",
                             as.character(Sys.Date()),
                             ".RData")
@@ -880,7 +883,7 @@
                         "number_ranks"    = number_ranks, 
                         "runtime"         = runtime, 
                         "cellchat_nperms" = cellchat_nperms, 
-                        "feature_type"    = feature_type, 
+                        "dilution_feature_type"    = dilution_feature_type, 
                         "methods_vector"  = methods_vector, 
                         "run_mode"        = run_mode, 
                         "save_results"    = save_results,
@@ -889,7 +892,7 @@
                         "save_names"      = list("plot_png_name" = plot_png_name,
                                                  "env_save_path" = env_save_path))
   # Removing now-superfluous meta data
-  rm(dilution_props, number_ranks, runtime, cellchat_nperms, feature_type, 
+  rm(dilution_props, number_ranks, runtime, cellchat_nperms, dilution_feature_type, 
      methods_vector, run_mode, save_results, testdata_type, plot_png_name, 
      env_save_path)
   
