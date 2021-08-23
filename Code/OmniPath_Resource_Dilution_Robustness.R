@@ -90,7 +90,37 @@
   
   save_results <- FALSE # should results be saved?
   
+  sink_output <- FALSE # If the output is sunk, all console outputs and warning
+  # messages go to a txt file in Outputs folder, but you won't be able to see
+  # them in the console. In essence, logs will be generated instead of console
+  # outputs
+  {
+    date_of_run <- as.character(Sys.Date())
+    
+    log_save_path <- str_glue("Outputs/Output_Log_", 
+                              run_mode,
+                              "_",
+                              testdata_type, 
+                              "_top",
+                              as.character(median(unlist(number_ranks))),
+                              "_res",
+                              as.character(length(dilution_props)),
+                              "_",
+                              dilution_feature_type,                            
+                              "_dil_on_",
+                              date_of_run,
+                              ".RData")
   
+  
+    if(sink_output == TRUE) {
+      
+      con <- file(log_save_path)
+      sink(con, append=TRUE)
+      sink(con, append=TRUE, type="message")
+      
+    }
+  
+  }
 }   
 
 
@@ -717,7 +747,7 @@
                                 "_",
                                 dilution_feature_type,
                                 "_dil_on_",
-                                as.character(Sys.Date()),
+                                date_of_run,
                                 ".png")
   
   # Plot top_ranks_overlap with lines and points at each value
@@ -874,7 +904,7 @@
                             "_",
                             dilution_feature_type,                            
                             "_dil_on_",
-                            as.character(Sys.Date()),
+                            date_of_run,
                             ".RData")
   
   # Summarizing important but somewhat scattered meta data
@@ -905,6 +935,13 @@
                    script_params$save_names$env_save_path,
                    "."))
   
+  }
+  
+  if(sink_output == TRUE) {
+    
+    sink() 
+    sink(type="message")
+    
   }
   
   } # end of subpoint
