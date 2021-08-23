@@ -91,12 +91,14 @@
   #'
   #' @param resource The resource (as a tibble) which you would like to 
   #' falsify / dilute with random gene relationships.
+  #' 
   #' @param data_set The data set (as a Seurat object) from which you will draw 
-  #' genes. Diluting the resource with genes that are actually found in the data
-  #' set the resource will be used with guarantees that the random relationships
-  #' will be relevant to the method. This function excludes dilution with genes 
-  #' already present in the base resource and by extension genes in the top 
-  #' ranking.
+  #' genes for dilution. Diluting the resource with genes that are actually 
+  #' found in the data set the resource will be used with guarantees that the 
+  #' random relationships will be relevant to the method. This function excludes
+  #' dilution with genes already present in the base resource and by extension 
+  #' genes in the top ranking.
+  #' 
   #' @param top_rank_df As a tibble. Ideally the output of get_top_n_ranks. 
   #' Should contain the top ranked rows of the liana_wrapper output for the 
   #' method you are diluting for (using the undiluted resource). Since we are 
@@ -104,38 +106,100 @@
   #' of top rankings using the undiluted resource ensures that the top 
   #' interactions can still be caught in the same way. It's the effect of 
   #' surrounding diluted noise that we'll be picking up on.
+  #' 
   #' @param dilution_prop As a number between 0-1. The proportion of rows of the
   #' resource to dilute. Top ranked rows can't be diluted. If attaining the 
   #' requested dilution proportion requires overwriting top ranked 
   #' interactions, the function throws an error and returns nothing instead.
-  #' @param dilution_type Choose "generic" or "variable". Generic dilutes with 
-  #' generic genes from the count matrix, variable dilutes from variable features.
   #' 
-  #' @return Returns a tibble that can be used as a resource for the liana 
-  #' call_method functions but has a certain (marked) percentage of it replaced 
-  #' with random nonsensical interactions.
+  #' @param dilution_feature_type Choose "generic" or "variable". Generic dilutes with 
+  #' generic genes from the count matrix, variable dilutes from variable 
+  #' features.
+  #' 
+  #' @param preserve_topology Either TRUE or FALSE. If TRUE, a dilution method 
+  #' is used where among the interactions that are to be diluted, each 
+  #' instance of a given gene is replaced with a fake gene counterpart. This way
+  #' the topology among those diluted interactions remains the same, while
+  #' all the original gene names are replaced. This preserves the overall 
+  #' network topology of the resource better, but not perfectly. The topology is
+  #' not preserved perfectly because the topology of genes that appeared in both
+  #' the undiluted and diluted parts is split by the renaming of the diluted 
+  #' part.
+  #' 
+  #' If FALSE, a method of dilution is chosen that randomly assigns interaction
+  #' pairs to the parts of the resource meant for dilution. This alters the
+  #' network topology, but the number of edges and number of unique edges is
+  #' preserved. Additionally, among the diluted interactions,  no source can be 
+  #' target to itself and there is no overlap between the sources and targets 
+  #' (each added gene is either a source in all of its interactions or a target,
+  #' but not both). This mimics similar constraints in OmniPath, where for 
+  #' example, source and target overlap is uncommon (but possible). The topology
+  #' received for this method is highly dependent on the number of dilution 
+  #' genes provided, but in turn it will also function with far less genes than 
+  #' if the topology is to be preserved.
+  #' 
   
-  # Format the dilute_Resource Function to make diluted OP resources for each method
+    
   dilute_Resource <- 
-      function(resource, top_rank_df, dilution_prop, data_set, dilution_type){
+      function(resource, top_rank_df, dilution_prop, data_set, 
+               dilution_feature_type, preserve_topology, verbose = TRUE) {
+  
         
+        
+    # Separate top_rank parts of resource from non top rank parts of resource, 
+    # we only want to dilute the latter
+    resource_top <- resource %>% 
+      filter(LR_Pair %in% top_rank_df$LR_Pair)
+    
+    resource_bottom <- resource %>% 
+      filter(!(LR_Pair %in% top_rank_df$LR_Pair))
+    
+    # Determine how many rows of resource_bottom to dilute so that the overall 
+    # dilution_prop is met.
+    dilution_number <- round(nrow(resource)*dilution_prop)
+    
+    # Additional Warning message and break if the dilution prop can't be met
+    # without touching top-ranked interactions which need to be protected.
+    if(dilution_number > nrow(resource_bottom)) {
+      
+      warning(str_glue("REQUESTED DILUTION PROPORTION NOT ATTAINABLE WITHOUT ",
+                       "OVERWRITING THE GIVEN TOP-RANKED INTERACIONS. ",
+                       "RETURNING NOTHING INSTEAD."))
+      
+      return()
+      
+      
+    }
+    
+    # Select the candidates for dilution from resource_bottom
+    set.seed(90)
+    resource_dilute <- slice_sample(resource_bottom, n = dilution_number)
+    
+    # Delete the dilution candidates from resource_bottom so we have an even 
+    # split into dilution candidates and non-diluted candidates
+    resource_bottom <- anti_join(resource_bottom, resource_dilute)
+    
+    
+    
+    
+    
     # Generate a list of gene names that will be relevant by getting them from 
     # the data_set. Depending on what type of dilution is requested, we pull our
     # genes from the variable or normal section of the seurat object.
-        
-    if (dilution_type == "generic") {
     
-    gene_name_list  <- as.list(rownames(data_set@assays$RNA@data))
-    
-    
-    } else if (dilution_type == "variable") {
+    if (dilution_feature_type == "generic") {
+      
+      gene_name_list  <- as.list(rownames(data_set@assays$RNA@data))
+      
+      
+    } else if (dilution_feature_type == "variable") {
       
       gene_name_list <- as.list(data_set@assays$RNA@var.features)
       
       
     } else {
       
-      warning("Type of dilution was not set properly. Returning null.")
+      warning("TYPE OF DILUTION WAS NOT SET PROPERLY. RETURNING NULL.")
       return()
       
     }
@@ -148,23 +212,159 @@
       discard(~ .x %in% resource$target_genesymbol)
     
     
+    # Does not attempt to fully preserve dilution candidate or resource topology
+    # but also doesn't randomly add interactions either. There will be no
+    # duplicates, no sources that are their own target, and no source and target
+    # overlap.
+    if (preserve_topology == FALSE) {
+      # When generating combinations from two distinct lists, the highest number
+      # of interactions are achieved when both are of as equal size as possible.
+      # Here we divide the given gene_name_list into two such sublists, randomly
+      # in order to avoid ordering bias in gene_name_list. We name them source 
+      # and target and will keep them distinct, as in real life gene-products 
+      # that are both ligands and receptors are rare. This restriction makes our
+      # dilutions more true to impersonating the overall structure of omnipath, 
+      # while still being nonsense.
+      set.seed(91)
+      source_gene_list <- sample(gene_name_list, 
+                                 size = ceiling(length(gene_name_list)/2))
+      
+      target_gene_list <- gene_name_list %>% 
+        discard(~ .x %in% source_gene_list)
+      
+      
+      max_possible_interactions <- 
+        length(source_gene_list) * length(target_gene_list)
+      
+      
+      # If we need to create more source/target interactions than is possible in
+      # the best case scenario given the gene_name_lists we have, we throw an 
+      # error and don't even try to compute it.
+      if(max_possible_interactions < dilution_number) {
+        warning(str_glue("THE NUMBER OF GENES GIVEN CANT CREATE AS MANY ",
+                         "RANDOM INTERACTIONS AS THE DILUTION PROP REQUIRES. ",
+                         "RETURNING NULL."))
+        return()
+      }
+      
+      
+      # ST: Stands for Source and Target
+      diluted_ST_interactions <- expand.grid(source = source_gene_list, 
+                                             target = target_gene_list)
+      
+      diluted_ST_interactions$source <- unlist(diluted_ST_interactions$source)
+      diluted_ST_interactions$target <- unlist(diluted_ST_interactions$target)
+      
+      diluted_ST_interactions        <- tibble(diluted_ST_interactions)
+      
+      
+      
+      set.seed(92)
+      resource_dilute[c("source_genesymbol", "target_genesymbol")] <-
+        slice_sample(diluted_ST_interactions, n = dilution_number)
+      
+      
+      rm(source_gene_list, 
+         target_gene_list, 
+         diluted_ST_interactions, 
+         max_possible_interactions)
+      
+      
+    }
     
-    # Separate top_rank parts of resource from non top rank parts of resource, 
-    # we only want to dilute the latter
-    resource_top <- resource %>% 
-      filter(LR_Pair %in% top_rank_df$LR_Pair)
+    # Fully preserves dilution candidates topology by  switching gene names.
+    # Almost preserves full resource topology, however if there are genes that
+    # were amongst dilution candidates and the rest of the resource, their
+    # topology will be altered.
+
+    if (preserve_topology == TRUE)  {
+      
+      
+      resource_genes <- unlist(unique(c(resource_dilute$source_genesymbol, 
+                                        resource_dilute$target_genesymbol)))
+      
+      if(length(gene_name_list) < length(resource_genes)) {
+        warning(str_glue("NOT ENOUGH GENES FROM DATA SET PROVIDED TO PRESERVE ",
+                         "TOPOLOGY. RETURNING NULL."))
+        return()
+      }
+      
+      set.seed(93)
+      dilution_genes <- unlist(sample(gene_name_list, 
+                                      size = length(resource_genes)))
+      
+      
+      dilution_mapping <- tibble(resource_genes, dilution_genes)
+      
+      
+      
+      for(i in 1:nrow(resource_dilute)) {
+        
+        gene_to_dilute  <- resource_dilute$source_genesymbol[i]
+        
+        GTD_index <- which(dilution_mapping$resource_genes == gene_to_dilute)
+        
+        resource_dilute$source_genesymbol[i] <-
+          dilution_mapping[GTD_index, "dilution_genes"]
+        
+        
+      }
+      
+      
+      for(i in 1:nrow(resource_dilute)) {
+        
+        gene_to_dilute  <- resource_dilute$target_genesymbol[i]
+        
+        GTD_index <- which(dilution_mapping$resource_genes == gene_to_dilute)
+        
+        resource_dilute$target_genesymbol[i] <-
+          dilution_mapping[GTD_index, "dilution_genes"]
+        
+        
+      }
+      
+      resource_dilute <- resource_dilute %>%
+        unnest(cols = c(source_genesymbol,  target_genesymbol))
+      
+      
+      rm(i, 
+         gene_to_dilute, 
+         GTD_index, 
+         resource_genes, 
+         dilution_genes, 
+         dilution_mapping)
+      
+    }
     
-    resource_bottom <- resource %>% 
-      filter(!(LR_Pair %in% top_rank_df$LR_Pair))
+    
+    # Update the LR-Pair column with the new random "interaction partners", and 
+    # mark the random interactions as such.
+    resource_dilute <- resource_dilute %>%
+      select(-LR_Pair)                 %>%
+      unite("LR_Pair", 
+            c(source_genesymbol, target_genesymbol), 
+            remove = FALSE)            %>%
+      mutate(isRandom = TRUE)          %>%
+      relocate("LR_Pair", .after = last_col())
+    
+    
+    # The new resource has top ranked interactions, non-top rank but still real 
+    # interactions, and diluted random interactions.
+    new_resource <- bind_rows(resource_top, resource_bottom, resource_dilute)
+    
+     
     
     
     
-    # Determine how many rows of resource_bottom to dilute so that the overall 
-    # dilution_prop is met
-    dilution_number <- round(nrow(resource)*dilution_prop)
     
-    # Additional Warning message and break if the dilution prop can't be met
-    if(dilution_number > nrow(resource_bottom)) {
+    
+    
+    
+    
+    
+    
+    
+    
       
       warning("Requested dilution proportion not attainable without overwriting 
                 the given top-ranked interacions. Returning nothing instead.")
@@ -213,9 +413,17 @@
     new_resource <- bind_rows(resource_top, resource_bottom, resource_dilute)
 
     
+      
+      
+      
+      
+      
+      
+      
+      
+      
     #return output
     return(new_resource)
-    
   } #end of function
     
     
