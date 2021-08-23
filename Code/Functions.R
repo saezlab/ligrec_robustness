@@ -138,6 +138,22 @@
   #' genes provided, but in turn it will also function with far less genes than 
   #' if the topology is to be preserved.
   #' 
+  #' @param verbose Set to TRUE by default. Produces a detailed output that 
+  #' summarizes important elements of the resource and how they changed through
+  #' dilution. The output can be used to double check the parameters that were
+  #' used and whether or not the dilution went correctly. 
+  #' 
+  #' Normally, the number of unique edges should not change, all edges should be 
+  #' unique, the percentage of edges MARKED diluted should be equal to the 
+  #' percentage that ARE diluted and should be close to the given dilution 
+  #' proportion. The overlap in diluted edges should be 0 if 
+  #' preserve_topology == FALSE, otherwise it should be close to the source and 
+  #' target overlap before dilution. No sources should be targets to themselves,
+  #' ever.
+  #' 
+  #' @return Returns a tibble that can be used as a custom OmniPath resource for
+  #' liana_wrap and the call_method functions but has a certain (marked) 
+  #' percentage of it replaced with random nonsensical interactions.
   
     
   dilute_Resource <- 
@@ -365,54 +381,241 @@
     
     
     
-      
-      warning("Requested dilution proportion not attainable without overwriting 
-                the given top-ranked interacions. Returning nothing instead.")
-      
-      return()
-      
-      
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    {
+    # calculate what proportion of edges is marked as diluted
+    prop_marked_diluted <- sum(new_resource$isRandom)*100/nrow(new_resource)
+    
+    prop_diluted <- sum(!(new_resource$LR_Pair %in%
+                            resource$LR_Pair))   *100   /nrow(new_resource)
+    
+    # calculate percentage overlap between source & target inresource
+    before_overlap <- 
+      sum(resource$source_genesymbol %in% 
+            resource$target_genesymbol)          *100   /nrow(resource)
+    
+    after_overlap <- 
+      sum(new_resource$source_genesymbol %in% 
+            new_resource$target_genesymbol)      *100   /nrow(new_resource)
+    
+    diluted_overlap <- 
+      sum(resource_dilute$source_genesymbol %in% 
+            resource_dilute$target_genesymbol)   *100   /nrow(resource_dilute)
+    
+    edges_okay <- all(sapply(list(nrow(resource), 
+                                  nrow(new_resource),
+                                  length(unique(resource$LR_Pair)),
+                                  length(unique(new_resource$LR_Pair))), 
+                             function(x) x == nrow(resource)))
+    
+    if(edges_okay == FALSE) {
+      warning(str_glue("DILUTION ERROR: THE NUMBER OF EDGES OR NUMBER OF ",
+                       "UNIQUE EDGES IS NOT CONSTANT."))
     }
     
-    # Select the candidates for dilution from resource_bottom
-    set.seed(90)
-    resource_dilute <- slice_sample(resource_bottom, n = dilution_number)
-    
-    # Delete the dilution candidates from resource_bottom so we have an even 
-    # split into dilution candidates and non-diluted candidates
-    resource_bottom <- anti_join(resource_bottom, resource_dilute)
-    
-    
-    # Sample random gene names from the gene list into the dilution candidates, 
-    # creating random nonsensical relationships
-    set.seed(91)
-    resource_dilute$source_genesymbol <-
-      as.character(sample(gene_name_list,
-                          size = nrow(resource_dilute),
-                          replace = TRUE))
-    
-    
-    set.seed(92)
-    resource_dilute$target_genesymbol <-
-      as.character(sample(gene_name_list, 
-                          size = nrow(resource_dilute), 
-                          replace = TRUE))
-    
-    # Update the LR-Pair column with the new random "interaction partners", and 
-    # mark the random interactions as such.
-    resource_dilute <- resource_dilute %>%
-      select(-LR_Pair) %>%
-      unite("LR_Pair", c(source_genesymbol, target_genesymbol), remove = FALSE) %>%
-      mutate(isRandom = TRUE) %>%
-      relocate("LR_Pair", .after = last_col())
     
     
     
-    # The new resource has top ranked interactions, non-top rank but still real 
-    # interactions, and diluted random interactions.
-    new_resource <- bind_rows(resource_top, resource_bottom, resource_dilute)
+    
+    
+    dilution_marker_okay <- prop_marked_diluted == prop_diluted
+    dilution_prop_okay <- abs(dilution_prop*100 - prop_diluted) > 5
+    
+    if(dilution_marker_okay == FALSE) {
+      warning(str_glue("DILUTION ERROR: THE PROPORTION OF INTERACTIONS ",
+                       "MARKED AS DILUTED (isRandom) DOES NOT CORRESPOND TO ",
+                       "THE PROPORTION OF EDGES THAT ARE DILUTED. SOMETHING ",
+                       "IS WRONG WITH THE isRandom MARKINGS."))
+    }
+    
+    if(dilution_prop_okay) {
+      warning(str_glue("DILUTION WARNING: THE ACTUAL DILUTION PROPORTION IS ",
+                       "MORE THAN 5 PERCENTAGE POINTS DIFFERENT TO THE USER ",
+                       "SPECIFIED DILUTION PROPORTION. SOMETHING IS WORNG ",
+                       "WITH THE NUMBER OF DILUTED ROWS."))
+    }
+    
+    
+    
+    
+    
+    
+    if(preserve_topology == TRUE) {
+      
+      topology_okay <- abs(before_overlap - after_overlap) <= 10
+      
+      if(topology_okay == FALSE) {
+        warning(str_glue("DILUTION WARNING: THE SOURCE AND TARGET  OVERLAP ",
+                         "CHANGED MORE THAN 10 PERCENTAGE POINTS THROUGH ",
+                         "DILUTION. THE TOPOLOGY HAS CHANGED DRASTICALLY."))
+      }
+      
+    } else if(preserve_topology == FALSE) {
+      
+      topology_okay <- diluted_overlap == 0
+      
+      if(topology_okay == FALSE) {
+        warning(str_glue("DILUTION ERROR: THE SOURCE AND TARGET  OVERLAP ",
+                         "SHOULD BE 0 FOR THIS DILUTION TYPE AND ISN'T. THE ",
+                         "TOPOLOGY IS NOT AS IT SHOULD BE."))
+      }
+    }
+    
+    
+    
+    
+    
+    no_self_targets <- all(sapply(list(sum(resource$source_genesymbol == 
+                                             resource$target_genesymbol), 
+                                       sum(new_resource$source_genesymbol == 
+                                             new_resource$target_genesymbol)), 
+                                  function(x) x == 0))
+    
+    if(no_self_targets == FALSE) {
+      warning(str_glue("DILUTION ERROR: THE ORIGINAL RESOURCE AND/OR THE ",
+                       "DILUTED RESOURCE CONTAIN(S) INTERACTIONS WITH ",
+                       "SOURCES THAT ARE TARGETS TO THEMSELVES."))
+    }
+    }
+      
+      if (verbose == TRUE) {
+      # define output divider so that 80 characters per line aren't exceeded 
+      # below
+      output_divider <- 
+        "------------------------------------------------------------
+        ------------------------------------------------------------"
+      
+      
+      #a bunch of info on the new and old data set
+      print(str_glue(""))
+      print(str_glue(""))
+      print(str_glue(as.character(dilution_prop*100), "% Dilution Complete"))
+      print(str_glue(""))
+      
+      if(preserve_topology == TRUE) {
+        print(str_glue("Topology semi-preserved."))
+        print(str_glue(""))
+      } else if (preserve_topology == FALSE) {
+        print(str_glue("Topology unpreserved, but: 
+                         - No duplicate interactions.
+                         - No sources that are their own target.
+                         - No overlap between diluted sources and targets."))
+        print(str_glue(""))
+      }
+      
+      if(dilution_feature_type == "generic") {
+        print(str_glue("Diluted with a list of all genes in the input Seurat."))
+      } else if (dilution_feature_type == "variable") {
+        print(str_glue("Diluted with the variable features in the input ",
+                       "Seurat."))
+      }
+      
+      
+      print(str_glue(""))
+      print(str_glue(output_divider))
+      print(str_glue("Number of edges before:                           ", 
+                     nrow(resource)))
+      print(str_glue("Number of edges after:                            ", 
+                     nrow(new_resource)))
+      print(str_glue(""))
+      
+      print(str_glue("Number of unique edges before:                    ", 
+                     length(unique(resource$LR_Pair))))
+      print(str_glue("Number of unique edges after:                     ", 
+                     length(unique(new_resource$LR_Pair))))
+      print(str_glue(""))
+      print(str_glue(output_divider))
+      
+      
+      
+      
+      print(str_glue("Number of edges marked  as diluted (after):       ", 
+                     sum(new_resource$isRandom)
+      ))
+      print(str_glue(""))
+      
+      print(str_glue("Proportion of edges marked as diluted:            ", 
+                     round(prop_marked_diluted, 2),
+                     " %"))
+      print(str_glue("Proportion of edges actually diluted:             ", 
+                     round(prop_marked_diluted, 2),
+                     " %"))
+      print(str_glue(""))
+      print(str_glue(output_divider))
+      
+      
+      
+      
+      print(str_glue("Source and Target overlap before:                 ", 
+                     round(before_overlap, 2),
+                     " %"))
+      print(str_glue("Source and Target overlap after:                  ", 
+                     round(after_overlap, 2),
+                     " %"))
+      print(str_glue(""))
+      print(str_glue("Source and target overlap in diluted edges:       ", 
+                     round(diluted_overlap, 2),
+                     " %"))
+      print(str_glue(""))
+      print(str_glue(output_divider))
+      
+      
+      
+      
+      print(str_glue("Sources that are Targets to themselves, before:   ", 
+                     sum(resource$source_genesymbol == 
+                           resource$target_genesymbol)))
+      print(str_glue("Sources that are Targets to themselves, after:    ", 
+                     sum(new_resource$source_genesymbol == 
+                           new_resource$target_genesymbol)))
+      
+      print(str_glue(""))
+      print(str_glue(""))
+  
+    
+    
+    
+    
 
+    }
+      
+      rm(dilution_marker_okay,
+         dilution_prop_okay,
+         edges_okay,
+         no_self_targets,
+         topology_okay)
+      
+      
+      rm(before_overlap,
+         after_overlap,
+         diluted_overlap,
+         prop_marked_diluted,
+         prop_diluted,
+         output_divider)
     
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       
       
       
