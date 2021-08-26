@@ -2,6 +2,7 @@
 # 1.
 ### Does the percentage of OmniPath genes in the results rise as OmniPath becomes more diluted? ----
 # run after liana results after dilution are in env
+{
 gene_names_results <- unique(c(liana_results_OP$connectome$OmniPath_0$ligand, liana_results_OP$connectome$OmniPath_0$receptor))
 gene_names_resource <- unique(c(resources_OP$connectome$OmniPath_0$source_genesymbol, resources_OP$connectome$OmniPath_0$target_genesymbol))
 percentage_resource_in_results <- sum(gene_names_resource %in% gene_names_results)/length(gene_names_resource)
@@ -20,12 +21,13 @@ print(percentage_resource_in_results)
 }
 
 rm(i, gene_names_resource, gene_names_results, percentage_resource_in_results)
-
+}
 
 
 # 2. 
 ## does the number of interactions rise when lapplying over multiple OP resources regardless of dilution? ----
 # run after dilutions are in env
+{
 test_list <- list(OmniPath_0 = resources_OP$connectome$OmniPath_0, 
                   OmniPath_0 = resources_OP$connectome$OmniPath_0, 
                   OmniPath_0 = resources_OP$connectome$OmniPath_0, 
@@ -36,9 +38,10 @@ test_list <- list(OmniPath_0 = resources_OP$connectome$OmniPath_0,
 test_result_list <- lapply(test_list, call_connectome, seurat_object = testdata)
 lapply(test_result_list, all.equal, test_result_list$OmniPath_0)
 ## the results is the same all four times, and have the same number of rows
-
+}
 
 # 3. does the number of interactions in connectome rise when diluting only hits? ----
+{
 ## if we filter OP_0 to be just hits and then dilute hits with more hits the number of rows, reflecting the number of interactions, shouldn't rise
 # run after dilutions are in env
 gene_names <- rownames(testdata@assays$RNA@data)
@@ -67,14 +70,14 @@ all.equal(normal_connectome, filter_connectome_0)
 
 
 
-
+}
 
 #4.
 ## Checking if a filtered (but undiluted) OP resource produces the same as the standard non-filtered one ----
 ## filtered means it only includes genes that are also present in the data you're going to use it with
 ## since gene interactions for genes not in the data should have no impact, this should make no difference.
 ## run when dilutions are in env
-
+{
 gene_names <- rownames(testdata@assays$RNA@data)
 OmniPath_filter <- resources_OP$connectome$OmniPath_0 %>%
   filter(source_genesymbol %in% gene_names) %>%
@@ -108,11 +111,12 @@ filter_sca_call <- call_sca(op_resource = select_resource(c("OmniPath"))[[1]], s
 
 all.equal(filter_sca_call, filter_sca)
 
-
+}
 
 
 #5.
 #### Call_X and liana wrap don't produce the same results ----
+{
 #### even when same resource, same method, same data
 ## not the same output somehow
 filter_sca_call <- call_sca(op_resource = select_resource(c("OmniPath"))[[1]], seurat_object = testdata)
@@ -121,11 +125,11 @@ filter_sca_wrap <- liana_wrap(seurat_object = testdata, method = c("sca"), resou
 filter_cellchat_call <- call_cellchat(op_resource = select_resource(c("OmniPath"))[[1]], seurat_object = testdata)
 filter_cellchat_wrap <- liana_wrap(seurat_object = testdata, method = c("cellchat"), resource = c("OmniPath"))[[1]]
 
-
+}
 
 
 # 6. Plot and save results for dilution, top 250 and top 1000 ranks -------------------------
-
+{
 load("C:/Users/plabu/OneDrive/Documents/GitHub/ligrec_robustness/Data/env_after_1000.RData")
 
 top_rank_overlap_1000 <- top_rank_overlap_1000 %>%
@@ -200,26 +204,11 @@ ggsave("top_rank_overlap_250_plot.png",
        height = 5, width = 8, 
        path = "Outputs")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
 ## what is the unification of top ranks ----
-
+{
 
 unification_top_ranks <- top_ranks_OP_0$call_connectome[1:4] %>%
   add_row(top_ranks_OP_0$call_natmi[1:4]) %>%
@@ -230,32 +219,22 @@ unification_top_ranks <- top_ranks_OP_0$call_connectome[1:4] %>%
 
 
 
+}
 
 
-
-
-
-
-
-
-
-
-
-
-
-## are tow rsult outputs idetical when ordered? ----
+## are tow result outputs identical when ordered? ----
+{
 all.equal(arrange_at(t, vars(everything())), 
           arrange_at(liana_results_OP$call_connectome$OmniPath_0, vars(everything()))
           )
 
 
 
-
-
-
+}
 
 
 ## Investigating the relationship of OP source and target genesymbols ----
+{
 #get OP_resource and construct LR Pairs
 op <- select_resource(c('OmniPath'))[["OmniPath"]] %>%
   select(source_genesymbol,
@@ -299,10 +278,11 @@ length(intersect(source_list, target_list)) / length(unique(c(source_list, targe
 # Are any of these gene symbols source and target to themselves?
 sum(source_list == target_list) # no, even though some genes appear in both lists they never appear twice in the same row, i.e. in relationship to themselves
 
-
+}
 
 
 # is thres = 1 actually a standard parameter of liana_wrap? ----
+{
 test_thing_no_thresh <- 
   liana_wrap(testdata, 
              method = c('cellchat'), 
@@ -322,17 +302,139 @@ test_thing <-
                                     thresh = 1),
              call_natmi.params = list(output_dir = natmi_output))
 
-
-
+}
 
 # 11. NATMI produces more unique LR Pairs in the top ranking than other methods ----
 # Other methods produce less unique LR Pairs and repeat them among more cluster combinations
 # NATMI has less repeats
+{
 
-length(unique(top_ranks_OP$call_natmi$OmniPath_0$LR_Pair))
+top_rank_edges <- 
+  tibble("methods"             = script_params$methods_vector,
+         "number_unique_edges" = 
+           c(length(unique(top_ranks_OP$call_connectome$OmniPath_0$LR_Pair)),
+             length(unique(top_ranks_OP$call_natmi$OmniPath_0$LR_Pair)),
+             length(unique(top_ranks_OP$call_italk$OmniPath_0$LR_Pair)),
+             length(unique(top_ranks_OP$call_sca$OmniPath_0$LR_Pair)),
+             length(unique(top_ranks_OP$cellchat$OmniPath_0$LR_Pair))))
 
-# Compare to the others
-length(unique(top_ranks_OP$call_connectome$OmniPath_0$LR_Pair))
-length(unique(top_ranks_OP$call_italk$OmniPath_0$LR_Pair))
-length(unique(top_ranks_OP$call_sca$OmniPath_0$LR_Pair))
-length(unique(top_ranks_OP$cellchat$OmniPath_0$LR_Pair))
+top_rank_edges <- top_rank_edges %>%
+  arrange(desc(number_unique_edges))
+
+print(top_rank_edges)
+
+
+
+
+topology_tables <- list()
+topology_plots  <- list()
+
+
+for (method in top_rank_edges$methods) {
+
+  # Investigate topology with plots
+  topology_tables[[method]] <- top_ranks_OP[[method]]$OmniPath_0$LR_Pair %>%
+    table()                                %>%
+    as_tibble(.name_repair = "universal")  %>% 
+    rename("LR_Pairs" = ".", "frequency" = "n")
+  
+  topology_tables[[method]]$LR_Pairs <- 
+    reorder(topology_tables[[method]]$LR_Pairs, 
+            topology_tables[[method]]$frequency)
+  
+  # often very large plot, adjuts plotting window accordingly
+  topology_plots[[method]] <- 
+    ggplot(data = topology_tables[[method]], 
+           aes(x= LR_Pairs, y = frequency, width = 0.5)) +
+    
+    geom_bar(stat = "identity", fill = "#8ABAFF") +
+    
+    coord_flip() +
+    
+    ggtitle(str_glue("LR-Pair distribution in ", method)) +
+    xlab("Unique Interactions") +
+    ylab("Frequency among top-ranked interactions") +
+    labs(subtitle = str_glue("Unique LR-Pairs : ",
+                             nrow(topology_tables[[method]]),
+                             " Highest frequency: ",
+                             max(topology_tables[[method]]$frequency)))
+  
+  print(topology_plots[[method]])
+
+}
+
+rm(method)
+
+
+# When you're done
+rm(topology_plots, topology_tables, top_rank_edges)
+
+}
+
+# 12. Working env for updating dilute_Resource() ----
+{
+require(tidyverse)
+require(Seurat)
+require(liana)
+
+library(lubridate)
+
+# You may want to make sure the loaded function in the env are up to date
+load("~/GitHub/ligrec_robustness/Data/Dilution_Upgrade_Env.RData")
+
+# This code to remove the old functions
+rm(dilute_Resource, 
+   get_top_n_ranks, 
+   prop_isRandom, 
+   rank_overlap, 
+   extract_unconflicting_Genes, 
+   preserve_Dilute, 
+   random_Dilute)
+}
+
+# 13. Remove duplicates for resource_dilute [OBSOLETE]
+{
+
+# This code was part of the old heuristic version of random_Dilute(), it
+# recursively removed duplicates and replaced them.
+  
+seed = 1
+
+while(nrow(distinct(resource_dilute[, c("source_genesymbol", "target_genesymbol")])) < dilution_number) {
+  
+  
+  print(str_glue("Removing Duplicates. Iteration: ", as.character(seed)))
+  
+  row_is_duplicated <- duplicated(resource_dilute[, c("source_genesymbol", 
+                                                      "target_genesymbol")])
+  
+  source_gene_name_list <- gene_name_list
+  
+  set.seed(seed)
+  resource_dilute[row_is_duplicated, ]$source_genesymbol <- 
+    as.character(sample(source_gene_name_list,
+                        size = sum(row_is_duplicated),
+                        replace = TRUE))
+  
+  target_gene_name_list <- gene_name_list %>% 
+    discard(~ .x %in% resource_dilute$source_genesymbol)
+  
+  
+  set.seed(-seed)
+  resource_dilute[row_is_duplicated, ]$target_genesymbol <- 
+    as.character(sample(target_gene_name_list, 
+                        size = sum(row_is_duplicated), 
+                        replace = TRUE))
+  
+  
+  seed = seed +1
+  
+  if(seed > 2000) {
+    warning("MAXIMUM ITERATIONS REACHED. DUPLICATES REMOVAL FAILED.")
+    break()
+  }
+}
+  
+
+
+}
