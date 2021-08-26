@@ -59,7 +59,7 @@
 #------------------------------------------------------------------------------#
 # B. Set top_n, dilution props, testdata type ----------------------------------
 {
-  dilution_props <- c(seq(0.10, 0.30, 0.20)) # should be consistent between tests
+  dilution_props <- c(seq(0.05, 0.10, 0.05)) # should be consistent between tests
   
   number_ranks   <- list("call_connectome" = 20, 
                          "call_natmi"      = 20,
@@ -69,10 +69,10 @@
   
   testdata_type  <- c("liana_test") # choose "liana_test" or "seurat_pbmc"
  
-  # If dilution_feature_type is generic, dilution will be completed with any genes
+  # If feature_type is generic, dilution will be completed with any genes
   # in the seurat count matrix. If dilution is variable, only the variable
   # features are used for dilution.
-  dilution_feature_type <- c("variable") # choose "generic" or "variable"
+  feature_type <- c("variable") # choose "generic" or "variable"
   
   preserve_topology <- FALSE  # choose TRUE to preserve and FALSE to not
 
@@ -97,6 +97,8 @@
   {
     date_of_run <- as.character(Sys.Date())
     
+    if(sink_output == TRUE) {
+      
     log_save_path <- str_glue("Outputs/Output_Log_", 
                               run_mode,
                               "_",
@@ -106,17 +108,15 @@
                               "_res",
                               as.character(length(dilution_props)),
                               "_",
-                              dilution_feature_type,                            
+                              feature_type,                            
                               "_dil_on_",
                               date_of_run,
                               ".RData")
-  
-  
-    if(sink_output == TRUE) {
       
       con <- file(log_save_path)
       sink(con, append=TRUE)
       sink(con, append=TRUE, type="message")
+      
       
     }
   
@@ -354,11 +354,12 @@
     
     dilutions_OP[[method]] <- 
       lapply(dilution_props, dilute_Resource, 
-             resource = resources_OP[[method]]$OmniPath_0, 
-             top_rank_df = top_ranks_OP[[method]]$OmniPath_0, 
-             data_set = testdata,
-             dilution_feature_type = dilution_feature_type,
-             preserve_topology = preserve_topology)
+             resource          = resources_OP[[method]]$OmniPath_0, 
+             top_rank_list     = top_ranks_OP[[method]]$OmniPath_0$LR_Pair, 
+             preserve_topology = preserve_topology,
+             data_set          = testdata,
+             feature_type      = feature_type,
+             verbose           = TRUE)
     
   }
   
@@ -728,14 +729,25 @@
   tr_overlap_for_plot <- top_ranks_analysis$Overlap * 100
   
   # Automatically assemble a file name and plot subtitle
-  plotting_subtitle <- str_glue(dilution_feature_type,
+  if (preserve_topology == FALSE) {
+    
+    topology_comment <- "using random_Dilute()"
+    
+  } else if (preserve_topology == TRUE) {
+    
+    topology_comment <- "using preserve_Dilute()"
+    
+  }
+  
+  plotting_subtitle <- str_glue(feature_type,
                                 " dilution, top ",
                                 as.character(median(unlist(number_ranks))),
                                 " ranks, ",
                                 testdata_type,
                                 " data, ",
                                 run_mode,
-                                " results")
+                                " results, ",
+                                topology_comment)
   
   plot_png_name     <- str_glue(run_mode,
                                 "_",
@@ -745,7 +757,7 @@
                                 "_res",
                                 as.character(length(dilution_props)),
                                 "_",
-                                dilution_feature_type,
+                                feature_type,
                                 "_dil_on_",
                                 date_of_run,
                                 ".png")
@@ -821,7 +833,7 @@
     
   }
   # Remove unnecessary variables
-  rm(tr_overlap_for_plot, overlap_plot, plotting_subtitle)
+  rm(tr_overlap_for_plot, overlap_plot, plotting_subtitle, topology_comment)
   
   
   } # end of subpoint
@@ -902,29 +914,45 @@
                             "_res",
                             as.character(length(dilution_props)),
                             "_",
-                            dilution_feature_type,                            
+                            feature_type,                            
                             "_dil_on_",
                             date_of_run,
                             ".RData")
   
   # Summarizing important but somewhat scattered meta data
   # Also attaches session info in case result replication needs it
-  script_params <- list("dilution_props"  = dilution_props, 
-                        "number_ranks"    = number_ranks, 
-                        "runtime"         = runtime, 
-                        "cellchat_nperms" = cellchat_nperms, 
-                        "dilution_feature_type"    = dilution_feature_type, 
-                        "methods_vector"  = methods_vector, 
-                        "run_mode"        = run_mode, 
-                        "save_results"    = save_results,
-                        "testdata_type"   = testdata_type,
-                        "Session_Info"    = sessionInfo(),
-                        "save_names"      = list("plot_png_name" = plot_png_name,
-                                                 "env_save_path" = env_save_path))
+  script_params <- list("dilution_props"    = dilution_props, 
+                        "number_ranks"      = number_ranks, 
+                        "runtime"           = runtime, 
+                        "cellchat_nperms"   = cellchat_nperms, 
+                        "feature_type"      = feature_type, 
+                        "methods_vector"    = methods_vector, 
+                        "run_mode"          = run_mode, 
+                        "save_results"      = save_results,
+                        "testdata_type"     = testdata_type,
+                        "Session_Info"      = sessionInfo(),
+                        "sink_output"       = sink_output,
+                        "preserve_topology" = preserve_topology,
+                        "save_names"        = 
+                          list("plot_png_name" = plot_png_name,
+                               "env_save_path" = env_save_path))
+  
+  # If the output was sunk the save path to the log is stored
+  if(script_params$sink_output == TRUE) {
+    
+    script_params$save_names["log_save_path"]  = log_save_path
+    
+    # Keep the environment tidy
+    rm(log_save_path)
+    
+  }
+  
+  
+  
   # Removing now-superfluous meta data
-  rm(dilution_props, number_ranks, runtime, cellchat_nperms, dilution_feature_type, 
+  rm(dilution_props, number_ranks, runtime, cellchat_nperms, feature_type, 
      methods_vector, run_mode, save_results, testdata_type, plot_png_name, 
-     env_save_path)
+     env_save_path, date_of_run, preserve_topology, sink_output)
   
   # Save R environment and all the results within it
   if (script_params$save_results) {
@@ -937,7 +965,7 @@
   
   }
   
-  if(sink_output == TRUE) {
+  if(script_params$sink_output == TRUE) {
     
     sink() 
     sink(type="message")
