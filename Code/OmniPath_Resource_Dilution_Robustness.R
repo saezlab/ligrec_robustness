@@ -59,7 +59,7 @@
 #------------------------------------------------------------------------------#
 # B. Set top_n, dilution props, testdata type ----------------------------------
 {
-  dilution_props <- c(seq(0.05, 0.10, 0.05)) # should be consistent between tests
+  dilution_props <- c(seq(0.20, 1.00, 0.20)) # should be consistent between tests
   
   number_ranks   <- list("call_connectome" = 20, 
                          "call_natmi"      = 20,
@@ -508,6 +508,56 @@
   rm(top_dilutions_OP, method, dilution)
   
   
+  # Formatting of top ranks
+  
+  # format top_ranks to have an ID that marks each specific interaction (LR and 
+  # the source and target cell)
+  top_ranks_OP$call_connectome <- 
+    lapply(top_ranks_OP$call_connectome, unite, col = "LR_ID", 
+           c(source, target, ligand, receptor), remove = FALSE)
+  
+  top_ranks_OP$call_natmi <-
+    lapply(top_ranks_OP$call_natmi, unite, col = "LR_ID",
+           c(source, target, ligand, receptor), remove = FALSE)
+  
+  
+  top_ranks_OP$call_italk <- 
+    lapply(top_ranks_OP$call_italk, unite, col = "LR_ID", 
+           c(source, target, ligand, receptor), remove = FALSE)
+  
+  
+  top_ranks_OP$call_sca <- 
+    lapply(top_ranks_OP$call_sca, unite, col = "LR_ID", 
+           c(source, target, ligand, receptor), remove = FALSE)
+  
+  
+  top_ranks_OP$cellchat <- 
+    lapply(top_ranks_OP$cellchat, unite, col = "LR_ID", 
+           c(source, target, ligand, receptor), remove = FALSE)
+  
+  
+  # add a column to see if an interaction is fake
+  for (method in methods_vector) {
+    for (dilution in c("OmniPath_0", names(dilution_props))) {
+      if( !(is_null(top_ranks_OP[[method]][[dilution]]))) {
+        
+        top_ranks_OP[[method]][[dilution]] <- 
+          top_ranks_OP[[method]][[dilution]] %>%
+          mutate(isRandom = 
+                   !(LR_Pair %in% resources_OP[[method]]$OmniPath_0$LR_Pair))
+        
+        
+      } else {
+        
+        warning("One of the top_rank tibbles is missing! Moving on.")
+        
+      }
+    }
+  }
+  
+  # remove superfluous values
+  rm(method,dilution)
+  
   
   } # end of subpoint
  
@@ -532,56 +582,6 @@
   #                         ranked.
   # 
   # All_mismatch_from_Randoms  =  At a glance, is all the mismatch from Randoms?
-    
-  # format top_ranks to have an ID that marks each specific interaction (LR and 
-  # the source and target cell)
-  top_ranks_OP$call_connectome <- 
-      lapply(top_ranks_OP$call_connectome, unite, col = "LR_ID", 
-             c(source, target, ligand, receptor), remove = FALSE)
-    
-    top_ranks_OP$call_natmi <-
-      lapply(top_ranks_OP$call_natmi, unite, col = "LR_ID",
-             c(source, target, ligand, receptor), remove = FALSE)
-    
-    
-    top_ranks_OP$call_italk <- 
-      lapply(top_ranks_OP$call_italk, unite, col = "LR_ID", 
-             c(source, target, ligand, receptor), remove = FALSE)
-    
-    
-    top_ranks_OP$call_sca <- 
-      lapply(top_ranks_OP$call_sca, unite, col = "LR_ID", 
-             c(source, target, ligand, receptor), remove = FALSE)
-    
-    
-  top_ranks_OP$cellchat <- 
-    lapply(top_ranks_OP$cellchat, unite, col = "LR_ID", 
-            c(source, target, ligand, receptor), remove = FALSE)
-  
-
-  
-  
-  # add a column to see if an interaction is fake
-  for (method in methods_vector) {
-    for (dilution in c("OmniPath_0", names(dilution_props))) {
-      if( !(is_null(top_ranks_OP[[method]][[dilution]]))) {
-          
-          top_ranks_OP[[method]][[dilution]] <- 
-            top_ranks_OP[[method]][[dilution]] %>%
-            mutate(isRandom = 
-                     !(LR_Pair %in% resources_OP[[method]]$OmniPath_0$LR_Pair))
-          
-          
-      } else {
-        
-        warning("One of the top_rank tibbles is missing! Moving on.")
-        
-      }
-    }
-  }
-  
-  # remove superfluous values
-  rm(method,dilution)
   
   
   # lapply rank_overlap over the top rank tibbles, comparing the dilutions to 
@@ -621,14 +621,11 @@
   
   # add NAs to the end of the overlaps where dilution wasn't possible
   # this way all the overlaps have the same length for tibble construction
-    overlaps <- 
+  overlaps <- 
     lapply(overlaps, 
            function(x) { c(x, rep(NA, length(dilution_props)+1-length(x)))})
     
   
- 
-    
-    
     
   
   # reformatting overlap as a tibble
@@ -664,15 +661,27 @@
   # top_ranks is felt greater.
   
   # We apply the prop_isRandom function, over every top_rank_df
-  # Using sapply twice gives a convenient data frame layout that makes the 
+  # Using lapply and sapply gives a convenient output layout that makes the 
   # formatting easier. 
-  # We add a dilution props column the same as in top_ranks_overlap.
-  top_ranks_randoms <- sapply(top_ranks_OP, sapply, prop_isRandom) %>%
-      data.frame()                                  %>%
-      tibble()                                      %>%
-      mutate(dilution_prop = c(0, dilution_props))  %>%
-      unnest(cols = c(dilution_prop))               %>%
-      relocate("dilution_prop")                     %>%
+  top_ranks_randoms <- lapply(top_ranks_OP, sapply, prop_isRandom) 
+  
+  # Because certain dilutions at higher dilution props might not have been 
+  # achievable in respects to not changing top_ranked interactions. Because of
+  # this, the sapply output may be short a few variables, which we correct by 
+  # adding NAs until every vector that will become a column is has the same 
+  # length of dilution_props. These NAs represent that the isRandom column
+  # couldn't be analysed here, as no output was created.
+  top_ranks_randoms <- 
+    lapply(top_ranks_randoms, 
+           function(x) { c(x, rep(NA, length(dilution_props)+1-length(x)))})
+  
+  # We format top_ranks_randoms the way we formatted top_ranks_overlap
+  top_ranks_randoms <- top_ranks_randoms           %>%
+      data.frame()                                 %>%
+      tibble()                                     %>%
+      mutate(dilution_prop = c(0, dilution_props)) %>%
+      unnest(cols = c(dilution_prop))              %>%
+      relocate("dilution_prop")                    %>%
       data.frame() #because we plan to do arithmetic operations with this tibble
   
   # The proportion of mismatch between top_rank_dfs is 1- the overlap
