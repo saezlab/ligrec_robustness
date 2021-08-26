@@ -392,7 +392,7 @@ rm(dilute_Resource,
    random_Dilute)
 }
 
-# 13. Remove duplicates for resource_dilute [OBSOLETE]
+# 13. Remove duplicates for resource_dilute [OBSOLETE] ----
 {
 
 # This code was part of the old heuristic version of random_Dilute(), it
