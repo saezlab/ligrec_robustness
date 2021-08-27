@@ -60,6 +60,15 @@
 #' 500 CCI's are considered relevant and that these 500 are the ones that are to
 #' be compared between the dilutions.
 #' 
+#' @param master_seed  At some stages when diluting  a resource, randomness 
+#' is at play. There are four stages where a random sample is taken in 
+#' resource_Dilute() Using master_seed, resource_Dilute() will produce a unique 
+#' seed on each of these occasions, making sure the function runs the same every
+#' time. Every master seed is one permutation of all the possible dilutions
+#' that could've been given our parameters, when iterating this function to get
+#' multiple permutations, master_seed is what is iterated over. The master seed
+#' must be an integer, and is floored into one in the function.
+#' 
 #' @param methods_vector This parameter may eventually become a way to toggle
 #' methods the script should run the analysis with. For now, please leave it be.
 #' The script always runs all five methods.
@@ -84,6 +93,7 @@ dilution_Robustness <- function(testdata_type,
                                 preserve_topology,
                                 dilution_props,
                                 number_ranks,
+                                master_seed,
                                 run_mode,
                                 outputs = c("liana_results_OP",
                                             "resources_OP",
@@ -102,6 +112,9 @@ dilution_Robustness <- function(testdata_type,
                                 sink_output = FALSE) {
   
 runtime <- list("Iteration Start" = Sys.time())
+
+# Sanitize master_seed input
+master_seed <- floor(master_seed)
 
 #------------------------------------------------------------------------------#
 # 0. Sinking Outputs ---------------------------------------------------------
@@ -369,7 +382,8 @@ runtime <- list("Iteration Start" = Sys.time())
              preserve_topology = preserve_topology,
              data_set          = testdata,
              feature_type      = feature_type,
-             verbose           = TRUE)
+             verbose           = TRUE, 
+             master_seed       = master_seed)
     
   }
   
