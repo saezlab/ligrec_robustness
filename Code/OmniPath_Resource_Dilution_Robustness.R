@@ -1,104 +1,27 @@
-#------------------------------------------------------------------------------#
-# A. Setup ---------------------------------------------------------------------
-{
-  # 0.1 Overview of Goals:
-  {
-  # The Idea with this script is to:
-  # .	run all methods on a single resource (OP)
-  # .	take the topmost ranked interactions for each method -> R-zero
-  # .	create a modified OP resource in which the topmost ranked interactions
-  #     remain, but of the remainder x% of the interactions have been removed 
-  #     and  replaced with entirely random pairs of genes derived from the test 
-  #     data that do not exist in the resource, x =10,20,40% etc.
-  # .	Rerun methods on modified omnipath resource, get top ranks -> R-modified
-  # .	plot percentage of R-zero in R-modified over x and investigate result
-    
-    
-  } # end of subpoint
-  
-  # 0.2 Script Structure:
-  {
-    # We load preprocessed seurat pbmc data and apply each method combined with 
-    # undiluted OmniPath to it.
-    # We define a function that can get the top ranked CCI from each method
-    # output and run it for the undiluted results.
-    # We restructure OmniPath, define a function that dilutes Resources and 
-    # restructure our data to be used at various dilutions.
-  
-    # We have base OmniPath and the top ranks for each method. These basic 
-    # inputs allow us to run dilute_Resource(). We create diluted resources for
-    # each method.
-    # We get the top ranks foreach method at each new dilution.
-    # We compare the percentage overlap of the undiluted top_ranks to the 
-    # top_ranks at each stage of dilution (for each method).
-  
-    # We visualize the results.
-    
-    
-  } # end of subpoint
-    
-  # 0.3 Loading Packages and Starting Runtime
-  {
-    runtime <- list("Script Start" = Sys.time())
-    
-    require(tidyverse)
-    require(Seurat)
-    require(liana)
-    
-    library(lubridate)
-    
-    runtime[["Load Packages"]] <- Sys.time() 
-    # each runtime is named after the section that it marks the conclusion of
-    
-  } # end of subpoint
-  
-}
 
 
+dilution_Robustness <- function(testdata_type,
+                                feature_type,
+                                preserve_topology,
+                                dilution_props,
+                                number_ranks,
+                                
+                                methods_vector,
+                                cellchat_nperms,
+                                run_mode,
+                                save_results,
+                                sink_output) {
+  
+runtime <- list("Iteration Start" = Sys.time())
 
 #------------------------------------------------------------------------------#
-# B. Set top_n, dilution props, testdata type ----------------------------------
-{
-  dilution_props <- c(seq(0.20, 1.00, 0.20)) # should be consistent between tests
-  
-  number_ranks   <- list("call_connectome" = 20, 
-                         "call_natmi"      = 20,
-                         "call_italk"      = 20,
-                         "call_sca"        = 20,
-                         "cellchat"        = 20)
-  
-  testdata_type  <- c("liana_test") # choose "liana_test" or "seurat_pbmc"
- 
-  # If feature_type is generic, dilution will be completed with any genes
-  # in the seurat count matrix. If dilution is variable, only the variable
-  # features are used for dilution.
-  feature_type <- c("variable") # choose "generic" or "variable"
-  
-  preserve_topology <- FALSE  # choose TRUE to preserve and FALSE to not
+# 0. Sinking Outputs ---------------------------------------------------------
 
-  # All the methods we're using (almsot all six of liana)
-  # squidpy won't be used unthetil I get it to work on windows
-  methods_vector <- c('call_connectome',
-                      'call_natmi', 
-                      'call_italk',
-                      'call_sca',
-                      'cellchat')
+{
+  date_of_run <- as.character(Sys.Date())
   
-  cellchat_nperms <- 10 # number of cellchat permutations, default 100
-  
-  run_mode <- "trial_run" # select between trial_run and real
-  
-  save_results <- FALSE # should results be saved?
-  
-  sink_output <- FALSE # If the output is sunk, all console outputs and warning
-  # messages go to a txt file in Outputs folder, but you won't be able to see
-  # them in the console. In essence, logs will be generated instead of console
-  # outputs
-  {
-    date_of_run <- as.character(Sys.Date())
+  if(sink_output == TRUE) {
     
-    if(sink_output == TRUE) {
-      
     log_save_path <- str_glue("Outputs/Output_Log_", 
                               run_mode,
                               "_",
@@ -112,25 +35,23 @@
                               "_dil_on_",
                               date_of_run,
                               ".RData")
-      
-      con <- file(log_save_path)
-      sink(con, append=TRUE)
-      sink(con, append=TRUE, type="message")
-      
-      
-    }
-  
-  }
-}   
-
-
-  
-#------------------------------------------------------------------------------#
-# C. Preparing necessary inputs to dilute Resources ----------------------------
-{
-  # 1. Running LIANA wrapper
-  {
     
+    con <- file(log_save_path)
+    sink(con, append=TRUE)
+    sink(con, append=TRUE, type="message")
+    
+    
+  }
+  
+}
+
+
+#------------------------------------------------------------------------------#
+# 1. Preparing necessary inputs to dilute Resources --------------------------
+{
+  # 1.1 Running LIANA wrapper
+  {
+  
   # Get seurat or liana test data
   if (testdata_type == "seurat_pbmc") {
     
@@ -155,20 +76,20 @@
     
   }
   
- 
+  
   # Generate Undiluted liana results by running wrapper function
   # Omnipath x the methods vector, on the selected data
-
+  
   # NATMI results are contaminated with results from earlier runs if you
   # don't specify a special output folder for the results to go in
-    
+  
   natmi_output <-  Sys.time()           %>%
-                   as.character()       %>%
-                   gsub(':', '_', .)    %>% 
-                   gsub('-', '_', .)    %>% 
-                   gsub(' ', '_', .)    %>%
-                   str_glue('Test_', .)
-    
+    as.character()       %>%
+    gsub(':', '_', .)    %>% 
+    gsub('-', '_', .)    %>% 
+    gsub(' ', '_', .)    %>%
+    str_glue('Test_', .)
+  
   liana_results_OP_0 <- 
     liana_wrap(testdata, 
                method = methods_vector, 
@@ -189,8 +110,8 @@
   rm(natmi_output)
   
   } # end of subpoint
-  
-  # 2. Get highest ranked interactions for undiluted conditions 
+
+  # 1.2 Get highest ranked interactions for undiluted conditions 
   {
     
     
@@ -200,12 +121,12 @@
   for (method in methods_vector){
     
     top_ranks_OP_0[[method]] <- get_top_n_ranks(data_set = 
-                                                liana_results_OP_0[[method]],
+                                                  liana_results_OP_0[[method]],
                                                 top_n = number_ranks[[method]],
                                                 method = method)
     
   }
-    
+  
   # an interesting note here is that NATMI produces far more unique LR Pairs in 
   # its top rankings than other methods. Cellchat identifies less for example, 
   # filling its top 1000 (or n) by repeating those interactions between many
@@ -213,76 +134,76 @@
   # NATMI repeats its interactions less, providing more unique LR pairs than
   # cellchat. In exchange it only finds these interacting pairs more rarely 
   # between cell clusters.
-    
-    
+  
+  
     
   } # end of subpoint
   
-  # 3. Prepare to Modify OmniPath with random genes
+  # 1.3 Prepare to Modify OmniPath with random genes
   {
-  
     
+  
   # Format OmniPath_0 to be easier to work with and to pair it down to the 
   # columns relevant for the methods. Also add the isRandom column which 
   # indicates whether an interaction has been randomly generated and the LR_Pair
   # columns, which helps identify individual interactions
   OmniPath_0 <- select_resource(c('OmniPath'))[["OmniPath"]] %>%
-                select(source_genesymbol,
-                       target_genesymbol,
-                       is_directed,
-                       is_stimulation,
-                       consensus_stimulation,
-                       is_inhibition,
-                       consensus_inhibition,
-                       category_intercell_source,
-                       category_intercell_target,
-                       genesymbol_intercell_source,
-                       genesymbol_intercell_target,
-                       entity_type_intercell_target,
-                       sources,
-                       references,
-                       entity_type_intercell_source,
-                       entity_type_intercell_target) %>%
-                mutate(isRandom = FALSE) %>%
-                unite("LR_Pair", 
-                      c(source_genesymbol, target_genesymbol), 
-                      remove = FALSE, 
-                      sep = "_") %>%
-                relocate("LR_Pair", .after = last_col())
-    
-    # Filter OmniPath to only include interactions between genes which are 
-    # represented in the data. 
-    # This has no impact on the results, since the removed interactions can't be
-    # evaluated by the methods as the necessary genes are missing.
-    # The advantage here is that dilution later replaces genes from the resource
-    # with genes in the data set
-    # If we consider genes in the resource that are also represented in the data
-    # 'hits', then we are diluting the resource by inserting hits.
-    # Making sure OP only had hits to begin with ensures we dilute hits with 
-    # other hits, a fairer comparison than the alternative, which would be 
-    # diluting hits and non-hits from OP with hits from the data.
-    gene_names <- rownames(testdata@assays$RNA@data)
-    
-    OmniPath_0 <- OmniPath_0 %>%
-      filter(source_genesymbol %in% gene_names) %>%
-      filter(target_genesymbol %in% gene_names)
-    
-    # removing superfluous values
-    rm(gene_names)
-    
-    
+    select(source_genesymbol,
+           target_genesymbol,
+           is_directed,
+           is_stimulation,
+           consensus_stimulation,
+           is_inhibition,
+           consensus_inhibition,
+           category_intercell_source,
+           category_intercell_target,
+           genesymbol_intercell_source,
+           genesymbol_intercell_target,
+           entity_type_intercell_target,
+           sources,
+           references,
+           entity_type_intercell_source,
+           entity_type_intercell_target) %>%
+    mutate(isRandom = FALSE) %>%
+    unite("LR_Pair", 
+          c(source_genesymbol, target_genesymbol), 
+          remove = FALSE, 
+          sep = "_") %>%
+    relocate("LR_Pair", .after = last_col())
+  
+  # Filter OmniPath to only include interactions between genes which are 
+  # represented in the data. 
+  # This has no impact on the results, since the removed interactions can't be
+  # evaluated by the methods as the necessary genes are missing.
+  # The advantage here is that dilution later replaces genes from the resource
+  # with genes in the data set
+  # If we consider genes in the resource that are also represented in the data
+  # 'hits', then we are diluting the resource by inserting hits.
+  # Making sure OP only had hits to begin with ensures we dilute hits with 
+  # other hits, a fairer comparison than the alternative, which would be 
+  # diluting hits and non-hits from OP with hits from the data.
+  gene_names <- rownames(testdata@assays$RNA@data)
+  
+  OmniPath_0 <- OmniPath_0 %>%
+    filter(source_genesymbol %in% gene_names) %>%
+    filter(target_genesymbol %in% gene_names)
+  
+  # removing superfluous values
+  rm(gene_names)
+  
+  
     
   } # end of subpoint
-    
-  # 4. Listify Data sets in the face of dilution steps
+  
+  # 1.4 Listify Data sets in the face of dilution steps
   {
-    
-    
+  
+  
   # Since we are about to perform the same analysis in the steps above but 
   # multiplied by each dilution step, we will turn our data sets into named 
   # lists sorted by method and sub categorized by dilution.
   
-    
+  
   # define dilution proportions
   # dilution props is a user defined sequence in the setup section
   dilution_names <- c()
@@ -312,7 +233,7 @@
          "call_italk"      = list(OmniPath_0 = liana_results_OP_0$call_italk),
          "call_sca"        = list(OmniPath_0 = liana_results_OP_0$call_sca),
          "cellchat"        = list(OmniPath_0 = liana_results_OP_0$cellchat))
-
+  
   
   
   
@@ -322,9 +243,9 @@
          "call_italk"      = list(OmniPath_0 = top_ranks_OP_0$call_italk),
          "call_sca"        = list(OmniPath_0 = top_ranks_OP_0$call_sca),
          "cellchat"        = list(OmniPath_0 = top_ranks_OP_0$cellchat))
-
-
-
+  
+  
+  
   
   
   
@@ -332,7 +253,7 @@
   rm(OmniPath_0, liana_results_OP_0, top_ranks_OP_0)
   
   
-  
+    
   } # end of subpoint
   
 }
@@ -340,12 +261,12 @@
 
 
 #------------------------------------------------------------------------------#
-# D. Diluting Resources --------------------------------------------------------
+# 2. Diluting Resources ------------------------------------------------------
 {
-  # 5. Generate diluted Resources for all methods
+  # 2.1 Generate diluted Resources for all methods
   {
-    
-    
+  
+  
   # Initiating a list of all dilutions
   dilutions_OP <- list()
   
@@ -384,20 +305,20 @@
   } # end of subpoint
   
 }    
-  
+
 
 
 #------------------------------------------------------------------------------#
-# E. Rerunning Liana and comparing  top ranks ----------------------------------
+# 3. Rerunning Liana and comparing  top ranks --------------------------------
 {
-  # 6. Reapply individual methods with diluted resources
+  # 3.1 Reapply individual methods with diluted resources
   {
   # results still growing somehow, don't know why (natmi and others)
   # in some cases the defaults assosciated with liana_wrap are explicitly applied
-    
+  
   # Initialize a list for liana results using diluted resources
   liana_dilutions_OP <- list()
-    
+  
   runtime[["Resource Dilution"]] <- Sys.time()
   
   # lapply liana wrap accross the diluted resources for every method 
@@ -406,17 +327,17 @@
   # don't specify a special output folder for the results to go in
   
   natmi_output <-  Sys.time()           %>%
-                   as.character()       %>%
-                   gsub(':', '_', .)    %>% 
-                   gsub('-', '_', .)    %>% 
-                   gsub(' ', '_', .)    %>%
-                   str_glue('Test_', .)
+    as.character()       %>%
+    gsub(':', '_', .)    %>% 
+    gsub('-', '_', .)    %>% 
+    gsub(' ', '_', .)    %>%
+    str_glue('Test_', .)
   
   
   
   for (method in methods_vector) {
     
- 
+    
     
     liana_dilutions_OP[[method]] <-
       lapply(resources_OP[[method]][-1], 
@@ -431,39 +352,39 @@
              call_natmi.params = list(output_dir = natmi_output))
     
     runtime[[str_glue(str_to_title(method), " rerun")]] <- Sys.time()
-    
-  }
-
-  
-  
-  
-  # Merge with undiluted results, could use mapply but its less consistent
-  for (method in methods_vector) {
-    for (dilution in names(dilution_props)) {
-      
-      liana_results_OP[[method]][[dilution]] <- 
-        liana_dilutions_OP[[method]][[dilution]]
       
     }
-  }
-
-  
-  # Remove uneccesary Variables
-  rm(liana_dilutions_OP, method, dilution, natmi_output)
-
-  
-  
+    
+    
+    
+    
+    # Merge with undiluted results, could use mapply but its less consistent
+    for (method in methods_vector) {
+      for (dilution in names(dilution_props)) {
+        
+        liana_results_OP[[method]][[dilution]] <- 
+          liana_dilutions_OP[[method]][[dilution]]
+        
+      }
+    }
+    
+    
+    # Remove uneccesary Variables
+    rm(liana_dilutions_OP, method, dilution, natmi_output)
+    
+    
+    
   } # end of subpoint
   
-  # 7. Get top_n_ranks for each method and dilution
+  # 3.2 Get top_n_ranks for each method and dilution
   {
     
-    
+  
   # lapply get_top_n_ranks over the dilution stages and save results in 
   # top_dilutions list
   top_dilutions_OP <- list()
   
-
+  
   top_dilutions_OP[["call_connectome"]] <- 
     lapply(liana_results_OP$call_connectome[-1], get_top_n_ranks, 
            method = "call_connectome", top_n = number_ranks$call_connectome)
@@ -485,11 +406,11 @@
            method = "cellchat", top_n = number_ranks$cellchat)  
   
   
-
   
-
-
-
+  
+  
+  
+  
   
   
   
@@ -558,10 +479,10 @@
   # remove superfluous values
   rm(method,dilution)
   
-  
+    
   } # end of subpoint
- 
-  #8. Analysis of top_ranks
+  
+  #3.3 Analysis of top_ranks
   {
   # Legend to what factors we look to analyse. Overlap is most important, the
   # rest interesting mostly in edge cases:
@@ -624,36 +545,36 @@
   overlaps <- 
     lapply(overlaps, 
            function(x) { c(x, rep(NA, length(dilution_props)+1-length(x)))})
-    
   
-    
+  
+  
   
   # reformatting overlap as a tibble
   top_ranks_overlap <- tibble("call_connectome" = overlaps$call_connectome,
-                             "call_natmi"      = overlaps$call_natmi,
-                             "call_italk"      = overlaps$call_italk,
-                             "call_sca"        = overlaps$call_sca,
-                             "cellchat"        = overlaps$cellchat)  %>%
-                       unnest(cols = all_of(methods_vector))         %>%
-                       mutate(dilution_prop = c(0, dilution_props))  %>%
-                       unnest(cols = c(dilution_prop))               %>%
-                       relocate("dilution_prop")
+                              "call_natmi"      = overlaps$call_natmi,
+                              "call_italk"      = overlaps$call_italk,
+                              "call_sca"        = overlaps$call_sca,
+                              "cellchat"        = overlaps$cellchat)  %>%
+    unnest(cols = all_of(methods_vector))         %>%
+    mutate(dilution_prop = c(0, dilution_props))  %>%
+    unnest(cols = c(dilution_prop))               %>%
+    relocate("dilution_prop")
   
   # removing superfluous values
   rm(overlaps)
   
-
+  
   
   # Top ranked interactions where isRandom = TRUE are products of dilutions.
   # If the diminished top_rank_overlap is exactly equal to the proportion of 
   # diluted interactions in the top_ranks, this indcates that dilution only 
   # messes with top ranks by creating candidates for false detection.
-    
+  
   # It could also be possible though that the proportion of dilutions in the 
   # top ranks doesn't fullly explain the diminishing overlap. In this case
   # dilutions may also alter the context such that real interactions that were
   # previously not top_ranked have become top_ranked.
-    
+  
   # Inaccuracy purely from random interactions being picked up on as top ranked
   # vs Inaccuracy from pushing previously not top ranked interactions into the
   # top ranks. This is an especially interesting comparison if top_ranked 
@@ -677,12 +598,12 @@
   
   # We format top_ranks_randoms the way we formatted top_ranks_overlap
   top_ranks_randoms <- top_ranks_randoms           %>%
-      data.frame()                                 %>%
-      tibble()                                     %>%
-      mutate(dilution_prop = c(0, dilution_props)) %>%
-      unnest(cols = c(dilution_prop))              %>%
-      relocate("dilution_prop")                    %>%
-      data.frame() #because we plan to do arithmetic operations with this tibble
+    data.frame()                                 %>%
+    tibble()                                     %>%
+    mutate(dilution_prop = c(0, dilution_props)) %>%
+    unnest(cols = c(dilution_prop))              %>%
+    relocate("dilution_prop")                    %>%
+    data.frame() #because we plan to do arithmetic operations with this tibble
   
   # The proportion of mismatch between top_rank_dfs is 1- the overlap
   # In order to perform this calculation top_ranks_overlap can't be a tibble
@@ -700,7 +621,7 @@
   
   # We store this variable in the environment so the user can find it more easily.
   All_mismatch_from_Randoms <- all.equal(top_ranks_randoms, 
-                                    top_ranks_mismatch)
+                                         top_ranks_mismatch)
   
   
   # Summarizing all this information in one list makes things clear. 
@@ -728,12 +649,12 @@
 
 
 #------------------------------------------------------------------------------#
-# F. Visualizing the results ---------------------------------------------------
+# 4. Visualizing the results -------------------------------------------------
 { 
-  # 9. Plotting, labeling and saving top_ranks_overlap 
+  # 4.1 Plotting, labeling and saving top_ranks_overlap 
   {
-    
-    
+  
+  
   # The plot is better in percent than proportion
   tr_overlap_for_plot <- top_ranks_analysis$Overlap * 100
   
@@ -773,60 +694,60 @@
   
   # Plot top_ranks_overlap with lines and points at each value
   overlap_plot <-  ggplot(data = tr_overlap_for_plot) + 
-                    geom_line(mapping = aes(dilution_prop, 
-                                            call_connectome, 
-                                            color =  "Connectome")) +
-                    
-                    geom_line(mapping = aes(dilution_prop, 
-                                            call_natmi, 
-                                            color = "NATMI")) + 
-                    
-                    geom_line(mapping = aes(dilution_prop,
-                                            call_italk, 
-                                            color = "iTALK")) +
-                    
-                    geom_line(mapping = aes(dilution_prop, 
-                                            call_sca, 
-                                            color = "SCA")) +
-                    
-                    geom_line(mapping = aes(dilution_prop, 
-                                            cellchat, 
-                                            color = "CellChat")) +
-                    
-                    
-                    
-                    geom_point(mapping = aes(dilution_prop, 
-                                             call_connectome, 
-                                             color =  "Connectome")) +
-                    
-                    geom_point(mapping = aes(dilution_prop,
-                                             call_natmi, 
-                                             color = "NATMI")) +
-                    
-                    geom_point(mapping = aes(dilution_prop, 
-                                             call_italk,
-                                             color = "iTALK")) +
-                    
-                    geom_point(mapping = aes(dilution_prop, 
-                                             call_sca, 
-                                             color = "SCA")) +
-                    
-                    geom_point(mapping = aes(dilution_prop, 
-                                             cellchat, 
-                                             color = "CellChat")) +
-                    
-                    
-                    
-                    # Show full breadth of 100-0 percent overlap
-                    ylim(0, 100) +
-                    
-                    ggtitle("Robustness of Method Predictions") +
-                    ylab("Overlap of Top Ranks [%]") +
-                    xlab("Dilution of Resource [%]") +
-                    labs(subtitle = plotting_subtitle,
-                         color = "Method")
-                  
-
+    geom_line(mapping = aes(dilution_prop, 
+                            call_connectome, 
+                            color =  "Connectome")) +
+    
+    geom_line(mapping = aes(dilution_prop, 
+                            call_natmi, 
+                            color = "NATMI")) + 
+    
+    geom_line(mapping = aes(dilution_prop,
+                            call_italk, 
+                            color = "iTALK")) +
+    
+    geom_line(mapping = aes(dilution_prop, 
+                            call_sca, 
+                            color = "SCA")) +
+    
+    geom_line(mapping = aes(dilution_prop, 
+                            cellchat, 
+                            color = "CellChat")) +
+    
+    
+    
+    geom_point(mapping = aes(dilution_prop, 
+                             call_connectome, 
+                             color =  "Connectome")) +
+    
+    geom_point(mapping = aes(dilution_prop,
+                             call_natmi, 
+                             color = "NATMI")) +
+    
+    geom_point(mapping = aes(dilution_prop, 
+                             call_italk,
+                             color = "iTALK")) +
+    
+    geom_point(mapping = aes(dilution_prop, 
+                             call_sca, 
+                             color = "SCA")) +
+    
+    geom_point(mapping = aes(dilution_prop, 
+                             cellchat, 
+                             color = "CellChat")) +
+    
+    
+    
+    # Show full breadth of 100-0 percent overlap
+    ylim(0, 100) +
+    
+    ggtitle("Robustness of Method Predictions") +
+    ylab("Overlap of Top Ranks [%]") +
+    xlab("Dilution of Resource [%]") +
+    labs(subtitle = plotting_subtitle,
+         color = "Method")
+  
+  
   
   # Print the Plot
   print(overlap_plot)
@@ -852,9 +773,9 @@
 
 
 #------------------------------------------------------------------------------#
-# G. Saving the results --------------------------------------------------------
+# 5. Saving the results ------------------------------------------------------
 {
-  # 10. Calculating run time of script
+  # 5.1 Calculating run time of script
   {
     
   # stop the stopwatch
@@ -888,7 +809,7 @@
   step_duration <- round(seconds_to_period(step_duration))
   time_elapsed  <- round(seconds_to_period(time_elapsed))
   
- 
+  
   # summarize all the runtime data in a tibble
   runtime <- runtime               %>%
     as_tibble_col()                %>%
@@ -906,13 +827,13 @@
      i)
   
   
-  
-  
+    
+    
   } # end of subpoint
   
-  # 11. Tidying R environment and saving to Outputs under custom name
+  # 5.2 Tidying R environment and saving to Outputs under custom name
   {
-    
+  
   # Automatically generate environment save file name
   env_save_path <- str_glue("Outputs/DilutionEnv_", 
                             run_mode,
@@ -971,7 +892,7 @@
     print(str_glue("Environment saved at ~/", 
                    script_params$save_names$env_save_path,
                    "."))
-  
+    
   }
   
   if(script_params$sink_output == TRUE) {
@@ -981,6 +902,19 @@
     
   }
   
+  
+  results  <- list(script_params, top_ranks_analysis, top_ranks_OP, 
+                   resources_OP, liana_results_OP)
+  
+  return(results)
+  
+  
   } # end of subpoint
   
 }
+
+
+} # end of function
+
+
+  
