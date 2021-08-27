@@ -1038,5 +1038,46 @@
   }
   
 
+  # print_Title()
+  {
+    #' Prints a nice title to the console
+    #'
+    #' @param title A char of what the title should read
+    #' @param super TRUE or FALSE. Should this title be extra large?
+    #'
+    #' @return Prints a title into the console.
+  
+    
+    print_Title <- function(title, super = FALSE) {
+      
+      divider <- str_glue("|=======================================",
+                          "=======================================|")
+      
+      if(super == FALSE) {
+        
+        print(str_glue(divider))
+        print(str_glue("   ",title))
+        print(str_glue(divider))
+        print(str_glue(""))
+        
+      } else if (super == TRUE) {
+        
+        print(str_glue(divider))
+        print(str_glue(divider))
+        print(str_glue(""))
+        print(str_glue("   ",title))
+        print(str_glue(""))
+        print(str_glue(divider))
+        print(str_glue(divider))
+        print(str_glue(""))
+        print(str_glue(""))
+        
+      }
 
+      
+      
+    } #end of function
+    
+  }
+  
 
