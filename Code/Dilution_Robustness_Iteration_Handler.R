@@ -80,4 +80,164 @@
 }   
 
 
+#------------------------------------------------------------------------------#
+# 4. Visualizing the results -------------------------------------------------
+{ 
+
+  
+  # 4.1 Plotting, labeling and saving top_ranks_overlap 
+  {
+    
+    
+    # The plot is better in percent than proportion
+    tr_overlap_for_plot <-  agg_top_ranks * 100
+    
+    # Automatically assemble a file name and plot subtitle
+    if (preserve_topology == FALSE) {
+      
+      topology_comment <- "using random_Dilute()"
+      
+    } else if (preserve_topology == TRUE) {
+      
+      topology_comment <- "using preserve_Dilute()"
+      
+    }
+    
+    plotting_subtitle <- str_glue(feature_type,
+                                  " dilution, top ",
+                                  as.character(median(unlist(number_ranks))),
+                                  " ranks, ",
+                                  testdata_type,
+                                  " data, ",
+                                  run_mode,
+                                  " results, ",
+                                  topology_comment,
+                                  ", ",
+                                  length(master_seed_list),
+                                  " permutations")
+    
+    plot_png_name     <- str_glue(run_mode,
+                                  "_",
+                                  testdata_type, 
+                                  "_top",
+                                  as.character(median(unlist(number_ranks))),
+                                  "_res",
+                                  as.character(length(dilution_props)),
+                                  "_",
+                                  feature_type,
+                                  "_dil_on_",
+                                  as.character(Sys.Date()),
+                                  ".png")
+    
+    # Plot top_ranks_overlap with lines and points at each value
+    overlap_plot <-  ggplot(data = tr_overlap_for_plot) + 
+      geom_line(mapping = aes(dilution_prop, 
+                              call_connectome_mean, 
+                              color =  "Connectome")) +
+      
+      geom_line(mapping = aes(dilution_prop, 
+                              call_natmi_mean, 
+                              color = "NATMI")) + 
+      
+      geom_line(mapping = aes(dilution_prop,
+                              call_italk_mean, 
+                              color = "iTALK")) +
+      
+      geom_line(mapping = aes(dilution_prop, 
+                              call_sca_mean, 
+                              color = "SCA")) +
+      
+      geom_line(mapping = aes(dilution_prop, 
+                              cellchat_mean, 
+                              color = "CellChat")) +
+      
+      
+      
+      geom_point(mapping = aes(dilution_prop, 
+                               call_connectome_mean, 
+                               color =  "Connectome")) +
+      
+      geom_point(mapping = aes(dilution_prop,
+                               call_natmi_mean, 
+                               color = "NATMI")) +
+      
+      geom_point(mapping = aes(dilution_prop, 
+                               call_italk_mean,
+                               color = "iTALK")) +
+      
+      geom_point(mapping = aes(dilution_prop, 
+                               call_sca_mean, 
+                               color = "SCA")) +
+      
+      geom_point(mapping = aes(dilution_prop, 
+                               cellchat_mean, 
+                               color = "CellChat")) +
+      
+
+      geom_errorbar(aes(ymin = call_connectome_mean - call_connectome_sd,
+                        ymax = call_connectome_mean + call_connectome_sd,
+                        x = dilution_prop), 
+                    width=.2,
+                    position=position_dodge(0.05)) + 
+      
+      geom_errorbar(aes(ymin = call_natmi_mean - call_natmi_sd,
+                        ymax = call_natmi_mean + call_natmi_sd,
+                        x = dilution_prop), 
+                    width=.2,
+                    position=position_dodge(0.05)) + 
+      
+      geom_errorbar(aes(ymin = call_italk_mean - call_italk_sd,
+                        ymax = call_italk_mean + call_italk_sd,
+                        x = dilution_prop), 
+                    width=.2,
+                    position=position_dodge(0.05)) + 
+      
+      geom_errorbar(aes(ymin = call_sca_mean - call_sca_sd,
+                        ymax = call_sca_mean + call_sca_sd,
+                        x = dilution_prop), 
+                    width=.2,
+                    position=position_dodge(0.05)) + 
+      
+      geom_errorbar(aes(ymin = cellchat_mean - cellchat_sd,
+                        ymax = cellchat_mean + cellchat_sd,
+                        x = dilution_prop), 
+                    width=.2,
+                    position=position_dodge(0.05)) + 
+      
+      
+      
+      # Show full breadth of 100-0 percent overlap
+      ylim(0, 100) +
+      
+      ggtitle("Robustness of Method Predictions") +
+      ylab("Overlap of Top Ranks [%]") +
+      xlab("Dilution of Resource [%]") +
+      labs(subtitle = plotting_subtitle,
+           color = "Method")
+    
+    
+    
+    # Print the Plot
+    print(overlap_plot)
+    
+    # Save the plot automatically to the outputs folder, if desired
+    if (save_results) {
+      
+      ggsave(plot_png_name, 
+             height = 5, width = 8, 
+             path = "Outputs")
+      
+      print(str_glue("Plot saved at ~/Outputs/", plot_png_name, "."))
+      
+    }
+    
+    # Remove unnecessary variables
+    rm(tr_overlap_for_plot, overlap_plot, plotting_subtitle, topology_comment)
+    
+    
+    
+    
+  } # end of subpoint
+  
+ }
 
