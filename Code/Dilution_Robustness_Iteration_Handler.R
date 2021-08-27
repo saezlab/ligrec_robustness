@@ -46,7 +46,7 @@
   
   preserve_topology <- FALSE  # TRUE = preserve_Dilute(), FALSE = random_Dilute()
   
-  dilution_props <- c(seq(0.20, 0.40, 0.20)) # should be consistent between tests
+  dilution_props <- c(seq(0.20, 0.20, 0.20)) # should be consistent between tests
   
   number_ranks   <- list("call_connectome" = 20, 
                          "call_natmi"      = 20,
@@ -54,10 +54,35 @@
                          "call_sca"        = 20,
                          "cellchat"        = 20)
   
-
+  # Format a master_seed_list that provides a different master_seed for each
+  # iteration of dilution_Robustness()
+  master_seed_list <- as.list(c(1:3))
+  
+  seed_names <- c()
+  
+  # Name each element of master_seed_list to have a name on results later
+  for (seed in master_seed_list) {
+    seed_names <- 
+      c(seed_names, str_glue("Seed_", as.character(seed)))
+  }
+  
+  names(master_seed_list) <- seed_names
+  
+  # Remove clutter
+  rm(seed_names, seed)
   
 
+  # Define Outpputs
+  outputs = c(
+              #"liana_results_OP",
+              #"resources_OP",
+              #"top_ranks_OP",
+              "top_ranks_analysis",
+              "script_params" #, 
+              #"testdata"
+              )
   
+
   # All the methods we're using (almsot all six of liana)
   # squidpy won't be used unthetil I get it to work on windows
   methods_vector <- c('call_connectome',
@@ -78,6 +103,88 @@
   # outputs
 
 }   
+
+#------------------------------------------------------------------------------#
+# B. Iterate dilution_Robustness() ---------------------------------------------
+
+# dilution_Robustness is an entire script that can be iterated as a function
+# There is randomness in dilution. Each master seed passed
+# to dilute_Resource() gives us one permutation of many theoretically possible
+# dilutions. By iterating over master_seed, we can produce many permutations
+# and aggregate their results.
+
+# Apply dilution_Robustness(), provide every argument but master_seed
+results <- lapply(master_seed_list, 
+                  dilution_Robustness,
+                  
+                  testdata_type     = testdata_type,
+                  feature_type      = feature_type,
+                  preserve_topology = preserve_topology,
+                  dilution_props    = dilution_props,
+                  number_ranks      = number_ranks,
+                  run_mode          = run_mode,
+                  outputs           = outputs,
+                   
+                  methods_vector    = methods_vector,
+                  cellchat_nperms   = cellchat_nperms,
+                  save_results      = save_results,
+                  sink_output       = sink_output)
+
+
+# Remove uneccesary Parameters
+rm(number_ranks, cellchat_nperms, feature_type,
+   outputs, preserve_topology, run_mode, save_results, sink_output,
+   testdata_type)
+
+
+# Reorganize Outputs for Top_ranks_overlaps
+top_ranks_overlaps <- list()
+
+for (seed in names(master_seed_list)) {
+  top_ranks_overlaps[[seed]] <- results[[seed]]$top_ranks_analysis$Overlap
+  top_ranks_overlaps[[seed]] <- top_ranks_overlaps[[seed]] %>%
+    as.data.frame()
+}
+
+top_ranks_overlaps <- bind_cols(top_ranks_overlaps)
+
+top_ranks_aggreg_mean <- list()
+top_ranks_aggreg_sd   <- list()
+
+for (method in methods_vector) {
+  
+  vector_sd   <- c()
+  vector_mean <- c()
+  
+  for (row in 1:(length(dilution_props)+1)) {
+    
+    mean_overlap <- mean(as.numeric(
+      top_ranks_overlaps[row, grepl(method, names(top_ranks_overlaps))]))
+    
+    sd_overlap   <- sd(as.numeric(
+      top_ranks_overlaps[row, grepl(method, names(top_ranks_overlaps))]))
+    
+    vector_mean <- c(vector_mean, mean_overlap)
+    vector_sd   <- c(vector_sd,   sd_overlap)
+    
+  }
+  
+  top_ranks_aggreg_mean[[str_glue(method, "_mean")]] <- vector_mean
+  top_ranks_aggreg_sd[[str_glue(method, "_sd")]]     <- vector_sd
+}
+
+agg_top_ranks_overlap_mean <- as_tibble(top_ranks_aggreg_mean) 
+
+agg_top_ranks_overlap_sd   <- as_tibble(top_ranks_aggreg_sd) 
+
+agg_top_ranks <- tibble(agg_top_ranks_overlap_mean,
+                        agg_top_ranks_overlap_sd,
+                        .name_repair = c("universal"))
+
+agg_top_ranks <- agg_top_ranks %>%
+  mutate(dilution_prop = c(0, dilution_props))  %>%
+  unnest(cols = c(dilution_prop))               %>%
+  relocate("dilution_prop")
 
 
 #------------------------------------------------------------------------------#
