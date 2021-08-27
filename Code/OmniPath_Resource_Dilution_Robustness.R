@@ -1,16 +1,90 @@
 
+#' Analyses LIANA prediction robustness when diluting resources
+#'
+#' @description This is not really a function, it is a ful fledged script that
+#' needs to be iterated easily and conveniently. Please familiarize yourself 
+#' with the code before using this script, it is well commented throughout.
+#' 
+#' In brief, this script runs five LIANA methods from LIANA++ (call_connectome,
+#' call_natmi, call_italk, call_sca and cellchat) on one benchmarking data set
+#' and stores their predictions for which are the top most relevant CCIs
+#' occuring. The resource used is OmniPath.
+#' 
+#' Using this information, we use resource_Dilute() on OmniPath. This process 
+#' removes a proportion of interactions from OmniPath, and replaces them with
+#' spurious interactions derived from mixing and matchint genes extracted from
+#' the testdata. Interactions that were ranked as relevant CCIs are excluded
+#' from dilution. It is not uncommon to generate a gradient of dilution, say 
+#' 10 % to 80 % in 10 % intervals.
+#' 
+#' LIANA is rerun on the diluted resources. For each result the top ranked CCIs
+#' are extracted and compared to the original predictions. The overlap, mismatch
+#' and proportion of diluted interactions amongst original top_ranked ones are
+#' recorded and stored. The overlap over dilution is plotted. Optionally, the
+#' plot and R environment are saved to Outputs. 
+#' 
+#' @param testdata_type This script automatically grabs data from the Data
+#' folder. Choose "liana_test" to get the smaller data frame stored in the 
+#' LIANA package, or "seurat_pbmc" to use the PBMC data from the Seurat 
+#' tutorial.
+#' 
+#' @param feature_type Should dilution occur with all the genes profiled in
+#' testdata (choose "generic") or with the most variable features (choose 
+#' "variable").
+#' 
+#' @param preserve_topology When diluting, two methods are implemented.
+#' random_Dilute makes only a small effort to preserve the topology of the rows
+#' that are diluted from resource, preserve_Dilute makes a far greater effort.
+#' Choose TRUE for preserve_Dilute and FALSE for random_Dilute.
+#' 
+#' @param dilution_props A sequence of numerics (0-1) that indicate which 
+#' proportions to dilute the resource with. For example c(0.1, 0.2, 0.3) would
+#' compare the top ranked CCI's using undiluted OmniPath compared to OmniPath 
+#' with 10 % of its rows diluted, undiluted vs 20 % diluted, and undiluted vs
+#' 30 % diluted.
+#' 
+#' @param number_ranks A named list. Each item is named after a method and is 
+#' equal to the number of top interactions considered relevant for that method. 
+#' 
+#' For example, item one on the list may be called call_connectome and be equal 
+#' to 500. This would signal to the function that for call_connectome, the top 
+#' 500 CCI's are considered relevant and that these 500 are the ones that are to
+#' be compared between the dilutions.
+#' 
+#' @param methods_vector This parameter may eventually become a way to toggle
+#' methods the script should run the analysis with. For now, please leave it be.
+#' The script always runs all five methods.
+#' 
+#' @param cellchat_nperms Cellchat is one of the slower methods, for test runs
+#' it may be useful to set this parameter to 10 to speed up the analysis.
+#' 
+#' @param run_mode This parameter will tag saved results with wether or not 
+#' the user intended this to be a serious becnhmarking run or simply a testrun
+#' to see if their code works. Choose between "real" and "trial_run".
+#' 
+#' @param save_results Should the function save the plot and the R environment
+#' to the Output folder? Set TRUE or FALSE.
+#'
+#'@param sink_otuput Should the function save a log to the Outputs folder
+#'instead of sending outputs to the console. Generally only recommended when 
+#'the user expects very long outputs to the console that RStudio might not save.
+#'
 
 dilution_Robustness <- function(testdata_type,
                                 feature_type,
                                 preserve_topology,
                                 dilution_props,
                                 number_ranks,
-                                
-                                methods_vector,
-                                cellchat_nperms,
                                 run_mode,
-                                save_results,
-                                sink_output) {
+                                
+                                methods_vector =  c('call_connectome',
+                                                    'call_natmi', 
+                                                    'call_italk',
+                                                    'call_sca',
+                                                    'cellchat'),
+                                cellchat_nperms = 100,
+                                save_results = FALSE,
+                                sink_output = FALSE) {
   
 runtime <- list("Iteration Start" = Sys.time())
 
@@ -47,7 +121,7 @@ runtime <- list("Iteration Start" = Sys.time())
 
 
 #------------------------------------------------------------------------------#
-# 1. Preparing necessary inputs to dilute Resources --------------------------
+# 1. Preparing resource_Dilute() Inputs ----------------------------------------
 {
   # 1.1 Running LIANA wrapper
   {
@@ -309,7 +383,8 @@ runtime <- list("Iteration Start" = Sys.time())
 
 
 #------------------------------------------------------------------------------#
-# 3. Rerunning Liana and comparing  top ranks --------------------------------
+# 3. Rerun Liana and contrast predictions --------------------------------------
+
 {
   # 3.1 Reapply individual methods with diluted resources
   {
