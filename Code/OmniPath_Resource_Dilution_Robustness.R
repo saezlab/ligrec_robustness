@@ -43,6 +43,15 @@
 #' with 10 % of its rows diluted, undiluted vs 20 % diluted, and undiluted vs
 #' 30 % diluted.
 #' 
+#' @param outputs Which outputs of the calculation would you like to return? 
+#' By default, all the liana results, resources used, top ranked CCIs, analysis 
+#' of top ranks, script parameters and the chosen testdata are returned in a
+#' list. Construct an atomic vector using all or some of "liana_results_OP", 
+#' "resources_OP", "top_ranks_OP", "top_ranks_analysis","script_params", and 
+#' "testdata" to tell the script which outputs should go in the returned list.
+#' It's probably best to run this once with testdata to better understand which
+#' list element holds which data, and then pair it down to what is needed.
+#' 
 #' @param number_ranks A named list. Each item is named after a method and is 
 #' equal to the number of top interactions considered relevant for that method. 
 #' 
@@ -76,6 +85,12 @@ dilution_Robustness <- function(testdata_type,
                                 dilution_props,
                                 number_ranks,
                                 run_mode,
+                                outputs = c("liana_results_OP",
+                                            "resources_OP",
+                                            "top_ranks_OP",
+                                            "top_ranks_analysis",
+                                            "script_params", 
+                                            "testdata"),
                                 
                                 methods_vector =  c('call_connectome',
                                                     'call_natmi', 
@@ -384,7 +399,6 @@ runtime <- list("Iteration Start" = Sys.time())
 
 #------------------------------------------------------------------------------#
 # 3. Rerun Liana and contrast predictions --------------------------------------
-
 {
   # 3.1 Reapply individual methods with diluted resources
   {
@@ -837,8 +851,11 @@ runtime <- list("Iteration Start" = Sys.time())
     print(str_glue("Plot saved at ~/Outputs/", plot_png_name, "."))
     
   }
+  
   # Remove unnecessary variables
   rm(tr_overlap_for_plot, overlap_plot, plotting_subtitle, topology_comment)
+  
+
   
   
   } # end of subpoint
@@ -854,7 +871,7 @@ runtime <- list("Iteration Start" = Sys.time())
   {
     
   # stop the stopwatch
-  runtime[["Script Epilogue"]] <- Sys.time()
+  runtime[["Iteration Epilogue"]] <- Sys.time()
   
   # save the names of the time-points for later
   runtime_labels <- names(runtime)
@@ -977,17 +994,33 @@ runtime <- list("Iteration Start" = Sys.time())
     
   }
   
-  
-  results  <- list(script_params, top_ranks_analysis, top_ranks_OP, 
-                   resources_OP, liana_results_OP)
-  
-  return(results)
+
   
   
   } # end of subpoint
+
+  # 5.3 Bundling Outputs and returning Results
+  {
+  # Create one bundled object for the script to return
+  results  <- list("liana_results_OP"   = liana_results_OP,
+                   "resources_OP"       = resources_OP,
+                   "top_ranks_OP"       = top_ranks_OP,
+                   "top_ranks_analysis" = top_ranks_analysis,
+                   
+                   "script_params"      = script_params,
+                   "testdata"           = testdata)
+  
+  # Filter it by the outputs the user requested
+  results <- results[outputs]
+ 
+  
+  }
+  
   
 }
 
+# Return results
+return(results)
 
 } # end of function
 
