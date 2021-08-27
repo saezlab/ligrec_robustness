@@ -379,6 +379,13 @@ print_Title("0. Sinking Outputs")
   {
   
   
+  # Generating a unified top_rank_list
+  top_rank_list <- unique(c(top_ranks_OP$call_connectome$OmniPath_0$LR_Pair,
+                            top_ranks_OP$call_natmi$OmniPath_0$LR_Pair,
+                            top_ranks_OP$call_italk$OmniPath_0$LR_Pair,
+                            top_ranks_OP$call_sca$OmniPath_0$LR_Pair,
+                            top_ranks_OP$cellchat$OmniPath_0$LR_Pair))
+  
   # Initiating a list of all dilutions
   dilutions_OP <- list()
   
@@ -388,7 +395,7 @@ print_Title("0. Sinking Outputs")
     dilutions_OP[[method]] <- 
       lapply(dilution_props, dilute_Resource, 
              resource          = resources_OP[[method]]$OmniPath_0, 
-             top_rank_list     = top_ranks_OP[[method]]$OmniPath_0$LR_Pair, 
+             top_rank_list     = top_rank_list, 
              preserve_topology = preserve_topology,
              data_set          = testdata,
              feature_type      = feature_type,
@@ -411,7 +418,7 @@ print_Title("0. Sinking Outputs")
   
   
   # Remove uneccesary Variables
-  rm(dilutions_OP, method, dilution)
+  rm(dilutions_OP, method, dilution, top_rank_list)
   
   
   
@@ -859,8 +866,7 @@ print_Title("0. Sinking Outputs")
                         "sink_output"       = sink_output,
                         "preserve_topology" = preserve_topology,
                         "save_names"        = 
-                          list("plot_png_name" = plot_png_name,
-                               "env_save_path" = env_save_path))
+                          list("env_save_path" = env_save_path))
   
   # If the output was sunk the save path to the log is stored
   if(script_params$sink_output == TRUE) {
