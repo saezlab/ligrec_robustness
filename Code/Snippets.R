@@ -381,6 +381,7 @@ library(lubridate)
 
 # You may want to make sure the loaded function in the env are up to date
 load("~/GitHub/ligrec_robustness/Data/Dilution_Upgrade_Env.RData")
+master_seed <- 900
 
 # This code to remove the old functions
 rm(dilute_Resource, 
