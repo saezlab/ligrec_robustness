@@ -116,8 +116,13 @@ runtime <- list("Iteration Start" = Sys.time())
 # Sanitize master_seed input
 master_seed <- floor(master_seed)
 
+print_Title(str_glue("Iteration ", master_seed), super = TRUE)
+
+
 #------------------------------------------------------------------------------#
 # 0. Sinking Outputs ---------------------------------------------------------
+
+print_Title("0. Sinking Outputs")
 
 {
   date_of_run <- as.character(Sys.Date())
@@ -152,9 +157,11 @@ master_seed <- floor(master_seed)
 #------------------------------------------------------------------------------#
 # 1. Preparing resource_Dilute() Inputs ----------------------------------------
 {
+  print_Title("1. Preparing resource_Dilute() Inputs")
+  
   # 1.1 Running LIANA wrapper
   {
-  
+    
   # Get seurat or liana test data
   if (testdata_type == "seurat_pbmc") {
     
@@ -366,6 +373,8 @@ master_seed <- floor(master_seed)
 #------------------------------------------------------------------------------#
 # 2. Diluting Resources ------------------------------------------------------
 {
+  print_Title("2. Diluting Resources")
+  
   # 2.1 Generate diluted Resources for all methods
   {
   
@@ -415,6 +424,8 @@ master_seed <- floor(master_seed)
 #------------------------------------------------------------------------------#
 # 3. Rerun Liana and contrast predictions --------------------------------------
 {
+  print_Title("3. Rerun Liana and contrast predictions")
+  
   # 3.1 Reapply individual methods with diluted resources
   {
   # results still growing somehow, don't know why (natmi and others)
@@ -701,7 +712,7 @@ master_seed <- floor(master_seed)
            function(x) { c(x, rep(NA, length(dilution_props)+1-length(x)))})
   
   # We format top_ranks_randoms the way we formatted top_ranks_overlap
-  top_ranks_randoms <- top_ranks_randoms           %>%
+  top_ranks_randoms <- top_ranks_randoms         %>%
     data.frame()                                 %>%
     tibble()                                     %>%
     mutate(dilution_prop = c(0, dilution_props)) %>%
@@ -885,6 +896,8 @@ master_seed <- floor(master_seed)
 #------------------------------------------------------------------------------#
 # 5. Saving the results ------------------------------------------------------
 {
+  print_Title("5. Saving the results")
+  
   # 5.1 Calculating run time of script
   {
     
