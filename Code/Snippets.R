@@ -439,3 +439,20 @@ while(nrow(distinct(resource_dilute[, c("source_genesymbol", "target_genesymbol"
 
 
 }
+
+
+# 14. Old code for liana dilutions call with separate top_rank_list
+# Iterate over every method, lapply over every dilution proportion
+for (method in methods_vector){
+  
+  dilutions_OP[[method]] <- 
+    lapply(dilution_props, dilute_Resource, 
+           resource          = resources_OP[[method]]$OmniPath_0, 
+           top_rank_list     = top_ranks_OP[[method]]$OmniPath_0$LR_Pair, 
+           preserve_topology = preserve_topology,
+           data_set          = testdata,
+           feature_type      = feature_type,
+           verbose           = TRUE, 
+           master_seed       = master_seed)
+  
+}
