@@ -69,9 +69,9 @@
 #' multiple permutations, master_seed is what is iterated over. The master seed
 #' must be an integer, and is floored into one in the function.
 #' 
-#' @param methods_vector This parameter may eventually become a way to toggle
-#' methods the script should run the analysis with. For now, please leave it be.
-#' The script always runs all five methods.
+#' @param methods_vector Which methods should the function run? Choose from
+#' "call_connectome", "call_natmi", "call_italk", "call_sca" and "cellchat".
+#' Supply the argument in the form of e.g. c("call_conncectome, "call_italk").
 #' 
 #' @param cellchat_nperms Cellchat is one of the slower methods, for test runs
 #' it may be useful to set this parameter to 10 to speed up the analysis.
@@ -249,7 +249,7 @@ print_Title("0. Sinking Outputs")
     
   } # end of subpoint
   
-  # 1.3 Prepare to Modify OmniPath with random genes
+  # 1.3 Format OmniPath and filter non-hits
   {
     
   
@@ -354,8 +354,10 @@ print_Title("0. Sinking Outputs")
          "call_sca"        = list(OmniPath_0 = top_ranks_OP_0$call_sca),
          "cellchat"        = list(OmniPath_0 = top_ranks_OP_0$cellchat))
   
-  
-  
+  # filter lists to only contain data relevant to the selected methods_vector
+  resources_OP     <- resources_OP[methods_vector]
+  liana_results_OP <- liana_results_OP[methods_vector]
+  top_ranks_OP     <- top_ranks_OP[methods_vector]
   
   
   
@@ -464,13 +466,13 @@ print_Title("0. Sinking Outputs")
     liana_dilutions_OP[[method]] <-
       lapply(resources_OP[[method]][-1], 
              liana_wrap,
-             seurat_object = testdata,
-             method = method,
-             resource = c('custom'),
-             expr_prop = 0,
-             cellchat.params = list(nboot = cellchat_nperms, 
+             seurat_object     = testdata,
+             method            = method,
+             resource          = c('custom'),
+             expr_prop         = 0,
+             cellchat.params   = list(nboot     = cellchat_nperms, 
                                     expr_prop = 0,
-                                    thresh = 1),
+                                    thresh    = 1),
              call_natmi.params = list(output_dir = natmi_output))
     
     runtime[[str_glue(str_to_title(method), " rerun")]] <- Sys.time()
@@ -528,12 +530,8 @@ print_Title("0. Sinking Outputs")
            method = "cellchat", top_n = number_ranks$cellchat)  
   
   
-  
-  
-  
-  
-  
-  
+  # This list could be filtered to only include results for methods in 
+  # methods_vector but it's about to be deleted anyway.
   
   
   
@@ -551,32 +549,22 @@ print_Title("0. Sinking Outputs")
   rm(top_dilutions_OP, method, dilution)
   
   
+  
+  
+  
+  
   # Formatting of top ranks
   
   # format top_ranks to have an ID that marks each specific interaction (LR and 
   # the source and target cell)
-  top_ranks_OP$call_connectome <- 
-    lapply(top_ranks_OP$call_connectome, unite, col = "LR_ID", 
-           c(source, target, ligand, receptor), remove = FALSE)
+  for (method in methods_vector) {
+    
+    top_ranks_OP[[method]] <- 
+      lapply(top_ranks_OP[[method]], unite, col = "LR_ID", 
+             c(source, target, ligand, receptor), remove = FALSE)
+    
   
-  top_ranks_OP$call_natmi <-
-    lapply(top_ranks_OP$call_natmi, unite, col = "LR_ID",
-           c(source, target, ligand, receptor), remove = FALSE)
-  
-  
-  top_ranks_OP$call_italk <- 
-    lapply(top_ranks_OP$call_italk, unite, col = "LR_ID", 
-           c(source, target, ligand, receptor), remove = FALSE)
-  
-  
-  top_ranks_OP$call_sca <- 
-    lapply(top_ranks_OP$call_sca, unite, col = "LR_ID", 
-           c(source, target, ligand, receptor), remove = FALSE)
-  
-  
-  top_ranks_OP$cellchat <- 
-    lapply(top_ranks_OP$cellchat, unite, col = "LR_ID", 
-           c(source, target, ligand, receptor), remove = FALSE)
+  }
   
   
   # add a column to see if an interaction is fake
@@ -631,35 +619,14 @@ print_Title("0. Sinking Outputs")
   # the OP_0 at each stage.
   overlaps <- list()
   
-  overlaps[['call_connectome']] <- 
-    lapply(top_ranks_OP$call_connectome, 
-           rank_overlap, 
-           main_ranks = top_ranks_OP$call_connectome$OmniPath_0)
+  for (method in methods_vector) {
+    
+    overlaps[[method]] <- 
+      lapply(top_ranks_OP[[method]], 
+             rank_overlap, 
+             main_ranks = top_ranks_OP[[method]]$OmniPath_0)
   
-  
-  overlaps[['call_natmi']]      <- 
-    lapply(top_ranks_OP$call_natmi, 
-           rank_overlap,
-           main_ranks = top_ranks_OP$call_natmi$OmniPath_0)
-  
-  
-  overlaps[['call_italk']]    <- 
-    lapply(top_ranks_OP$call_italk, 
-           rank_overlap, 
-           main_ranks = top_ranks_OP$call_italk$OmniPath_0)
-  
-  
-  overlaps[['call_sca']]       <- 
-    lapply(top_ranks_OP$call_sca, 
-           rank_overlap,
-           main_ranks = top_ranks_OP$call_sca$OmniPath_0)
-  
-  
-  overlaps[['cellchat']]      <- 
-    lapply(top_ranks_OP$cellchat, 
-           rank_overlap,
-           main_ranks = top_ranks_OP$cellchat$OmniPath_0)
-  
+  }
   
   
   # add NAs to the end of the overlaps where dilution wasn't possible
@@ -672,11 +639,7 @@ print_Title("0. Sinking Outputs")
   
   
   # reformatting overlap as a tibble
-  top_ranks_overlap <- tibble("call_connectome" = overlaps$call_connectome,
-                              "call_natmi"      = overlaps$call_natmi,
-                              "call_italk"      = overlaps$call_italk,
-                              "call_sca"        = overlaps$call_sca,
-                              "cellchat"        = overlaps$cellchat)  %>%
+  top_ranks_overlap <- as_tibble(overlaps)        %>%
     unnest(cols = all_of(methods_vector))         %>%
     mutate(dilution_prop = c(0, dilution_props))  %>%
     unnest(cols = c(dilution_prop))               %>%
@@ -721,7 +684,7 @@ print_Title("0. Sinking Outputs")
   # We format top_ranks_randoms the way we formatted top_ranks_overlap
   top_ranks_randoms <- top_ranks_randoms         %>%
     data.frame()                                 %>%
-    tibble()                                     %>%
+    as_tibble()                                  %>%
     mutate(dilution_prop = c(0, dilution_props)) %>%
     unnest(cols = c(dilution_prop))              %>%
     relocate("dilution_prop")                    %>%
@@ -882,8 +845,8 @@ print_Title("0. Sinking Outputs")
   
   # Removing now-superfluous meta data
   rm(dilution_props, number_ranks, runtime, cellchat_nperms, feature_type, 
-     methods_vector, run_mode, save_results, testdata_type, plot_png_name, 
-     env_save_path, date_of_run, preserve_topology, sink_output)
+     methods_vector, run_mode, save_results, testdata_type, env_save_path, 
+     date_of_run, preserve_topology, sink_output)
   
   # Save R environment and all the results within it
   if (script_params$save_results) {
