@@ -46,17 +46,17 @@
   
   preserve_topology <- FALSE  # TRUE = preserve_Dilute(), FALSE = random_Dilute()
   
-  dilution_props <- c(seq(0.20, 0.20, 0.20)) # should be consistent between tests
+  dilution_props <- c(seq(0.10, 0.10, 0.10)) # should be consistent between tests
   
-  number_ranks   <- list("call_connectome" = 20, 
-                         "call_natmi"      = 20,
-                         "call_italk"      = 20,
-                         "call_sca"        = 20,
-                         "cellchat"        = 20)
+  number_ranks   <- list("call_connectome" = 30, 
+                         "call_natmi"      = 30,
+                         "call_italk"      = 30,
+                         "call_sca"        = 30,
+                         "cellchat"        = 30)
   
   # Format a master_seed_list that provides a different master_seed for each
   # iteration of dilution_Robustness()
-  master_seed_list <- as.list(c(1:3))
+  master_seed_list <- as.list(c(1:4))
   
   seed_names <- c()
   
@@ -74,22 +74,25 @@
 
   # Define Outpputs
   outputs = c(
-              #"liana_results_OP",
-              #"resources_OP",
-              #"top_ranks_OP",
+              "liana_results_OP",
+              "resources_OP",
+              "top_ranks_OP",
               "top_ranks_analysis",
-              "script_params" #, 
-              #"testdata"
+              "metadata", 
+              "testdata"
               )
   
 
   # All the methods we're using (almsot all six of liana)
   # squidpy won't be used unthetil I get it to work on windows
-  methods_vector <- c('call_connectome',
-                      'call_natmi', 
+  methods_vector <- c(
+                      'call_connectome',
+                      #'call_natmi', 
                       'call_italk',
-                      'call_sca',
-                      'cellchat')
+                      'call_sca' #,
+                      #'cellchat'
+                      )
+  
   
   cellchat_nperms <- 10 # number of cellchat permutations, default 100
   
@@ -101,11 +104,54 @@
   # messages go to a txt file in Outputs folder, but you won't be able to see
   # them in the console. In essence, logs will be generated instead of console
   # outputs
+  
+  liana_warnings <- "divert"
+  
+  
+  # define dilution proportions
+  # dilution props is a user defined sequence in the setup section
+  dilution_names <- c()
+  
+  for (i in dilution_props) {
+    dilution_names <- 
+      c(dilution_names, str_glue("OmniPath_", as.character(i*100)))
+  }
+  
+  dilution_props <- as.list(dilution_props)
+  names(dilution_props) <- dilution_names
+  
+  rm(dilution_names, i)
+  
+  
+  # Summarize all the above parameters into one compact item
+  script_params <- list("master_seed_list"  = master_seed_list,
+                        "dilution_props"    = dilution_props, 
+                        "number_ranks"      = number_ranks, 
+                        "feature_type"      = feature_type, 
+                        "methods_vector"    = methods_vector, 
+                        "testdata_type"     = testdata_type,
+                        "preserve_topology" = preserve_topology,
+                        
+                        "outputs"         = outputs,
+                        "cellchat_nperms" = cellchat_nperms, 
+                        "run_mode"        = run_mode, 
+                        "save_results"    = save_results,
+                        "sink_output"     = sink_output,
+                        "Session_Info"    = sessionInfo(),
+                        "liana_warnings"  = liana_warnings)
+  
+  # Remove the parameters we just summarized
+  rm(master_seed_list, dilution_props, number_ranks, feature_type, 
+     methods_vector, testdata_type, preserve_topology, outputs, cellchat_nperms,
+     run_mode, save_results, sink_output, liana_warnings)
+  
 
 }   
 
+
+
 #------------------------------------------------------------------------------#
-# B. Iterate dilution_Robustness() ---------------------------------------------
+# C. Iterate dilution_Robustness() ---------------------------------------------
 
 # dilution_Robustness is an entire script that can be iterated as a function
 # There is randomness in dilution. Each master seed passed
@@ -114,21 +160,21 @@
 # and aggregate their results.
 
 # Apply dilution_Robustness(), provide every argument but master_seed
-results <- lapply(master_seed_list, 
+results <- lapply(script_params$master_seed_list, 
                   dilution_Robustness,
                   
-                  testdata_type     = testdata_type,
-                  feature_type      = feature_type,
-                  preserve_topology = preserve_topology,
-                  dilution_props    = dilution_props,
-                  number_ranks      = number_ranks,
-                  run_mode          = run_mode,
-                  outputs           = outputs,
+                  testdata_type     = script_params$testdata_type,
+                  feature_type      = script_params$feature_type,
+                  preserve_topology = script_params$preserve_topology,
+                  dilution_props    = script_params$dilution_props,
+                  number_ranks      = script_params$number_ranks,
+                  outputs           = script_params$outputs,
                    
-                  methods_vector    = methods_vector,
-                  cellchat_nperms   = cellchat_nperms,
-                  save_results      = save_results,
-                  sink_output       = sink_output)
+                  methods_vector    = script_params$methods_vector,
+                  cellchat_nperms   = script_params$cellchat_nperms,
+                  sink_output       = script_params$sink_output,
+                  liana_warnings    = script_params$liana_warnings)
+
 
 
 # Remove uneccesary Parameters
