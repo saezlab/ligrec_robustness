@@ -112,7 +112,8 @@ dilution_Robustness <- function(testdata_type,
                                 sink_output = FALSE,
                                 liana_warnings = TRUE) {
   
-runtime <- list("Iteration Start" = Sys.time())
+runtime <- list()
+runtime[[str_glue("Iteration Start - Seed ", master_seed)]] <- Sys.time()
 
 # Sanitize master_seed input
 master_seed <- floor(master_seed)
@@ -126,10 +127,10 @@ print_Title(str_glue("Iteration ",
 
 #------------------------------------------------------------------------------#
 # 0. Preparing Logs ------------------------------------------------------------
-
-print_Title(
-  str_glue("0. Sinking Outputs", "                        --  Iteration ",
-           master_seed))
+{
+  print_Title(
+    str_glue("0. Sinking Outputs", "                      --  Iteration ",
+             master_seed))
   # 0.1 Sinking Outputs
   {
     
@@ -177,6 +178,10 @@ print_Title(
   } 
   
   } # end of subpoint
+  
+  
+}
+
 
 
 #------------------------------------------------------------------------------#
@@ -871,65 +876,70 @@ print_Title(
   
   # 4.1 Tidying R environment and saving to Outputs under custom name
   {
+      
+    # stop the stopwatch
+    runtime[[str_glue("Iteration Epilogue - Seed ", master_seed)]] <- Sys.time()  
+      
     # Summarizing runtime and potentially save path of sunk logs
-  metadata <- list("runtime" = runtime)
+    metadata <- list("runtime" = runtime)
+    
+    # If the output was sunk the save path to the log is stored
+    if(sink_output == TRUE) {
+      
+      metadata["sunk_log_save_path"]  = sunk_log_save_path
+      
+      # let the user know where to find the log
+      print(str_glue("Complete log saved at ~/", sunk_log_save_path, "."))
+      
+      # Keep the environment tidy
+      rm(sunk_log_save_path)
+      
+    }
+      
+    if(liana_warnings == "divert") {
+      
+      metadata["liana_warning_save_path"]  = liana_warning_save_path
+      
+      # let the user know where to find the log
+      print(str_glue("LIANA warnings saved at ~/", 
+                     liana_warning_save_path, "."))
+      
+      # Keep the environment tidya
+      rm(liana_warning_save_path)
+      
+    }
   
-  # If the output was sunk the save path to the log is stored
-  if(sink_output == TRUE) {
     
-    metadata["sunk_log_save_path"]  = sunk_log_save_path
+    # Removing now-superfluous meta data
+    rm(dilution_props, number_ranks, runtime, cellchat_nperms, feature_type, 
+       methods_vector, testdata_type, preserve_topology)
     
-    # let the user know where to find the log
-    print(str_glue("Complete log saved at ~/", sunk_log_save_path, "."))
     
-    # Keep the environment tidy
-    rm(sunk_log_save_path)
-    
-  }
-    
-  if(liana_warnings == "divert") {
-    
-    metadata["liana_warning_save_path"]  = liana_warning_save_path
-    
-    # let the user know where to find the log
-    print(str_glue("LIANA warnings saved at ~/", liana_warning_save_path, "."))
-    
-    # Keep the environment tidya
-    rm(liana_warning_save_path)
-    
-  }
-
+    if(sink_output == TRUE) {
+      
+      sink() 
+      sink(type="message")
+      
+    }
   
-  # Removing now-superfluous meta data
-  rm(dilution_props, number_ranks, runtime, cellchat_nperms, feature_type, 
-     methods_vector, testdata_type, preserve_topology)
-  
-  
-  if(sink_output == TRUE) {
     
-    sink() 
-    sink(type="message")
-    
-  }
-
-  
   } # end of subpoint
 
   # 5.3 Bundling Outputs and returning Results
   {
-  # Create one bundled object for the script to return
-  results  <- list("liana_results_OP"   = liana_results_OP,
-                   "resources_OP"       = resources_OP,
-                   "top_ranks_OP"       = top_ranks_OP,
-                   "top_ranks_analysis" = top_ranks_analysis,
-                   
-                   "metadata"           = metadata,
-                   "testdata"           = testdata)
-  
-  # Filter it by the outputs the user requested
-  results <- results[outputs]
- 
-  
+    # Create one bundled object for the script to return
+    results  <- list("liana_results_OP"   = liana_results_OP,
+                     "resources_OP"       = resources_OP,
+                     "top_ranks_OP"       = top_ranks_OP,
+                     "top_ranks_analysis" = top_ranks_analysis,
+                     
+                     "metadata"           = metadata,
+                     "testdata"           = testdata)
+    
+    # Filter it by the outputs the user requested
+    results <- results[outputs]
+   
+    
   }
   
   
