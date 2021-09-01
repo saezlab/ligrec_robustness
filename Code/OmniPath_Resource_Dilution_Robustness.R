@@ -76,9 +76,16 @@
 #' @param cellchat_nperms Cellchat is one of the slower methods, for test runs
 #' it may be useful to set this parameter to 10 to speed up the analysis.
 #'
-#'@param sink_otuput Should the function save a log to the Outputs folder
-#'instead of sending outputs to the console. Generally only recommended when 
-#'the user expects very long outputs to the console that RStudio might not save.
+#' @param sink_otuput TRUE or FALSE. Should the function save a full log of the 
+#' Console Output as a log to the log folder? Warnings and messages will not be 
+#' visible in the console output if this is enabled, so unless there is a reason
+#' why such a record is necessary this option is not recommended.
+#' 
+#' @param liana_warnings Either TRUE, FALSE or "divert". Should the warnings 
+#' from liana, which are often repetitive and unhelpful, be either suppressed or 
+#' alternatively diverted to the log folder? When these types of warning are left
+#' in, they can often displace valuable warnings. Be careful with this setting,
+#' as suppressing warnings is obviously risky.
 #'
 
 dilution_Robustness <- function(testdata_type,
@@ -100,7 +107,8 @@ dilution_Robustness <- function(testdata_type,
                                                     'call_sca',
                                                     'cellchat'),
                                 cellchat_nperms = 100,
-                                sink_output = FALSE) {
+                                sink_output = FALSE,
+                                liana_warnings = TRUE) {
   
 runtime <- list("Iteration Start" = Sys.time())
 
@@ -111,38 +119,52 @@ print_Title(str_glue("Iteration ", master_seed), super = TRUE)
 
 
 #------------------------------------------------------------------------------#
-# 0. Sinking Outputs ---------------------------------------------------------
+# 0. Preparing Logs ------------------------------------------------------------
 
-print_Title("0. Sinking Outputs")
 
-{
-  date_of_run <- as.character(Sys.Date())
-  
   if(sink_output == TRUE) {
     
-    log_save_path <- str_glue("Outputs/Output_Log_", 
-                              run_mode,
-                              "_",
-                              testdata_type, 
-                              "_top",
-                              as.character(median(unlist(number_ranks))),
-                              "_res",
-                              as.character(length(dilution_props)),
-                              "_seed",
-                              master_seed,
-                              feature_type,                            
-                              "_dil_on_",
-                              date_of_run,
-                              ".RData")
+    sunk_log_save_path <- str_glue("Outputs/Logs/Complete_Log_", 
+                                   testdata_type, 
+                                   "_top",
+                                   as.character(median(unlist(number_ranks))),
+                                   "_res",
+                                   as.character(length(dilution_props)),
+                                   "_seed",
+                                   master_seed,
+                                   "_",
+                                   feature_type,                            
+                                   "_dil_on_",
+                                   as.character(Sys.Date()),
+                                   ".txt")
     
-    con <- file(log_save_path)
-    sink(con, append=TRUE)
-    sink(con, append=TRUE, type="message")
+    connection <- file(sunk_log_save_path, open = "at")
+    sink(connection, append=TRUE, type = "output", split = TRUE)
+    sink(connection, append=TRUE, type="message")
     
     
-  }
+  } 
+    
+  if(liana_warnings == "divert") {
+    
+    liana_warning_save_path <- str_glue("Outputs/Logs/LIANA_warnings_", 
+                                  testdata_type, 
+                                  "_top",
+                                  as.character(median(unlist(number_ranks))),
+                                  "_res",
+                                  as.character(length(dilution_props)),
+                                  "_seed",
+                                  master_seed,
+                                  "_",
+                                  feature_type,                            
+                                  "_dil_on_",
+                                  as.character(Sys.Date()),
+                                  ".txt")
+    
+    
+  } 
   
-}
+  } # end of subpoint
 
 
 #------------------------------------------------------------------------------#
@@ -191,15 +213,56 @@ print_Title("0. Sinking Outputs")
     gsub(' ', '_', .)    %>%
     str_glue('Test_', .)
   
-  liana_results_OP_0 <- 
-    liana_wrap(testdata, 
-               method = methods_vector, 
-               resource = c('OmniPath'), 
-               expr_prop = 0,
-               cellchat.params   = list(nboot = cellchat_nperms, 
-                                        expr_prop = 0,
-                                        thresh = 1),
-               call_natmi.params = list(output_dir = natmi_output))
+  # The if statements give the user control over how warnings are handled
+  if (liana_warnings == TRUE) {
+    
+    liana_results_OP_0 <- 
+      liana_wrap(testdata, 
+                 method = methods_vector, 
+                 resource = c('OmniPath'), 
+                 expr_prop = 0,
+                 cellchat.params   = list(nboot = cellchat_nperms, 
+                                          expr_prop = 0,
+                                          thresh = 1),
+                 call_natmi.params = list(output_dir = natmi_output))
+    
+    
+  } else if (liana_warnings == "divert") {
+    
+    divert_Warnings(
+      {    
+        liana_results_OP_0 <- 
+          liana_wrap(testdata, 
+                     method = methods_vector, 
+                     resource = c('OmniPath'), 
+                     expr_prop = 0,
+                     cellchat.params   = list(nboot = cellchat_nperms, 
+                                              expr_prop = 0,
+                                              thresh = 1),
+                     call_natmi.params = list(output_dir = natmi_output))
+        
+      }, logFile = liana_warning_save_path)
+    
+  } else if (liana_warnings == FALSE) {
+    
+    suppressWarnings(
+      {    
+        liana_results_OP_0 <- 
+          liana_wrap(testdata, 
+                     method = methods_vector, 
+                     resource = c('OmniPath'), 
+                     expr_prop = 0,
+                     cellchat.params   = list(nboot = cellchat_nperms, 
+                                              expr_prop = 0,
+                                              thresh = 1),
+                     call_natmi.params = list(output_dir = natmi_output))
+        
+      })
+    
+  }
+
+  
+  
   
   
   
@@ -448,27 +511,81 @@ print_Title("0. Sinking Outputs")
     gsub(' ', '_', .)    %>%
     str_glue('Test_', .)
   
-  
-  
-  for (method in methods_vector) {
+  if (liana_warnings == TRUE) {
     
-    
-    
-    liana_dilutions_OP[[method]] <-
-      lapply(resources_OP[[method]][-1], 
-             liana_wrap,
-             seurat_object     = testdata,
-             method            = method,
-             resource          = c('custom'),
-             expr_prop         = 0,
-             cellchat.params   = list(nboot     = cellchat_nperms, 
-                                    expr_prop = 0,
-                                    thresh    = 1),
-             call_natmi.params = list(output_dir = natmi_output))
-    
-    runtime[[str_glue(str_to_title(method), " rerun")]] <- Sys.time()
+    for (method in methods_vector) {
+      
+        liana_dilutions_OP[[method]] <-
+          lapply(resources_OP[[method]][-1], 
+                 liana_wrap,
+                 seurat_object     = testdata,
+                 method            = method,
+                 resource          = c('custom'),
+                 expr_prop         = 0,
+                 cellchat.params   = list(nboot     = cellchat_nperms, 
+                                          expr_prop = 0,
+                                          thresh    = 1),
+                 call_natmi.params = list(output_dir = natmi_output))
+      
+      
+      runtime[[str_glue(str_to_title(method), " rerun")]] <- Sys.time()
       
     }
+    
+  } else if (liana_warnings == "divert") {
+    
+    for (method in methods_vector) {
+      
+      divert_Warnings(
+        {    
+          
+          liana_dilutions_OP[[method]] <-
+            lapply(resources_OP[[method]][-1], 
+                   liana_wrap,
+                   seurat_object     = testdata,
+                   method            = method,
+                   resource          = c('custom'),
+                   expr_prop         = 0,
+                   cellchat.params   = list(nboot     = cellchat_nperms, 
+                                            expr_prop = 0,
+                                            thresh    = 1),
+                   call_natmi.params = list(output_dir = natmi_output))
+        
+        }, logFile = liana_warning_save_path)
+      
+      
+      
+      runtime[[str_glue(str_to_title(method), " rerun")]] <- Sys.time()
+      
+    }
+    
+  } else if (liana_warnings == FALSE) {
+    
+    for (method in methods_vector) {
+      
+      suppressWarnings(
+        {    
+          
+          liana_dilutions_OP[[method]] <-
+            lapply(resources_OP[[method]][-1], 
+                   liana_wrap,
+                   seurat_object     = testdata,
+                   method            = method,
+                   resource          = c('custom'),
+                   expr_prop         = 0,
+                   cellchat.params   = list(nboot     = cellchat_nperms, 
+                                            expr_prop = 0,
+                                            thresh    = 1),
+                   call_natmi.params = list(output_dir = natmi_output))
+        
+        })
+      
+      runtime[[str_glue(str_to_title(method), " rerun")]] <- Sys.time()
+      
+    }
+  }
+  
+
     
     
     
@@ -738,14 +855,28 @@ print_Title("0. Sinking Outputs")
     # Summarizing runtime and potentially save path of sunk logs
   metadata <- list("runtime" = runtime)
   
+  # If the output was sunk the save path to the log is stored
+  if(sink_output == TRUE) {
     
+    metadata["sunk_log_save_path"]  = sunk_log_save_path
     
+    # let the user know where to find the log
+    print(str_glue("Complete log saved at ~/", sunk_log_save_path, "."))
+    
+    # Keep the environment tidy
+    rm(sunk_log_save_path)
     
   }
     
+  if(liana_warnings == "divert") {
     
+    metadata["liana_warning_save_path"]  = liana_warning_save_path
     
+    # let the user know where to find the log
+    print(str_glue("LIANA warnings saved at ~/", liana_warning_save_path, "."))
     
+    # Keep the environment tidya
+    rm(liana_warning_save_path)
     
   }
   
@@ -754,7 +885,7 @@ print_Title("0. Sinking Outputs")
      methods_vector, testdata_type, preserve_topology)
   
   
-  if(script_params$sink_output == TRUE) {
+  if(sink_output == TRUE) {
     
     sink() 
     sink(type="message")
