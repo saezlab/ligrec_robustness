@@ -87,6 +87,8 @@
 #' in, they can often displace valuable warnings. Be careful with this setting,
 #' as suppressing warnings is obviously risky.
 #'
+#' @return Depending on outputs arg, a list with many possible contents is 
+#' returned.
 
 dilution_Robustness <- function(testdata_type,
                                 feature_type,
@@ -115,12 +117,22 @@ runtime <- list("Iteration Start" = Sys.time())
 # Sanitize master_seed input
 master_seed <- floor(master_seed)
 
-print_Title(str_glue("Iteration ", master_seed), super = TRUE)
+print_Title(str_glue("Iteration ", 
+                     master_seed, 
+                     "  --  At ", 
+                     as.character(Sys.time())),
+            super = TRUE)
 
 
 #------------------------------------------------------------------------------#
 # 0. Preparing Logs ------------------------------------------------------------
 
+print_Title(
+  str_glue("0. Sinking Outputs", "                        --  Iteration ",
+           master_seed))
+  # 0.1 Sinking Outputs
+  {
+    
 
   if(sink_output == TRUE) {
     
@@ -170,7 +182,9 @@ print_Title(str_glue("Iteration ", master_seed), super = TRUE)
 #------------------------------------------------------------------------------#
 # 1. Preparing resource_Dilute() Inputs ----------------------------------------
 {
-  print_Title("1. Preparing resource_Dilute() Inputs")
+  print_Title(
+    str_glue("1. Preparing resource_Dilute() Inputs", "   --  Iteration ", 
+             master_seed))
   
   # 1.1 Running LIANA wrapper
   {
@@ -429,7 +443,9 @@ print_Title(str_glue("Iteration ", master_seed), super = TRUE)
 #------------------------------------------------------------------------------#
 # 2. Diluting Resources ------------------------------------------------------
 {
-  print_Title("2. Diluting Resources")
+  print_Title(
+    str_glue("2. Diluting Resources", "                   --  Iteration ", 
+             master_seed))
   
   # 2.1 Generate diluted Resources for all methods
   {
@@ -446,6 +462,7 @@ print_Title(str_glue("Iteration ", master_seed), super = TRUE)
   dilutions_OP <- list()
   
   # Iterate over every method, lapply over every dilution proportion
+  
   for (method in methods_vector){
     
     dilutions_OP[[method]] <- 
@@ -487,7 +504,9 @@ print_Title(str_glue("Iteration ", master_seed), super = TRUE)
 #------------------------------------------------------------------------------#
 # 3. Rerun Liana and contrast predictions --------------------------------------
 {
-  print_Title("3. Rerun Liana and contrast predictions")
+  print_Title(
+    str_glue("3. Rerun Liana and contrast predictions","  --  Iteration ", 
+             master_seed))
   
   # 3.1 Reapply individual methods with diluted resources
   {
@@ -879,6 +898,7 @@ print_Title(str_glue("Iteration ", master_seed), super = TRUE)
     rm(liana_warning_save_path)
     
   }
+
   
   # Removing now-superfluous meta data
   rm(dilution_props, number_ranks, runtime, cellchat_nperms, feature_type, 
