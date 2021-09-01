@@ -175,6 +175,199 @@ results <- lapply(script_params$master_seed_list,
                   sink_output       = script_params$sink_output,
                   liana_warnings    = script_params$liana_warnings)
 
+#------------------------------------------------------------------------------#
+# D. Extract Results -----------------------------------------------------------
+
+
+# In this segment we extract the data from the results object, which is poorly
+# formatted by default, and put it into a more appropriate hierarchy, then split 
+# into multiple more convenient objects.
+
+# Initiate the restructured results list.
+restructured_results <- list()
+
+# The three outputs mentioned here can all be formatted the same way
+# But only execute this code if that output is actually in results
+for(output in intersect(script_params$outputs, c("liana_results_OP",
+                                                 "resources_OP",
+                                                 "top_ranks_OP"))) {
+  
+  # We need the name of the method, name of dilution and seed as coordinates to
+  # subset results and get at the smallest units of data for transfer, so we 
+  # iterate over  every combination of these three values. 
+  # This way we get every unit of data from these three outputs and transfer 
+  # them to the new structure.
+  for(method in script_params$methods_vector) {
+    
+    for(dilution_name in c("OmniPath_0", names(script_params$dilution_props))) {
+      
+      for (seed in names(script_params$master_seed_list)) {
+        
+        # For tracking purposes we tack the seed name onto the data
+        name <- str_glue(dilution_name, "_",seed)
+        
+        # This top line is the hierarchy we are trying to achieve
+        restructured_results[[output]][[method]][[dilution_name]][[name]] <- 
+          results[[seed]][[output]][[method]][[dilution_name]]
+          # This lower line is the hierarchy as it is per default
+
+      }
+    }
+  }
+}
+
+
+
+# This code formats top_ranks_analysis outputs, but only if they are actually in
+# results. We need the seed and the top_ranks analysis type to subset this part
+# of results into the units of data we want to transfer, so we iterate over all
+# combinations of these two.
+if("top_ranks_analysis" %in% script_params$outputs == TRUE) {
+  
+  for (analysis in names(results$Seed_1$top_ranks_analysis)) {
+    
+    for (seed in names(script_params$master_seed_list)) {
+      
+      # For tracking purposes we tack the seed name onto the data
+      name <- str_glue(analysis, "_", seed)
+      
+      # This top line represents the list hierarchy as we would like it
+      restructured_results[["top_ranks_analysis"]][[analysis]][[name]] <- 
+        results[[seed]][["top_ranks_analysis"]][[analysis]]
+        # and this lower line represents the hierarchy in results.
+        
+    }
+  }
+}
+
+
+
+# Only format metadata if its actually in the results
+if("metadata" %in% script_params$outputs == TRUE) {
+  
+  # We iterate over every permutation seed
+  for (seed in names(script_params$master_seed_list)) {
+    
+    # Within every seed, grab the three items below and store them
+    
+    # Mark the runtime with the iteration it belongs to
+    name <- str_glue("Runtime", "_", seed)
+    # Grab the runtime from the metadata and save it as its own sublist
+    restructured_results[["runtime"]][[name]] <-      # new hierarchy
+      results[[seed]][["metadata"]][["runtime"]]      # old hierarchy
+    
+    
+    # Mark the log save path (if it exists) with the iteration it belongs to
+    name <- str_glue("Sunk_log_save_path", "_", seed)
+    # Grab the log save path from the metadata and save it within a new metadata
+    # hierarchy
+    restructured_results[["metadata"]][["sunk_log_save_path"]][[name]] <-
+      results[[seed]][["metadata"]][["sunk_log_save_path"]]
+    
+    
+    # Mark the log save path (if it exists) with the iteration it belongs to   
+    name <- str_glue("Liana_warning_save_path", "_", seed)
+    # Grab the log save path from the metadata and save it within a new metadata
+    # hierarchy
+    restructured_results[["metadata"]][["liana_warning_save_path"]][[name]] <-
+      results[[seed]][["metadata"]][["liana_warning_save_path"]]
+
+  }
+
+}
+
+
+
+# Only format testdata if its actually in the results
+if("testdata" %in% script_params$outputs == TRUE) {
+  
+  # We only need the seed to access the testdata of every seed, the hierarchy is
+  # very simple and flat here.
+  for (seed in names(script_params$master_seed_list)) {
+    
+    # New hierarchy
+    restructured_results[["testdata"]][[str_glue("Testdata", "_", seed)]] <- 
+      results[[seed]][["testdata"]] # old hierarchy
+  }
+  
+}
+
+
+
+
+
+# Now lets turn the sub-lists of restructured results into standalone objects
+list2env(restructured_results, envir = .GlobalEnv)
+
+# Remove unnecessary clutter from the environment.
+rm(analysis, dilution_name, name, method, output, seed, results, 
+   restructured_results)
+
+
+
+# Calculate Runtime and format metadata
+
+runtime <- flatten(runtime)
+
+# save the names of the time-points for later
+runtime_labels <- names(runtime)
+
+# convert run time for subtractions, to calculate durations between checkpoints
+runtime_numeric <- as.numeric(runtime)
+
+# We calculate the passage of time between checkpoints in the script, 
+# Step duration is the duration of a step between neighboring checkpoints
+# Time elapsed is the duration between the completion of a step and the 
+# start of the script.
+
+step_duration <- c(0) # No time has passed when the script is initialized.
+time_elapsed  <- c(0) # No time has passed when the script is initialized.
+
+for (i in seq(2, length(runtime_numeric), 1)) {
+  
+  step_duration <- c(step_duration, 
+                     runtime_numeric[[i]] - runtime_numeric[[i-1]])
+  
+  time_elapsed  <- c(time_elapsed,
+                     runtime_numeric[[i]] - runtime_numeric[[1]])
+  
+}
+
+# Turn seconds into time periods and round for simplicity
+step_duration <- round(seconds_to_period(step_duration))
+time_elapsed  <- round(seconds_to_period(time_elapsed))
+
+
+# summarize all the runtime data in a tibble
+runtime <- runtime               %>%
+  as_tibble_col()                %>%
+  unnest(cols = c(value))        %>%
+  rename("Start Time" = "value") %>% 
+  add_column("Step Name" = runtime_labels, .before = 1) %>%
+  add_column("Step Duration"   = step_duration)         %>%
+  add_column("Time Elapsed"    = time_elapsed) 
+
+
+
+metadata[["runtime"]] <- runtime
+
+
+# remove unnecessary variables
+rm(runtime,
+   runtime_numeric, 
+   step_duration, 
+   time_elapsed, 
+   runtime_labels,
+   i)
+
+
+
+
+
+
+
+
+
 
 
 # Remove uneccesary Parameters
