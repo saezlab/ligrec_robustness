@@ -44,10 +44,10 @@
 #' 30 % diluted.
 #' 
 #' @param outputs Which outputs of the calculation would you like to return? 
-#' By default, all the liana results, resources used, top ranked CCIs, analysis 
+#' By default, all the method results, resources used, top ranked CCIs, analysis 
 #' of top ranks, script parameters and the chosen testdata are returned in a
 #' list. Construct an atomic vector using all or some of "liana_results_OP", 
-#' "resources_OP", "top_ranks_OP", "top_ranks_analysis","script_params", and 
+#' "resources_OP", "top_ranks_OP", "top_ranks_analysis","metadata", and 
 #' "testdata" to tell the script which outputs should go in the returned list.
 #' It's probably best to run this once with testdata to better understand which
 #' list element holds which data, and then pair it down to what is needed.
@@ -75,13 +75,6 @@
 #' 
 #' @param cellchat_nperms Cellchat is one of the slower methods, for test runs
 #' it may be useful to set this parameter to 10 to speed up the analysis.
-#' 
-#' @param run_mode This parameter will tag saved results with wether or not 
-#' the user intended this to be a serious becnhmarking run or simply a testrun
-#' to see if their code works. Choose between "real" and "trial_run".
-#' 
-#' @param save_results Should the function save the plot and the R environment
-#' to the Output folder? Set TRUE or FALSE.
 #'
 #'@param sink_otuput Should the function save a log to the Outputs folder
 #'instead of sending outputs to the console. Generally only recommended when 
@@ -94,12 +87,11 @@ dilution_Robustness <- function(testdata_type,
                                 dilution_props,
                                 number_ranks,
                                 master_seed,
-                                run_mode,
                                 outputs = c("liana_results_OP",
                                             "resources_OP",
                                             "top_ranks_OP",
                                             "top_ranks_analysis",
-                                            "script_params", 
+                                            "metadata", 
                                             "testdata"),
                                 
                                 methods_vector =  c('call_connectome',
@@ -108,7 +100,6 @@ dilution_Robustness <- function(testdata_type,
                                                     'call_sca',
                                                     'cellchat'),
                                 cellchat_nperms = 100,
-                                save_results = FALSE,
                                 sink_output = FALSE) {
   
 runtime <- list("Iteration Start" = Sys.time())
@@ -735,129 +726,33 @@ print_Title("0. Sinking Outputs")
 
 
 #------------------------------------------------------------------------------#
-# 5. Saving the results ------------------------------------------------------
+# 4. Returning results ------------------------------------------------------
 {
-  print_Title("5. Saving the results")
+  print_Title(
+    str_glue("5. Returning results", "                   --  Iteration ", 
+             master_seed))
   
-  # 5.1 Calculating run time of script
+  
+  # 4.1 Tidying R environment and saving to Outputs under custom name
   {
+    # Summarizing runtime and potentially save path of sunk logs
+  metadata <- list("runtime" = runtime)
+  
     
-  # stop the stopwatch
-  runtime[["Iteration Epilogue"]] <- Sys.time()
-  
-  # save the names of the time-points for later
-  runtime_labels <- names(runtime)
-  
-  # convert run time for subtractions, to calculate durations between checkpoints
-  runtime_numeric <- as.numeric(runtime)
-  
-  # We calculate the passage of time between checkpoints in the script, 
-  # Step duration is the duration of a step between neighboring checkpoints
-  # Time elapsed is the duration between the completion of a step and the 
-  # start of the script.
-  
-  step_duration <- c(0) # No time has passed when the script is initialized.
-  time_elapsed  <- c(0) # No time has passed when the script is initialized.
-  
-  for (i in seq(2, length(runtime_numeric), 1)) {
     
-    step_duration <- c(step_duration, 
-                       runtime_numeric[[i]] - runtime_numeric[[i-1]])
-    
-    time_elapsed  <- c(time_elapsed,
-                       runtime_numeric[[i]] - runtime_numeric[[1]])
     
   }
-  
-  # Turn seconds into time periods and round for simplicity
-  step_duration <- round(seconds_to_period(step_duration))
-  time_elapsed  <- round(seconds_to_period(time_elapsed))
-  
-  
-  # summarize all the runtime data in a tibble
-  runtime <- runtime               %>%
-    as_tibble_col()                %>%
-    unnest(cols = c(value))        %>%
-    rename("Start Time" = "value") %>% 
-    add_column("Step Name" = runtime_labels, .before = 1) %>%
-    add_column("Step Duration"   = step_duration)         %>%
-    add_column("Time Elapsed"    = time_elapsed) 
-  
-  # remove uneccesary variables
-  rm(runtime_numeric, 
-     step_duration, 
-     time_elapsed, 
-     runtime_labels,
-     i)
-  
-  
     
     
-  } # end of subpoint
-  
-  # 5.2 Tidying R environment and saving to Outputs under custom name
-  {
-  
-  # Automatically generate environment save file name
-  env_save_path <- str_glue("Outputs/DilutionEnv_", 
-                            run_mode,
-                            "_",
-                            testdata_type, 
-                            "_top",
-                            as.character(median(unlist(number_ranks))),
-                            "_res",
-                            as.character(length(dilution_props)),
-                            "_seed",
-                            master_seed,
-                            feature_type,                            
-                            "_dil_on_",
-                            date_of_run,
-                            ".RData")
-  
-  # Summarizing important but somewhat scattered meta data
-  # Also attaches session info in case result replication needs it
-  script_params <- list("dilution_props"    = dilution_props, 
-                        "number_ranks"      = number_ranks, 
-                        "runtime"           = runtime, 
-                        "cellchat_nperms"   = cellchat_nperms, 
-                        "feature_type"      = feature_type, 
-                        "methods_vector"    = methods_vector, 
-                        "run_mode"          = run_mode, 
-                        "save_results"      = save_results,
-                        "testdata_type"     = testdata_type,
-                        "Session_Info"      = sessionInfo(),
-                        "sink_output"       = sink_output,
-                        "preserve_topology" = preserve_topology,
-                        "save_names"        = 
-                          list("env_save_path" = env_save_path))
-  
-  # If the output was sunk the save path to the log is stored
-  if(script_params$sink_output == TRUE) {
     
-    script_params$save_names["log_save_path"]  = log_save_path
     
-    # Keep the environment tidy
-    rm(log_save_path)
     
   }
-  
-  
   
   # Removing now-superfluous meta data
   rm(dilution_props, number_ranks, runtime, cellchat_nperms, feature_type, 
-     methods_vector, run_mode, save_results, testdata_type, env_save_path, 
-     date_of_run, preserve_topology, sink_output)
+     methods_vector, testdata_type, preserve_topology)
   
-  # Save R environment and all the results within it
-  if (script_params$save_results) {
-    
-    save.image(file = script_params$save_names$env_save_path)
-    
-    print(str_glue("Environment saved at ~/", 
-                   script_params$save_names$env_save_path,
-                   "."))
-    
-  }
   
   if(script_params$sink_output == TRUE) {
     
@@ -865,9 +760,7 @@ print_Title("0. Sinking Outputs")
     sink(type="message")
     
   }
-  
 
-  
   
   } # end of subpoint
 
@@ -879,7 +772,7 @@ print_Title("0. Sinking Outputs")
                    "top_ranks_OP"       = top_ranks_OP,
                    "top_ranks_analysis" = top_ranks_analysis,
                    
-                   "script_params"      = script_params,
+                   "metadata"           = metadata,
                    "testdata"           = testdata)
   
   # Filter it by the outputs the user requested
