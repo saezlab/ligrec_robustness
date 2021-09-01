@@ -1100,12 +1100,13 @@
       
       # describe the output to the user
       if (verbose == TRUE) {
+        print(str_glue(""))
         print(
           str_glue(
             "The main ranking and the comparison ranking have ",
             as.character(overlap),
             " LR_IDs in common. Which corrsponds to a ",
-            as.character(percentage_overlap * 100),
+            as.character(round(percentage_overlap * 100, 2)),
             "% overlap."
           )
         )
@@ -1165,19 +1166,32 @@
     )
     
     if (super == FALSE) {
+      print(str_glue(""))
+      print(str_glue(""))
       print(str_glue(divider))
+      print(str_glue(""))
       print(str_glue("   ", title))
+      print(str_glue(""))
       print(str_glue(divider))
+      print(str_glue(""))
+      print(str_glue(""))
       print(str_glue(""))
       
     } else if (super == TRUE) {
+      print(str_glue(""))
+      print(str_glue(""))
+      print(str_glue(""))
       print(str_glue(divider))
       print(str_glue(divider))
+      print(str_glue(""))
       print(str_glue(""))
       print(str_glue("   ", title))
       print(str_glue(""))
+      print(str_glue(""))
       print(str_glue(divider))
       print(str_glue(divider))
+      print(str_glue(""))
+      print(str_glue(""))
       print(str_glue(""))
       print(str_glue(""))
       
