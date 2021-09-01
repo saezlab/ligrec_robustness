@@ -10,6 +10,7 @@ Data/**
 !Data/.gitkeep 
 
 Outputs/**
+!Outputs/Logs/.gitkeep 
 !Outputs/.gitkeep 
 
 omnipathr-log/
