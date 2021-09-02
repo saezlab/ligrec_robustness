@@ -83,10 +83,18 @@
 #' 
 #' @param liana_warnings Either TRUE, FALSE or "divert". Should the warnings 
 #' from liana, which are often repetitive and unhelpful, be either suppressed or 
-#' alternatively diverted to the log folder? When these types of warning are left
-#' in, they can often displace valuable warnings. Be careful with this setting,
-#' as suppressing warnings is obviously risky.
-#'
+#' alternatively diverted to the log folder? When these types of warning are 
+#' left in, they can often displace valuable warnings. Be careful with this 
+#' setting, as suppressing warnings is obviously risky.
+#' 
+#' @param sink_logfile Only if sink_output == TRUE. As a char, under what file 
+#' path (including the name of the log) should your sunk output be stored? For 
+#' example, "Outputs/Logs/Complete_Log_xyz.txt" would store the log in the logs
+#' folder of outputs, under the name "Complete_Log_xyz.txt".
+#'  
+#' @param warning_logfile Only if liana_warnings == "divert". Same idea as 
+#' sink_logfile.
+#' 
 #' @return Depending on outputs arg, a list with many possible contents is 
 #' returned.
 
@@ -109,8 +117,10 @@ dilution_Robustness <- function(testdata_type,
                                                     'call_sca',
                                                     'cellchat'),
                                 cellchat_nperms = 100,
-                                sink_output = FALSE,
-                                liana_warnings = TRUE) {
+                                sink_output     = FALSE,
+                                liana_warnings  = TRUE,
+                                sink_logfile    = "",
+                                warning_logfile = "") {
   
 runtime <- list()
 runtime[[str_glue("Iteration Start - Seed ", master_seed)]] <- Sys.time()
@@ -136,49 +146,35 @@ print_Title(str_glue("Iteration ",
     
 
   if(sink_output == TRUE) {
-    
-    sunk_log_save_path <- str_glue("Outputs/Logs/Complete_Log_", 
-                                   testdata_type, 
-                                   "_top",
-                                   as.character(median(unlist(number_ranks))),
-                                   "_res",
-                                   as.character(length(dilution_props)),
-                                   "_seed",
-                                   master_seed,
-                                   "_",
-                                   feature_type,                            
-                                   "_dil_on_",
-                                   as.character(Sys.Date()),
-                                   ".txt")
-    
-    connection <- file(sunk_log_save_path, open = "at")
+  
+    connection <- file(sink_logfile, open = "at")
     sink(connection, append=TRUE, type = "output", split = TRUE)
     sink(connection, append=TRUE, type="message")
     
     
   } 
     
-  if(liana_warnings == "divert") {
     
-    liana_warning_save_path <- str_glue("Outputs/Logs/LIANA_warnings_", 
-                                  testdata_type, 
-                                  "_top",
-                                  as.character(median(unlist(number_ranks))),
-                                  "_res",
-                                  as.character(length(dilution_props)),
-                                  "_seed",
-                                  master_seed,
-                                  "_",
-                                  feature_type,                            
-                                  "_dil_on_",
-                                  as.character(Sys.Date()),
-                                  ".txt")
-    
-    
-  } 
-  
   } # end of subpoint
   
+  # 0.2 Printing Iteration Header to Warnings Log
+  {
+    
+    
+  if(liana_warnings == "divert") {
+    
+    cat(str_glue("|=======================================",
+                 "=======================================|"),
+        "\n\n",
+        str_glue(as.character(Sys.time()), ": Iteration  --  ", master_seed), 
+        "\n\n\n",
+        file = warning_logfile, 
+        append = TRUE)
+
+  } 
+    
+    
+  } # end of subpoint
   
 }
 
@@ -260,7 +256,7 @@ print_Title(str_glue("Iteration ",
                                               thresh = 1),
                      call_natmi.params = list(output_dir = natmi_output))
         
-      }, logFile = liana_warning_save_path)
+      }, logFile = warning_logfile)
     
   } else if (liana_warnings == FALSE) {
     
@@ -575,7 +571,7 @@ print_Title(str_glue("Iteration ",
                                             thresh    = 1),
                    call_natmi.params = list(output_dir = natmi_output))
         
-        }, logFile = liana_warning_save_path)
+        }, logFile = warning_logfile)
       
       
       
@@ -880,32 +876,29 @@ print_Title(str_glue("Iteration ",
     # stop the stopwatch
     runtime[[str_glue("Iteration Epilogue - Seed ", master_seed)]] <- Sys.time()  
       
-    # Summarizing runtime and potentially save path of sunk logs
+    # Summarizing runtime
     metadata <- list("runtime" = runtime)
     
-    # If the output was sunk the save path to the log is stored
+    # If the output was sunk the location of the log is brought to the user's 
+    # attention
     if(sink_output == TRUE) {
       
-      metadata["sunk_log_save_path"]  = sunk_log_save_path
-      
-      # let the user know where to find the log
-      print(str_glue("Complete log saved at ~/", sunk_log_save_path, "."))
+      print(str_glue("Complete log saved at ~/", sink_logfile, "."))
       
       # Keep the environment tidy
-      rm(sunk_log_save_path)
+      rm(sink_logfile)
       
     }
+    
       
     if(liana_warnings == "divert") {
       
-      metadata["liana_warning_save_path"]  = liana_warning_save_path
-      
       # let the user know where to find the log
       print(str_glue("LIANA warnings saved at ~/", 
-                     liana_warning_save_path, "."))
+                     warning_logfile, "."))
       
-      # Keep the environment tidya
-      rm(liana_warning_save_path)
+      # Keep the environment tidy
+      rm(warning_logfile)
       
     }
   
