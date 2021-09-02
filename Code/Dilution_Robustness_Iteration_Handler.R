@@ -44,7 +44,8 @@
   # features are used for dilution.
   feature_type <- c("variable") # choose "generic" or "variable"
   
-  preserve_topology <- FALSE  # TRUE = preserve_Dilute(), FALSE = random_Dilute()
+  preserve_topology <- FALSE  # TRUE  = preserve_Dilute(), 
+                              # FALSE = random_Dilute()
   
   dilution_props <- c(seq(0.10, 0.10, 0.10)) # should be consistent between tests
   
@@ -121,8 +122,7 @@
   names(dilution_props) <- dilution_names
   
   rm(dilution_names, i)
-  
-  
+
   # Summarize all the above parameters into one compact item
   script_params <- list("master_seed_list"  = master_seed_list,
                         "dilution_props"    = dilution_props, 
@@ -137,17 +137,62 @@
                         "run_mode"        = run_mode, 
                         "save_results"    = save_results,
                         "sink_output"     = sink_output,
-                        "Session_Info"    = sessionInfo(),
-                        "liana_warnings"  = liana_warnings)
+                        "liana_warnings"  = liana_warnings,
+                        "sink_logfile"    = "",
+                        "warning_logfile" = "", 
+                        "Session_Info"    = sessionInfo())
+  
+  
+  time_of_run <- Sys.time()     %>%
+    as.character()       %>%
+    gsub(':', '_', .)    %>% 
+    gsub('-', '_', .)    %>% 
+    gsub(' ', '_', .)
+  
+  
+  if(sink_output == TRUE) {
+    sink_logfile <- str_glue("Outputs/Logs/Complete_Log_", 
+                             testdata_type, 
+                             "_top",
+                             as.character(median(unlist(number_ranks))),
+                             "_res",
+                             as.character(length(dilution_props)),
+                             "_",
+                             feature_type,                            
+                             "_dil_at_",
+                             time_of_run,
+                             ".txt")
+    
+    script_params[["sink_logfile"]] <- sink_logfile
+    
+    rm(sink_logfile)
+  }
+  
+  if(liana_warnings == "divert") {
+    warning_logfile <- str_glue("Outputs/Logs/LIANA_warnings_", 
+                                testdata_type, 
+                                "_top",
+                                as.character(median(unlist(number_ranks))),
+                                "_res",
+                                as.character(length(dilution_props)),
+                                "_",
+                                feature_type,                            
+                                "_dil_at_",
+                                time_of_run,
+                                ".txt")
+    
+    script_params[["warning_logfile"]] <- warning_logfile
+    
+    rm(warning_logfile)
+  }
   
   # Remove the parameters we just summarized
   rm(master_seed_list, dilution_props, number_ranks, feature_type, 
      methods_vector, testdata_type, preserve_topology, outputs, cellchat_nperms,
-     run_mode, save_results, sink_output, liana_warnings)
+     run_mode, save_results, sink_output, liana_warnings, time_of_run)
   
 
 }   
-
 
 
 #------------------------------------------------------------------------------#
@@ -173,7 +218,10 @@ results <- lapply(script_params$master_seed_list,
                   methods_vector    = script_params$methods_vector,
                   cellchat_nperms   = script_params$cellchat_nperms,
                   sink_output       = script_params$sink_output,
-                  liana_warnings    = script_params$liana_warnings)
+                  liana_warnings    = script_params$liana_warnings,
+                  
+                  sink_logfile      = script_params$sink_logile,
+                  warning_logfile   = script_params$warning_logfile)
 
 #------------------------------------------------------------------------------#
 # D. Extract Results -----------------------------------------------------------
@@ -248,29 +296,12 @@ if("metadata" %in% script_params$outputs == TRUE) {
   # We iterate over every permutation seed
   for (seed in names(script_params$master_seed_list)) {
     
-    # Within every seed, grab the three items below and store them
-    
     # Mark the runtime with the iteration it belongs to
     name <- str_glue("Runtime", "_", seed)
     # Grab the runtime from the metadata and save it as its own sublist
     restructured_results[["runtime"]][[name]] <-      # new hierarchy
       results[[seed]][["metadata"]][["runtime"]]      # old hierarchy
     
-    
-    # Mark the log save path (if it exists) with the iteration it belongs to
-    name <- str_glue("Sunk_log_save_path", "_", seed)
-    # Grab the log save path from the metadata and save it within a new metadata
-    # hierarchy
-    restructured_results[["metadata"]][["sunk_log_save_path"]][[name]] <-
-      results[[seed]][["metadata"]][["sunk_log_save_path"]]
-    
-    
-    # Mark the log save path (if it exists) with the iteration it belongs to   
-    name <- str_glue("Liana_warning_save_path", "_", seed)
-    # Grab the log save path from the metadata and save it within a new metadata
-    # hierarchy
-    restructured_results[["metadata"]][["liana_warning_save_path"]][[name]] <-
-      results[[seed]][["metadata"]][["liana_warning_save_path"]]
 
   }
 
@@ -349,12 +380,11 @@ runtime <- runtime               %>%
 
 
 
-metadata[["runtime"]] <- runtime
+
 
 
 # remove unnecessary variables
-rm(runtime,
-   runtime_numeric, 
+rm(runtime_numeric, 
    step_duration, 
    time_elapsed, 
    runtime_labels,
@@ -364,16 +394,33 @@ rm(runtime,
 
 
 
+# Integrate Metadata to script params
+
+script_params[["metadata"]][["runtime"]]      <- runtime
+script_params[["metadata"]][["Session_Info"]] <- sessionInfo()
+
+if(script_params$sink_output == TRUE) {
+  
+  script_params$metadata[["sink_logfile"]] <- script_params[["sink_logfile"]]
+
+}
+
+if(script_params$liana_warnings == "divert") {
+  
+  script_params$metadata[["warning_logfile"]] <- script_params[["warning_logfile"]]
+  
+}
+
+
+script_params[["sink_logfile"]]    <- NULL
+script_params[["warning_logfile"]] <- NULL
+script_params[["Session_Info"]]    <- NULL
 
 
 
 
 
 
-# Remove uneccesary Parameters
-rm(number_ranks, cellchat_nperms, feature_type,
-   outputs, preserve_topology, run_mode, save_results, sink_output,
-   testdata_type)
 
 
 # Reorganize Outputs for Top_ranks_overlaps
