@@ -181,12 +181,9 @@
   #' ever.
   #'
   #' @param master_seed  At some stages when diluting  a resource, randomness
-  #' is at play. There are four stages where a random sample is taken in this
-  #' function (and its subfunctions). Once when resource is subset to produce
-  #' resource_dilute, twice in random_Dilute() and once in preserve_Dilute().
-  #' Using master_seed, the function will produce a unique seed on each of
-  #' these occasions, making sure the function runs the same every time. The
-  #' master seed must be an integer, and is floored into one in the function.
+  #' is at play. Setting a master seed will ensure that the function runs the
+  #' same way every time. Each instance of randomness within the scope of this
+  #' function will run reproducibly.
   #'
   #' @return Returns a tibble that can be used as a custom OmniPath resource for
   #' liana_wrap and the call_method functions but has a certain (marked)
@@ -199,10 +196,16 @@
                               preserve_topology,
                               data_set,
                               feature_type,
-                              verbose = TRUE,
-                              master_seed = 900)         {
-    ## 0. Sanitize master_seed input
-    master_seed <- floor(master_seed)
+                              verbose = TRUE, 
+                              master_seed)         {
+    
+    ## 0. Setting the Seed
+    {
+      # We set the seed once here, all functions using randomness within the scope
+      # of this function will now run reproducibly.
+      set.seed(master_seed)
+    }
+
     
     ## 1. Splitting the Resource
     {
@@ -245,7 +248,6 @@
       
       # If we dilute dilution_number of rows dilution_prop will be met
       # Copy dilution_number rows at random from resource_bottom...
-      set.seed(seed = (master_seed + 0.1)*10)
       resource_dilute <-
         slice_sample(resource_bottom, n = dilution_number)
       
@@ -299,8 +301,7 @@
       if (preserve_topology == FALSE) {
         resource_dilute <- random_Dilute(
           resource_dilute = resource_dilute,
-          gene_name_list  = gene_name_list,
-          master_seed     = master_seed
+          gene_name_list  = gene_name_list
         )
         
       }
@@ -310,8 +311,7 @@
         resource_dilute <-
           preserve_Dilute(
             resource_dilute = resource_dilute,
-            gene_name_list  = gene_name_list,
-            master_seed     = master_seed
+            gene_name_list  = gene_name_list
           )
         
       }
@@ -847,6 +847,9 @@
   #' Beyond these three rules interaction topology is random. This method
   #' requires less genes to work with than other methods, and if a solution in
   #' the above constraints is possible, this method will always find it.
+  #' 
+  #' The randomness within this function is controlled by the master_seed set in
+  #' dilute_Resource().
   #'
   #' @param resource_dilute The resource (as a tibble) which you would like to
   #' falsify / dilute with random gene relationships. Must have a
@@ -857,24 +860,13 @@
   #' @param gene_name_list A list of gene names from which to generate random
   #' pairwise relationships.
   #'
-  #' @param master_seed This method has two instances of randomness. By
-  #' supplying a master_seed the function will always run the same way. The same
-  #' master seed can be used here as is used elsewhere; every time randomness
-  #' is employed the master_seed is used to calculate a globally unique seed for
-  #' that instance of usage.  The master seed must be an integer, and is floored
-  #' into one in the function.
-  #'
   #' @return Returns a tibble that can be used as a custom OmniPath resource for
   #' liana_wrap and the call_method functions but has is entirely made up of
   #' random interactions, which are all marked.
   
   
-  random_Dilute <- function (resource_dilute,
-                             gene_name_list,
-                             master_seed = 900) {
-    # Sanitize master_seed input
-    master_seed <- floor(master_seed)
-    
+  random_Dilute <- function (resource_dilute, gene_name_list) {
+
     # This method works by generating random interactions from gene_name_list.
     # Because OmniPath has a low overlap of sources and targets, i.e. few
     # gene products that are both ligands and receptor, we split
@@ -884,7 +876,6 @@
     
     # Random sample for source_gene_list to avoid any ordering bias of
     # gene_name_list
-    set.seed(seed = (master_seed + 0.2)*10)
     source_gene_list <- sample(gene_name_list,
                                size = ceiling(length(gene_name_list) / 2))
     
@@ -939,7 +930,6 @@
     # always find a solution if a solution with our criteria is possible.
     
     # We sample without replacing because we don't want duplicates.
-    set.seed(seed = (master_seed + 0.3)*10)
     resource_dilute[c("source_genesymbol", "target_genesymbol")] <-
       slice_sample(diluted_ST_interactions, n = nrow(resource_dilute))
     
@@ -968,6 +958,9 @@
   #' topology is 100 % preserved. However, if the output was just a subset of
   #' a resource as in dilute_Resource(), the overall topology is only
   #' semi-preserved.
+  #' 
+  #' The randomness within this function is controlled by the master_seed set in
+  #' dilute_Resource().
   #'
   #' @param resource_dilute The resource (as a tibble) which you would like to
   #' falsify / dilute with random gene relationships. Must have a
@@ -979,22 +972,11 @@
   #' original gene names from resource_dilute will be wholly replaced with the
   #' gene names in this list.
   #'
-  #' @param master_seed This method has one instance of randomness. By supplying
-  #' master_seed the function will always run the same way. The same master seed
-  #' can be used here as is used elsewhere; every time randomness is employed
-  #' the master_seed is used to calculate a globally unique seed for that
-  #' instance of usage. The master seed must be an integer, and is floored into
-  #' one in the function.
-  #'
   #' @return Returns a tibble that can be used as a custom OmniPath resource for
   #' liana_wrap and the call_method functions but has is entirely made up of
   #' diluted interactions, which are all marked.
   
-  preserve_Dilute <- function (resource_dilute,
-                               gene_name_list,
-                               master_seed) {
-    # Sanitize master_seed input
-    master_seed <- floor(master_seed)
+  preserve_Dilute <- function (resource_dilute, gene_name_list) {
     
     # This method creates a dictionary, where every real gene in
     # resource_dilute gets a unique fake counterpart from gene_name_list.
@@ -1026,7 +1008,6 @@
     
     # We sample to avoid ordering bias in gene_name_list. We sample as many
     # genes as are in resource_genes to create our 1:1 dictionary.
-    set.seed(seed =  (master_seed + 0.4)*10)
     dilution_genes <- unlist(sample(gene_name_list,
                                     size = length(resource_genes)))
     
@@ -1131,6 +1112,8 @@
     } #end of function
   
   
+}
+
 # cellchat_rank_overlap()
 {
   #' Takes get_n_top_ranks outputs that have an LR_ID and determines their 
