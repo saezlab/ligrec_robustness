@@ -465,16 +465,39 @@
   }
   
   for (row in 1:(length(dilution_props)+1)) {
+  # 4.2 Reformat Metadata
+  {
+    # Create a metadata subsection of script_params and assign it runtime
+    script_params[["metadata"]][["runtime"]]      <- runtime
     
     mean_overlap <- mean(as.numeric(
       top_ranks_overlaps[row, grepl(method, names(top_ranks_overlaps))]))
+    # If output was sunk, store the file path to metadata
+    if(script_params$sink_output == TRUE) {
+      
+      script_params$metadata[["sink_logfile"]] <- 
+        script_params[["sink_logfile"]]
+      
+    }
     
     sd_overlap   <- sd(as.numeric(
       top_ranks_overlaps[row, grepl(method, names(top_ranks_overlaps))]))
+    # If warnings were diverted, store the file path to metadata 
+    if(script_params$liana_warnings == "divert") {
+      
+      script_params$metadata[["warning_logfile"]] <- 
+        script_params[["warning_logfile"]]
+      
+    }
     
     vector_mean <- c(vector_mean, mean_overlap)
     vector_sd   <- c(vector_sd,   sd_overlap)
+    # Remove any file paths and session info outside of metadata
+    script_params[["sink_logfile"]]    <- NULL
+    script_params[["warning_logfile"]] <- NULL
     
+    # Remove runtime now that it's a part of script_params$metadata
+    rm(runtime)
   }
   
   top_ranks_aggreg_mean[[str_glue(method, "_mean")]] <- vector_mean
