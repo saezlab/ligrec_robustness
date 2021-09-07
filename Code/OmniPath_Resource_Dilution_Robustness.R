@@ -277,6 +277,13 @@ print_Title(str_glue("Iteration ",
   }
 
   
+  if (length(methods_vector) == 1) {
+    
+    liana_results_OP_0 <- list(liana_results_OP_0)
+    
+    names(liana_results_OP_0) <- methods_vector
+  
+  }
   
   
   
