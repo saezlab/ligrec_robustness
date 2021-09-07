@@ -386,21 +386,6 @@ print_Title(str_glue("Iteration ",
   # multiplied by each dilution step, we will turn our data sets into named 
   # lists sorted by method and sub categorized by dilution.
   
-  
-  # define dilution proportions
-  # dilution props is a user defined sequence in the setup section
-  dilution_names <- c()
-  
-  for (i in dilution_props) {
-    dilution_names <- 
-      c(dilution_names, str_glue("OmniPath_", as.character(i*100)))
-  }
-  
-  dilution_props <- as.list(dilution_props)
-  names(dilution_props) <- dilution_names
-  
-  rm(dilution_names, i)
-  
   #relist all our data into three concise named lists of named lists
   resources_OP <- list("call_connectome" = list(OmniPath_0 = OmniPath_0),
                        "call_natmi"      = list(OmniPath_0 = OmniPath_0),
