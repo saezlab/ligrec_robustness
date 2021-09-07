@@ -464,14 +464,11 @@
     
   }
   
-  for (row in 1:(length(dilution_props)+1)) {
   # 4.2 Reformat Metadata
   {
     # Create a metadata subsection of script_params and assign it runtime
     script_params[["metadata"]][["runtime"]]      <- runtime
     
-    mean_overlap <- mean(as.numeric(
-      top_ranks_overlaps[row, grepl(method, names(top_ranks_overlaps))]))
     # If output was sunk, store the file path to metadata
     if(script_params$sink_output == TRUE) {
       
@@ -480,8 +477,6 @@
       
     }
     
-    sd_overlap   <- sd(as.numeric(
-      top_ranks_overlaps[row, grepl(method, names(top_ranks_overlaps))]))
     # If warnings were diverted, store the file path to metadata 
     if(script_params$liana_warnings == "divert") {
       
@@ -490,8 +485,6 @@
       
     }
     
-    vector_mean <- c(vector_mean, mean_overlap)
-    vector_sd   <- c(vector_sd,   sd_overlap)
     # Remove any file paths and session info outside of metadata
     script_params[["sink_logfile"]]    <- NULL
     script_params[["warning_logfile"]] <- NULL
@@ -500,182 +493,289 @@
     rm(runtime)
   }
   
-  top_ranks_aggreg_mean[[str_glue(method, "_mean")]] <- vector_mean
-  top_ranks_aggreg_sd[[str_glue(method, "_sd")]]     <- vector_sd
 }
-
-agg_top_ranks_overlap_mean <- as_tibble(top_ranks_aggreg_mean) 
-
-agg_top_ranks_overlap_sd   <- as_tibble(top_ranks_aggreg_sd) 
-
-agg_top_ranks <- tibble(agg_top_ranks_overlap_mean,
-                        agg_top_ranks_overlap_sd,
-                        .name_repair = c("universal"))
-
-agg_top_ranks <- agg_top_ranks %>%
-  mutate(dilution_prop = c(0, dilution_props))  %>%
-  unnest(cols = c(dilution_prop))               %>%
-  relocate("dilution_prop")
 
 
 #------------------------------------------------------------------------------#
-# 4. Visualizing the results -------------------------------------------------
-{ 
-
+# 5. Aggregate top_ranks_analysis ----------------------------------------------
+{
+  complete_top_ranks_overlap <- top_ranks_analysis$Overlap %>%
+    bind_rows() 
   
-  # 4.1 Plotting, labeling and saving top_ranks_overlap 
+  seed_assignment <- sort(rep(1:length(script_params$master_seed_list),
+                              length(script_params$dilution_props) +1 ))
+  
+  complete_top_ranks_overlap <- complete_top_ranks_overlap %>%
+    mutate("Seed" = seed_assignment) %>%
+    arrange(dilution_prop) %>%
+    pivot_longer(cols = script_params$methods_vector, names_to = "Method") %>%
+    rename("Overlap" = value) 
+  
+  rm(seed_assignment)
+  View(complete_top_ranks_overlap)
+  
+
+}
+
+
+
+#------------------------------------------------------------------------------#
+# 6. Plotting of Aggregate Results ---------------------------------------------
+{
+  # Preparing Plotting Inputs
   {
+    # We format 
+    alpha <- 0.4
     
     
-    # The plot is better in percent than proportion
-    tr_overlap_for_plot <-  agg_top_ranks * 100
+    tr_overlap_for_plot <-  complete_top_ranks_overlap  %>%
+      as.data.frame() %>%
+      mutate(dilution_prop = dilution_prop * 100) %>%
+      mutate(Overlap       = Overlap       * 100) %>%
+      as_tibble()     %>%
+      drop_na()
+    
     
     # Automatically assemble a file name and plot subtitle
-    if (preserve_topology == FALSE) {
+    if (script_params$preserve_topology == FALSE) {
       
-      topology_comment <- "using random_Dilute()"
+      topology_comment <- "random_Dilute()"
       
-    } else if (preserve_topology == TRUE) {
+    } else if (script_params$preserve_topology == TRUE) {
       
-      topology_comment <- "using preserve_Dilute()"
+      topology_comment <- "preserve_Dilute()"
       
     }
     
-    plotting_subtitle <- str_glue(feature_type,
-                                  " dilution, top ",
-                                  as.character(median(unlist(number_ranks))),
-                                  " ranks, ",
-                                  testdata_type,
-                                  " data, ",
-                                  run_mode,
-                                  " results, ",
-                                  topology_comment,
-                                  ", ",
-                                  length(master_seed_list),
-                                  " permutations")
+    plotting_caption <- 
+      str_glue("This plot was created using the ",
+               script_params$testdata_type,
+               " data. Dilution was performed using ",
+               script_params$feature_type,
+               " features and the ",
+               topology_comment,
+               " function. \n",
+               "The dilution occured in ",
+               (script_params$dilution_props[[2]] -
+                  script_params$dilution_props[[1]]) * 100,
+               " % increments up to a maximum of ",
+               max(tr_overlap_for_plot$dilution_prop),
+               " %. \n\n",
+               "The overlap was compared between the ",
+               as.character(median(unlist(script_params$number_ranks))),
+               " highest ranked interactions over ",
+               length(script_params$master_seed_list),
+               " permutations."
+               )
+               
     
-    plot_png_name     <- str_glue(run_mode,
-                                  "_",
-                                  testdata_type, 
-                                  "_top",
-                                  as.character(median(unlist(number_ranks))),
-                                  "_res",
-                                  as.character(length(dilution_props)),
-                                  "_",
-                                  feature_type,
-                                  "_dil_on_",
-                                  as.character(Sys.Date()),
-                                  ".png")
+    if (script_params$run_mode == "trial_run") {
+      plotting_caption <- 
+        str_glue(plotting_caption, "   --   [TRIAL RUN]")
+    }
     
-    # Plot top_ranks_overlap with lines and points at each value
-    overlap_plot <-  ggplot(data = tr_overlap_for_plot) + 
-      geom_line(mapping = aes(dilution_prop, 
-                              call_connectome_mean, 
-                              color =  "Connectome")) +
-      
-      geom_line(mapping = aes(dilution_prop, 
-                              call_natmi_mean, 
-                              color = "NATMI")) + 
-      
-      geom_line(mapping = aes(dilution_prop,
-                              call_italk_mean, 
-                              color = "iTALK")) +
-      
-      geom_line(mapping = aes(dilution_prop, 
-                              call_sca_mean, 
-                              color = "SCA")) +
-      
-      geom_line(mapping = aes(dilution_prop, 
-                              cellchat_mean, 
-                              color = "CellChat")) +
-      
-      
-      
-      geom_point(mapping = aes(dilution_prop, 
-                               call_connectome_mean, 
-                               color =  "Connectome")) +
-      
-      geom_point(mapping = aes(dilution_prop,
-                               call_natmi_mean, 
-                               color = "NATMI")) +
-      
-      geom_point(mapping = aes(dilution_prop, 
-                               call_italk_mean,
-                               color = "iTALK")) +
-      
-      geom_point(mapping = aes(dilution_prop, 
-                               call_sca_mean, 
-                               color = "SCA")) +
-      
-      geom_point(mapping = aes(dilution_prop, 
-                               cellchat_mean, 
-                               color = "CellChat")) +
-      
+    
 
-      geom_errorbar(aes(ymin = call_connectome_mean - call_connectome_sd,
-                        ymax = call_connectome_mean + call_connectome_sd,
-                        x = dilution_prop), 
-                    width=.2,
-                    position=position_dodge(0.05)) + 
-      
-      geom_errorbar(aes(ymin = call_natmi_mean - call_natmi_sd,
-                        ymax = call_natmi_mean + call_natmi_sd,
-                        x = dilution_prop), 
-                    width=.2,
-                    position=position_dodge(0.05)) + 
-      
-      geom_errorbar(aes(ymin = call_italk_mean - call_italk_sd,
-                        ymax = call_italk_mean + call_italk_sd,
-                        x = dilution_prop), 
-                    width=.2,
-                    position=position_dodge(0.05)) + 
-      
-      geom_errorbar(aes(ymin = call_sca_mean - call_sca_sd,
-                        ymax = call_sca_mean + call_sca_sd,
-                        x = dilution_prop), 
-                    width=.2,
-                    position=position_dodge(0.05)) + 
-      
-      geom_errorbar(aes(ymin = cellchat_mean - cellchat_sd,
-                        ymax = cellchat_mean + cellchat_sd,
-                        x = dilution_prop), 
-                    width=.2,
-                    position=position_dodge(0.05)) + 
+  }
+
+  
+  # Generating and printing Plots
+  {
+    plot_line <- 
+      ggplot(data = tr_overlap_for_plot, aes(dilution_prop,
+                                             Overlap,
+                                             group = Method,
+                                             color = Method)) + 
       
       
+      geom_point(alpha = alpha) +
+      stat_summary(alpha = 0.6,
+                   fun   = mean, 
+                   geom  = "line") +
       
-      # Show full breadth of 100-0 percent overlap
-      ylim(0, 100) +
+      
+      ylim(0, 105) +
       
       ggtitle("Robustness of Method Predictions") +
       ylab("Overlap of Top Ranks [%]") +
       xlab("Dilution of Resource [%]") +
-      labs(subtitle = plotting_subtitle,
-           color = "Method")
-    
-    
-    
-    # Print the Plot
-    print(overlap_plot)
-    
-    # Save the plot automatically to the outputs folder, if desired
-    if (save_results) {
+      labs(subtitle = "Point scatter plot.",
+           caption = plotting_caption,
+           color = "Method") +
       
-      ggsave(plot_png_name, 
-             height = 5, width = 8, 
-             path = "Outputs")
+      theme_bw() + ##########################################
       
-      print(str_glue("Plot saved at ~/Outputs/", plot_png_name, "."))
+      theme(plot.caption = element_text(hjust = 0),
+            legend.position = "bottom")
+    
+    
+    
+    
+    
+    
+    plot_box <- 
+      ggplot(data = tr_overlap_for_plot, aes(x = dilution_prop, 
+                                             y = Overlap, 
+                                             group = dilution_prop,
+                                             color = Method)) + 
+      geom_boxplot(outlier.shape = NA) + 
+      geom_point(alpha = alpha) + 
+
+      scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0,100)) +
+      # ylim(0, 100) +
+      
+      ggtitle("Robustness of Method Predictions") +
+      ylab("Overlap of Top Ranks [%]") +
+      xlab("Dilution of Resource [%]") +
+      labs(subtitle = "Boxplot by Method.",
+           caption = plotting_caption,
+           color = "Method") +
+      
+       theme_bw() + ##########################################
+      
+      
+      theme(plot.caption = element_text(hjust = 0),
+            legend.position = "bottom") +     
+      
+      facet_grid(~Method)
+    
+    
+    
+    print(plot_line)
+    print(plot_box)
+  }
+  
+  # Removing Clutter
+#  rm(tr_overlap_for_plot, alpha, plotting_caption,topology_comment)
+  
+}
+
+
+
+#------------------------------------------------------------------------------#
+# 7. Saving Results ------------------------------------------------------------
+{
+  # Save the plot automatically to the outputs folder, if desired
+  if (script_params$save_results == TRUE) {
+    if (script_params$run_mode == "real") {
+      test_run_comment <- ""
+      
+    } else if (script_params$run_mode == "trial_run") {
+      test_run_comment <- "TRIAL_RUN_"
       
     }
     
-    # Remove unnecessary variables
-    rm(tr_overlap_for_plot, overlap_plot, plotting_subtitle, topology_comment)
+    if (script_params$preserve_topology == FALSE) {
+      topology_comment <- "_random_topology_"
+      
+    } else if (script_params$preserve_topology == TRUE) {
+      topology_comment <- "_preserved_topology_"
+      
+    }
+    
+    # Define the time of run to uniquely tag every save file
+    time_of_run <-  Sys.time()%>%
+      as.character()       %>%
+      gsub(':', '_', .)    %>% 
+      gsub('-', '_', .)    %>% 
+      gsub(' ', '_', .)
+    
+    # Generate the filepaths to save the data under
+    box_plot_png_name <-
+      str_glue(
+        test_run_comment,
+        "Barplot_Resource_Dilution_",
+        script_params$testdata_type,
+        topology_comment,
+        script_params$feature_type,
+        "_top",
+        as.character(median(unlist(
+          script_params$number_ranks
+        ))),
+        "_",
+        time_of_run,
+        ".png"
+      )
+    
+    line_plot_png_name <-
+      str_glue(
+        test_run_comment,
+        "Lineplot_Resource_Dilution_",
+        script_params$testdata_type,
+        topology_comment,
+        script_params$feature_type,
+        "_top",
+        as.character(median(unlist(
+          script_params$number_ranks
+        ))),
+        "_",
+        time_of_run,
+        ".png"
+      )
     
     
+    env_save_path <- 
+      str_glue(
+        "Outputs/",
+        test_run_comment,
+        "DilutionEnv_",
+        script_params$testdata_type,
+        topology_comment,
+        script_params$feature_type,
+        "_top",
+        as.character(median(unlist(
+          script_params$number_ranks
+        ))),
+        "_",
+        time_of_run,
+        ".RData"
+      )
+    
+    env_save_path
     
     
-  } # end of subpoint
-  
- }
-
+    # Save both plots
+    ggsave(
+      plot = plot_box,
+      box_plot_png_name,
+      height = 5,
+      width = 8,
+      path = "Outputs"
+    )
+    
+    ggsave(
+      plot = plot_line,
+      line_plot_png_name,
+      height = 5,
+      width = 8,
+      path = "Outputs"
+    )
+    
+    
+    # Store save locations for plots and session info in script_params metadata
+    script_params$metadata[["box_plot_png_name"]]  <- box_plot_png_name
+    script_params$metadata[["line_plot_png_name"]] <- line_plot_png_name
+    script_params$metadata[["env_save_path"]]      <- env_save_path
+    
+    script_params$metadata[["Session_Info"]]       <- sessionInfo
+    
+    # Remove clutter
+    rm(box_plot_png_name, line_plot_png_name, env_save_path, test_run_comment, 
+       topology_comment, time_of_run)
+    
+    
+    # Save R environment and all the results within it
+    save.image(file = script_params$metadata$env_save_path)
+    
+    # Let the user know where everything was stored.
+    print(str_glue("Box Plot saved at ~/Outputs/", 
+                   script_params$metadata$box_plot_png_name, "."))
+    
+    print(str_glue("Line Plot saved at ~/Outputs/", 
+                   script_params$metadata$line_plot_png_name, "."))
+    
+    print(str_glue("Environment saved at ~/", 
+                   script_params$metadata$env_save_path, "."))
+    
+  }
+}
