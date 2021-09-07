@@ -456,3 +456,9 @@ for (method in methods_vector){
            master_seed       = master_seed)
   
 }
+
+
+
+## 14. Check if all the testdata is the same ----
+
+lapply(testdata, all.equal, testdata$Testdata_Seed_1)
