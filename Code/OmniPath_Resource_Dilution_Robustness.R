@@ -60,14 +60,11 @@
 #' 500 CCI's are considered relevant and that these 500 are the ones that are to
 #' be compared between the dilutions.
 #' 
-#' @param master_seed  At some stages when diluting  a resource, randomness 
-#' is at play. There are four stages where a random sample is taken in 
-#' resource_Dilute() Using master_seed, resource_Dilute() will produce a unique 
-#' seed on each of these occasions, making sure the function runs the same every
-#' time. Every master seed is one permutation of all the possible dilutions
-#' that could've been given our parameters, when iterating this function to get
-#' multiple permutations, master_seed is what is iterated over. The master seed
-#' must be an integer, and is floored into one in the function.
+#' @param master_seed  At some stages when diluting  a resource, randomness
+#' is at play. Setting a master seed will ensure that dilute_Resource(), the 
+#' function that dilutes the resources, runs the same way every time. Each 
+#' instance of randomness within the scope of dilute_Resource() will run 
+#' reproducibly.
 #' 
 #' @param methods_vector Which methods should the function run? Choose from
 #' "call_connectome", "call_natmi", "call_italk", "call_sca" and "cellchat".
