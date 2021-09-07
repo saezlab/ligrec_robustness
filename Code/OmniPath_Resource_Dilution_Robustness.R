@@ -303,10 +303,26 @@ print_Title(str_glue("Iteration ",
   
   for (method in methods_vector){
     
-    top_ranks_OP_0[[method]] <- get_top_n_ranks(data_set = 
-                                                  liana_results_OP_0[[method]],
-                                                top_n = number_ranks[[method]],
-                                                method = method)
+    # Because cellchat produces so many interactions all tied for 0, we need
+    # to cut with ties
+    if(method == "cellchat") {
+      
+      top_ranks_OP_0[[method]] <- 
+        get_top_n_ranks(data_set  = liana_results_OP_0[[method]],
+                        top_n     = number_ranks[[method]],
+                        method    = method,
+                        with_ties = TRUE)
+      
+    } else {
+      
+      top_ranks_OP_0[[method]] <- 
+        get_top_n_ranks(data_set  = liana_results_OP_0[[method]],
+                        top_n     = number_ranks[[method]],
+                        method    = method,
+                        with_ties = FALSE)
+      
+    }
+
     
   }
   
@@ -642,9 +658,14 @@ print_Title(str_glue("Iteration ",
     lapply(liana_results_OP$call_sca[-1], get_top_n_ranks, 
            method = "call_sca", top_n = number_ranks$call_sca)  
   
+  # Because cellchat produces so many interactions all tied for 0, we need
+  # to cut with ties
   top_dilutions_OP[["cellchat"]] <- 
-    lapply(liana_results_OP$cellchat[-1], get_top_n_ranks, 
-           method = "cellchat", top_n = number_ranks$cellchat)  
+    lapply(liana_results_OP$cellchat[-1], 
+           get_top_n_ranks, 
+           method = "cellchat", 
+           top_n = number_ranks$cellchat,
+           with_ties = TRUE)  
   
   
   # This list could be filtered to only include results for methods in 
@@ -738,10 +759,22 @@ print_Title(str_glue("Iteration ",
   
   for (method in methods_vector) {
     
-    overlaps[[method]] <- 
-      lapply(top_ranks_OP[[method]], 
-             rank_overlap, 
-             main_ranks = top_ranks_OP[[method]]$OmniPath_0)
+    if (method == "cellchat") {
+      
+      overlaps[[method]] <- 
+        lapply(top_ranks_OP[[method]], 
+               cellchat_rank_overlap, 
+               main_ranks = top_ranks_OP[[method]]$OmniPath_0)
+      
+    } else {
+      
+      overlaps[[method]] <- 
+        lapply(top_ranks_OP[[method]], 
+               rank_overlap, 
+               main_ranks = top_ranks_OP[[method]]$OmniPath_0)
+      
+    }
+
   
   }
   
