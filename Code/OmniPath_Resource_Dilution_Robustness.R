@@ -268,7 +268,10 @@ print_Title(str_glue("Iteration ",
     
   }
 
-  
+  # If only one method is fed to liana_wrap(), the output data structure is
+  # different. So here we convert it to the same data structure that would 
+  # exist if multiple methods had been called, so the code below works
+  # properly for single method runs too.
   if (length(methods_vector) == 1) {
     
     liana_results_OP_0 <- list(liana_results_OP_0)
@@ -338,9 +341,9 @@ print_Title(str_glue("Iteration ",
     
   
   # Format OmniPath_0 to be easier to work with and to pair it down to the 
-  # columns relevant for the methods. Also add the isRandom column which 
-  # indicates whether an interaction has been randomly generated and the LR_Pair
-  # columns, which helps identify individual interactions
+  # columns relevant for the methods. Also add the isRandom column and the 
+  # LR_Pair column. IsRandom tracks  whether an interaction has been randomly 
+  # generated, LR_Pair helps identify individual interactions
   OmniPath_0 <- select_resource(c('OmniPath'))[["OmniPath"]] %>%
     select(source_genesymbol,
            target_genesymbol,
@@ -370,9 +373,9 @@ print_Title(str_glue("Iteration ",
   # This has no impact on the results, since the removed interactions can't be
   # evaluated by the methods as the necessary genes are missing.
   # The advantage here is that dilution later replaces genes from the resource
-  # with genes in the data set
-  # If we consider genes in the resource that are also represented in the data
-  # 'hits', then we are diluting the resource by inserting hits.
+  # with genes in the data set; if we consider genes in the resource that are 
+  # also represented in the data 'hits', then we are diluting the resource by 
+  # inserting hits.
   # Making sure OP only had hits to begin with ensures we dilute hits with 
   # other hits, a fairer comparison than the alternative, which would be 
   # diluting hits and non-hits from OP with hits from the data.
@@ -420,8 +423,6 @@ print_Title(str_glue("Iteration ",
          "call_sca"        = list(OmniPath_0 = top_ranks_OP_0$call_sca),
          "cellchat"        = list(OmniPath_0 = top_ranks_OP_0$cellchat))
   
-  # filter lists to only contain data relevant to the selected methods_vector
-  resources_OP     <- resources_OP[methods_vector]
   # filter lists to only contain data relevant to the selected method in 
   # methods_vector
   liana_results_OP <- liana_results_OP[methods_vector]
@@ -500,19 +501,18 @@ print_Title(str_glue("Iteration ",
   
   # 3.1 Reapply individual methods with diluted resources
   {
-  # results still growing somehow, don't know why (natmi and others)
-  # in some cases the defaults assosciated with liana_wrap are explicitly applied
   
   # Initialize a list for liana results using diluted resources
   liana_dilutions_OP <- list()
   
   runtime[["Resource Dilution"]] <- Sys.time()
   
-  # lapply liana wrap accross the diluted resources for every method 
   
   # NATMI results are contaminated with results from earlier runs if you
   # don't specify a special output folder for the results to go in
   
+  # lapply liana wrap once per method across all the diluted resources
+  natmi_output <-  Sys.time() %>%
     as.character()       %>%
     gsub(':', '-', .)    %>% 
     gsub(' ', '_', .)    %>%
