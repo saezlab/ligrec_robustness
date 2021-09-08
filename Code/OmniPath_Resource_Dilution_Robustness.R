@@ -395,15 +395,10 @@ print_Title(str_glue("Iteration ",
   
   # Since we are about to perform the same analysis in the steps above but 
   # multiplied by each dilution step, we will turn our data sets into named 
-  # lists sorted by method and sub categorized by dilution.
+  # lists sorted by method and sub categorized by dilution. Since the resource
+  # will be the same for each method, this list isn't subdivided by method.
   
-  #relist all our data into three concise named lists of named lists
-  resources_OP <- list("call_connectome" = list(OmniPath_0 = OmniPath_0),
-                       "call_natmi"      = list(OmniPath_0 = OmniPath_0),
-                       "call_italk"      = list(OmniPath_0 = OmniPath_0),
-                       "call_sca"        = list(OmniPath_0 = OmniPath_0),
-                       "cellchat"        = list(OmniPath_0 = OmniPath_0))
-  
+  resources_OP <- list("OmniPath_0" = OmniPath_0)
   
   
   liana_results_OP <- 
@@ -452,7 +447,7 @@ print_Title(str_glue("Iteration ",
     str_glue("2. Diluting Resources", "                   --  Iteration ", 
              master_seed))
   
-  # 2.1 Generate diluted Resources for all methods
+  # 2.1 Generate diluted Resources for all dilution proportions
   {
   
   
@@ -467,33 +462,22 @@ print_Title(str_glue("Iteration ",
   # Initiating a list of all dilutions
   dilutions_OP <- list()
   
-  # Iterate over every method, lapply over every dilution proportion
-  
-  for (method in methods_vector){
+  # lapply dilute_Resource() over every dilution proportion
+  dilutions_OP <- 
+    lapply(dilution_props, dilute_Resource, 
+           resource          = resources_OP$OmniPath_0, 
+           top_rank_list     = top_rank_list, 
+           preserve_topology = preserve_topology,
+           data_set          = testdata,
+           feature_type      = feature_type,
+           verbose           = TRUE, 
+           master_seed       = master_seed)
     
-    dilutions_OP[[method]] <- 
-      lapply(dilution_props, dilute_Resource, 
-             resource          = resources_OP[[method]]$OmniPath_0, 
-             top_rank_list     = top_rank_list, 
-             preserve_topology = preserve_topology,
-             data_set          = testdata,
-             feature_type      = feature_type,
-             verbose           = TRUE, 
-             master_seed       = master_seed)
-    
-  }
   
   
   
-  # Merge OP_0 with the rest of the dilutions, could use mapply but its less 
-  # consistent
-  for (method in methods_vector) {
-    for (dilution in names(dilution_props)) {
-      
-      resources_OP[[method]][[dilution]] <- dilutions_OP[[method]][[dilution]]
-      
-    }
-  }
+  # Add new dilutions to resources_OP
+  resources_OP <- append(resources_OP, dilutions_OP)
   
   
   # Remove uneccesary Variables
@@ -539,7 +523,7 @@ print_Title(str_glue("Iteration ",
     for (method in methods_vector) {
       
         liana_dilutions_OP[[method]] <-
-          lapply(resources_OP[[method]][-1], 
+          lapply(resources_OP[-1], 
                  liana_wrap,
                  seurat_object     = testdata,
                  method            = method,
@@ -563,7 +547,7 @@ print_Title(str_glue("Iteration ",
         {    
           
           liana_dilutions_OP[[method]] <-
-            lapply(resources_OP[[method]][-1], 
+            lapply(resources_OP[-1], 
                    liana_wrap,
                    seurat_object     = testdata,
                    method            = method,
@@ -590,7 +574,7 @@ print_Title(str_glue("Iteration ",
         {    
           
           liana_dilutions_OP[[method]] <-
-            lapply(resources_OP[[method]][-1], 
+            lapply(resources_OP[-1], 
                    liana_wrap,
                    seurat_object     = testdata,
                    method            = method,
@@ -715,7 +699,7 @@ print_Title(str_glue("Iteration ",
         top_ranks_OP[[method]][[dilution]] <- 
           top_ranks_OP[[method]][[dilution]] %>%
           mutate(isRandom = 
-                   !(LR_Pair %in% resources_OP[[method]]$OmniPath_0$LR_Pair))
+                   !(LR_Pair %in% resources_OP$OmniPath_0$LR_Pair))
         
         
       } else {
