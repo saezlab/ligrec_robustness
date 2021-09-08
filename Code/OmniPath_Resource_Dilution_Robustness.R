@@ -5,10 +5,10 @@
 #' needs to be iterated easily and conveniently. Please familiarize yourself 
 #' with the code before using this script, it is well commented throughout.
 #' 
-#' In brief, this script runs five LIANA methods from LIANA++ (call_connectome,
-#' call_natmi, call_italk, call_sca and cellchat) on one benchmarking data set
-#' and stores their predictions for which are the top most relevant CCIs
-#' occuring. The resource used is OmniPath.
+#' In brief, this script runs six LIANA methods from LIANA++ (call_connectome,
+#' call_squidpy, call_natmi, call_italk, call_sca and cellchat) on one 
+#' benchmarking data set and stores their predictions for which are the top most
+#' relevant CCIs occuring. The resource used is OmniPath.
 #' 
 #' Using this information, we use resource_Dilute() on OmniPath. This process 
 #' removes a proportion of interactions from OmniPath, and replaces them with
@@ -67,8 +67,9 @@
 #' reproducibly.
 #' 
 #' @param methods_vector Which methods should the function run? Choose from
-#' "call_connectome", "call_natmi", "call_italk", "call_sca" and "cellchat".
-#' Supply the argument in the form of e.g. c("call_conncectome, "call_italk").
+#' "call_connectome", "call_squidpy", "call_natmi", "call_italk", "call_sca" and
+#' "cellchat". Supply the argument in the form of e.g. 
+#' c("call_conncectome, "call_italk").
 #' 
 #' @param cellchat_nperms Cellchat is one of the slower methods, for test runs
 #' it may be useful to set this parameter to 10 to speed up the analysis.
@@ -108,11 +109,7 @@ dilution_Robustness <- function(testdata_type,
                                             "metadata", 
                                             "testdata"),
                                 
-                                methods_vector =  c('call_connectome',
-                                                    'call_natmi', 
-                                                    'call_italk',
-                                                    'call_sca',
-                                                    'cellchat'),
+                                methods_vector,
                                 cellchat_nperms = 100,
                                 sink_output     = FALSE,
                                 liana_warnings  = TRUE,
@@ -413,6 +410,7 @@ print_Title(str_glue("Iteration ",
   
   liana_results_OP <- 
     list("call_connectome" = list(OmniPath_0 = liana_results_OP_0$call_connectome),
+         "call_squidpy"    = list(OmniPath_0 = liana_results_OP_0$call_squidpy),
          "call_natmi"      = list(OmniPath_0 = liana_results_OP_0$call_natmi),
          "call_italk"      = list(OmniPath_0 = liana_results_OP_0$call_italk),
          "call_sca"        = list(OmniPath_0 = liana_results_OP_0$call_sca),
@@ -423,6 +421,7 @@ print_Title(str_glue("Iteration ",
   
   top_ranks_OP <- 
     list("call_connectome" = list(OmniPath_0 = top_ranks_OP_0$call_connectome),
+         "call_squidpy"    = list(OmniPath_0 = top_ranks_OP_0$call_squidpy),
          "call_natmi"      = list(OmniPath_0 = top_ranks_OP_0$call_natmi),
          "call_italk"      = list(OmniPath_0 = top_ranks_OP_0$call_italk),
          "call_sca"        = list(OmniPath_0 = top_ranks_OP_0$call_sca),
@@ -430,6 +429,8 @@ print_Title(str_glue("Iteration ",
   
   # filter lists to only contain data relevant to the selected methods_vector
   resources_OP     <- resources_OP[methods_vector]
+  # filter lists to only contain data relevant to the selected method in 
+  # methods_vector
   liana_results_OP <- liana_results_OP[methods_vector]
   top_ranks_OP     <- top_ranks_OP[methods_vector]
   
@@ -459,6 +460,7 @@ print_Title(str_glue("Iteration ",
   
   # Generating a unified top_rank_list
   top_rank_list <- unique(c(top_ranks_OP$call_connectome$OmniPath_0$LR_Pair,
+                            top_ranks_OP$call_squidpy$OmniPath_0$LR_Pair,
                             top_ranks_OP$call_natmi$OmniPath_0$LR_Pair,
                             top_ranks_OP$call_italk$OmniPath_0$LR_Pair,
                             top_ranks_OP$call_sca$OmniPath_0$LR_Pair,
@@ -645,6 +647,10 @@ print_Title(str_glue("Iteration ",
   top_dilutions_OP[["call_connectome"]] <- 
     lapply(liana_results_OP$call_connectome[-1], get_top_n_ranks, 
            method = "call_connectome", top_n = number_ranks$call_connectome)
+  
+  top_dilutions_OP[["call_squidpy"]] <- 
+    lapply(liana_results_OP$call_squidpy[-1], get_top_n_ranks, 
+           method = "call_squidpy", top_n = number_ranks$call_squidpy)
   
   top_dilutions_OP[["call_natmi"]] <-
     lapply(liana_results_OP$call_natmi[-1], get_top_n_ranks,
