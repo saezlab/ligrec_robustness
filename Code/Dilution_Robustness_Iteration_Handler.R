@@ -286,10 +286,9 @@
   # Initiate the restructured results list.
   restructured_results <- list()
   
-  # The three outputs mentioned here can all be formatted the same way
+  # The two outputs mentioned here can be formatted the same way
   # But only execute this code if that output is actually in results
   for(output in intersect(script_params$outputs, c("liana_results_OP",
-                                                   "resources_OP",
                                                    "top_ranks_OP"))) {
   
   # We need the name of the method, name of dilution and seed as coordinates to
@@ -318,6 +317,32 @@
     }
   }
   
+  
+  if ("resources_OP" %in% script_params$outputs == TRUE) {
+    
+    # We need the name of dilution and seed as coordinates to uniquely identify 
+    # the tibbles we want to transfer, so we iterate over every combination of 
+    # these two markers.
+    # Using these two markers, we identify a tibble, and then copy it over in
+    # a more convenient hierarchy to the restructure_results list. 
+      
+    # All the dilution names plus OmniPath_0
+    for(dilution_name in c("OmniPath_0", 
+                           names(script_params$dilution_props))) {
+      
+      for (seed in names(script_params$master_seed_list)) {
+        
+        # For tracking purposes we tack the seed name onto the data
+        name <- str_glue(dilution_name, "_",seed)
+        
+        # This top line is the hierarchy we are trying to achieve
+        restructured_results[[output]][[dilution_name]][[name]] <- 
+          results[[seed]][[output]][[dilution_name]]
+        # This lower line is the hierarchy as it is per default
+        
+      }
+    }
+  }
   
   
   # This code formats top_ranks_analysis outputs, but only if they are actually
