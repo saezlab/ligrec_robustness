@@ -512,7 +512,6 @@
     rename("Overlap" = value) 
   
   rm(seed_assignment)
-  View(complete_top_ranks_overlap)
   
 
 }
@@ -529,12 +528,19 @@
     
     
     tr_overlap_for_plot <-  complete_top_ranks_overlap  %>%
-      as.data.frame() %>%
+      as.data.frame()                             %>%
       mutate(dilution_prop = dilution_prop * 100) %>%
       mutate(Overlap       = Overlap       * 100) %>%
-      as_tibble()     %>%
-      drop_na()
+      as_tibble()                                 %>%
+      drop_na() 
     
+    tr_overlap_for_plot$Method <- tr_overlap_for_plot$Method %>%
+      str_replace("call_connectome", "Connectome")        %>%
+      str_replace("call_squidpy"   , "CellPhoneDB")       %>%
+      str_replace("call_natmi"     , "NATMI")             %>%
+      str_replace("call_italk"     , "iTALK")             %>%
+      str_replace("call_sca"       , "SingleCellSignalR") %>%
+      str_replace("cellchat"       , "CellChat") 
     
     # Automatically assemble a file name and plot subtitle
     if (script_params$preserve_topology == FALSE) {
@@ -594,7 +600,8 @@
                    geom  = "line") +
       
       
-      ylim(0, 105) +
+      scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0,100)) +
+      scale_x_continuous(breaks = seq(0, 100, 20), limits = c(0,100)) +
       
       ggtitle("Robustness of Method Predictions") +
       ylab("Overlap of Top Ranks [%]") +
@@ -603,7 +610,7 @@
            caption = plotting_caption,
            color = "Method") +
       
-      theme_bw() + ##########################################
+      theme_bw() +
       
       theme(plot.caption = element_text(hjust = 0),
             legend.position = "bottom")
@@ -622,7 +629,8 @@
       geom_point(alpha = alpha) + 
 
       scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0,100)) +
-      # ylim(0, 100) +
+      scale_x_continuous(breaks = seq(0, 100, 20)) +
+
       
       ggtitle("Robustness of Method Predictions") +
       ylab("Overlap of Top Ranks [%]") +
@@ -631,13 +639,13 @@
            caption = plotting_caption,
            color = "Method") +
       
-       theme_bw() + ##########################################
+       theme_bw() + 
       
       
       theme(plot.caption = element_text(hjust = 0),
             legend.position = "bottom") +     
       
-      facet_grid(~Method)
+      facet_wrap(~Method, nrow = 2, ncol = 3, scales = "free")
     
     
     
@@ -646,7 +654,7 @@
   }
   
   # Removing Clutter
-#  rm(tr_overlap_for_plot, alpha, plotting_caption,topology_comment)
+  rm(tr_overlap_for_plot, alpha, plotting_caption,topology_comment)
   
 }
 
@@ -684,7 +692,7 @@
     box_plot_png_name <-
       str_glue(
         test_run_comment,
-        "Barplot_Resource_Dilution_",
+        "Boxplot_Resource_Dilution_",
         script_params$testdata_type,
         topology_comment,
         script_params$feature_type,
@@ -738,7 +746,7 @@
     ggsave(
       plot = plot_box,
       box_plot_png_name,
-      height = 5,
+      height = 7.75,
       width = 8,
       path = "Outputs"
     )
@@ -746,7 +754,7 @@
     ggsave(
       plot = plot_line,
       line_plot_png_name,
-      height = 5,
+      height = 8.5,
       width = 8,
       path = "Outputs"
     )
