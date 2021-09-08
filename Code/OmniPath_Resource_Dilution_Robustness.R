@@ -403,38 +403,29 @@ print_Title(str_glue("Iteration ",
   
   resources_OP <- list("OmniPath_0" = OmniPath_0)
   
-  
-  liana_results_OP <- 
-    list("call_connectome" = list(OmniPath_0 = liana_results_OP_0$call_connectome),
-         "call_squidpy"    = list(OmniPath_0 = liana_results_OP_0$call_squidpy),
-         "call_natmi"      = list(OmniPath_0 = liana_results_OP_0$call_natmi),
-         "call_italk"      = list(OmniPath_0 = liana_results_OP_0$call_italk),
-         "call_sca"        = list(OmniPath_0 = liana_results_OP_0$call_sca),
-         "cellchat"        = list(OmniPath_0 = liana_results_OP_0$cellchat))
+  # Create a named methods list from methods_vector, when we map over the list 
+  # the names will be passed to the map output
+  methods_list        <- as.list(methods_vector)
+  names(methods_list) <- methods_vector
   
   
+  # Create a nested list, where each liana_result is listed by method and then
+  # dilution it was achieved at.
+  liana_results_OP <-
+    map(methods_list, function(method) {
+      list(OmniPath_0 = liana_results_OP_0[[method]])
+    })
   
+  # Create a nested list, where each top_ranks tibble is listed by method and
+  # then dilution it was achieved at.
+  top_ranks_OP <-
+    map(methods_list, function(method) {
+      list(OmniPath_0 = top_ranks_OP_0[[method]])
+    })
   
-  top_ranks_OP <- 
-    list("call_connectome" = list(OmniPath_0 = top_ranks_OP_0$call_connectome),
-         "call_squidpy"    = list(OmniPath_0 = top_ranks_OP_0$call_squidpy),
-         "call_natmi"      = list(OmniPath_0 = top_ranks_OP_0$call_natmi),
-         "call_italk"      = list(OmniPath_0 = top_ranks_OP_0$call_italk),
-         "call_sca"        = list(OmniPath_0 = top_ranks_OP_0$call_sca),
-         "cellchat"        = list(OmniPath_0 = top_ranks_OP_0$cellchat))
+  # remove old data frames and methods_list, which we won't need for a while
+  rm(OmniPath_0, liana_results_OP_0, top_ranks_OP_0, methods_list)
   
-  # filter lists to only contain data relevant to the selected method in 
-  # methods_vector
-  liana_results_OP <- liana_results_OP[methods_vector]
-  top_ranks_OP     <- top_ranks_OP[methods_vector]
-  
-  
-  
-  # remove old data frames
-  rm(OmniPath_0, liana_results_OP_0, top_ranks_OP_0)
-  
-  
-    
   } # end of subpoint
   
 }
@@ -452,13 +443,21 @@ print_Title(str_glue("Iteration ",
   {
   
   
-  # Generating a unified top_rank_list
-  top_rank_list <- unique(c(top_ranks_OP$call_connectome$OmniPath_0$LR_Pair,
-                            top_ranks_OP$call_squidpy$OmniPath_0$LR_Pair,
-                            top_ranks_OP$call_natmi$OmniPath_0$LR_Pair,
-                            top_ranks_OP$call_italk$OmniPath_0$LR_Pair,
-                            top_ranks_OP$call_sca$OmniPath_0$LR_Pair,
-                            top_ranks_OP$cellchat$OmniPath_0$LR_Pair))
+  # Generating a unified top_rank_vector. We call it a list because that's what
+  # the dilute_Resource() parameter is called.
+    
+  # For each method in methods_vector we collect all the LR_Pairs from the top
+  # ranks. Then we reduce it down to unique LR_Pairs among them.
+  top_rank_list <- 
+    map(methods_vector, function(method) {
+      
+      top_ranks_OP[[method]]$OmniPath_0$LR_Pair 
+      
+    })       %>%
+    unlist() %>%
+    unique()
+  
+  
   
   # Initiating a list of all dilutions
   dilutions_OP <- list()
@@ -618,45 +617,38 @@ print_Title(str_glue("Iteration ",
   # 3.2 Get top_n_ranks for each method and dilution
   {
     
+  # Create a named methods list from methods_vector, when we map over the list 
+  # the names will be passed to the map output.
+  methods_list        <- as.list(methods_vector)
+  names(methods_list) <- methods_vector
+  # Filter out cellchat, it needs to be done separately
+  methods_list <- methods_list %>%
+    discard(methods_list %in% "cellchat")
   
-  # lapply get_top_n_ranks over the dilution stages and save results in 
-  # top_dilutions list
-  top_dilutions_OP <- list()
   
+  # map over every method except cellchat
+  top_dilutions_OP <- map(methods_list, function(method) {
+    
+    # Get the top_ranks from the liana_results for each dilution stage
+    # using get_top_n_ranks()
+    lapply(liana_results_OP[[method]][-1], 
+           get_top_n_ranks, 
+           method = method, 
+           top_n = number_ranks[[method]])
+    
+  })
   
-  top_dilutions_OP[["call_connectome"]] <- 
-    lapply(liana_results_OP$call_connectome[-1], get_top_n_ranks, 
-           method = "call_connectome", top_n = number_ranks$call_connectome)
-  
-  top_dilutions_OP[["call_squidpy"]] <- 
-    lapply(liana_results_OP$call_squidpy[-1], get_top_n_ranks, 
-           method = "call_squidpy", top_n = number_ranks$call_squidpy)
-  
-  top_dilutions_OP[["call_natmi"]] <-
-    lapply(liana_results_OP$call_natmi[-1], get_top_n_ranks,
-           method = "call_natmi", top_n = number_ranks$call_natmi)
-  
-  top_dilutions_OP[["call_italk"]] <- 
-    lapply(liana_results_OP$call_italk[-1], get_top_n_ranks, 
-           method = "call_italk", top_n = number_ranks$call_italk)  
-  
-  top_dilutions_OP[["call_sca"]] <- 
-    lapply(liana_results_OP$call_sca[-1], get_top_n_ranks, 
-           method = "call_sca", top_n = number_ranks$call_sca)  
   
   # Because cellchat produces so many interactions all tied for 0, we need
   # to cut with ties
   top_dilutions_OP[["cellchat"]] <- 
+    # Get the top_ranks from the liana_results for each dilution stage
+    # using get_top_n_ranks() while cutting with ties
     lapply(liana_results_OP$cellchat[-1], 
            get_top_n_ranks, 
            method = "cellchat", 
            top_n = number_ranks$cellchat,
            with_ties = TRUE)  
-  
-  
-  # This list could be filtered to only include results for methods in 
-  # methods_vector but it's about to be deleted anyway.
-  
   
   
   # Merge with undiluted results, could use mapply but its less consistent
@@ -670,11 +662,7 @@ print_Title(str_glue("Iteration ",
   }
   
   # Remove superfluous values
-  rm(top_dilutions_OP, method, dilution)
-  
-  
-  
-  
+  rm(top_dilutions_OP, method, dilution, methods_list)
   
   
   # Formatting of top ranks
