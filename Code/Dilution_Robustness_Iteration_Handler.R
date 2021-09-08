@@ -73,7 +73,6 @@
     # no squidpy until it works on windows.
     
     # Which top n of interactions should be considered top-ranked per method?
-    number_ranks   <- list("call_connectome" = 20, 
                            "call_natmi"      = 20,
                            "call_italk"      = 20,
                            "call_sca"        = 20,
@@ -336,8 +335,8 @@
         name <- str_glue(dilution_name, "_",seed)
         
         # This top line is the hierarchy we are trying to achieve
-        restructured_results[[output]][[dilution_name]][[name]] <- 
-          results[[seed]][[output]][[dilution_name]]
+        restructured_results[["resources_OP"]][[dilution_name]][[name]] <- 
+          results[[seed]][["resources_OP"]][[dilution_name]]
         # This lower line is the hierarchy as it is per default
         
       }
