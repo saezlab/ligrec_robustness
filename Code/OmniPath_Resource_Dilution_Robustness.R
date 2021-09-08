@@ -214,11 +214,9 @@ print_Title(str_glue("Iteration ",
   
   # NATMI results are contaminated with results from earlier runs if you
   # don't specify a special output folder for the results to go in
-  
-  natmi_output <-  Sys.time()           %>%
+  natmi_output <-  Sys.time() %>%
     as.character()       %>%
-    gsub(':', '_', .)    %>% 
-    gsub('-', '_', .)    %>% 
+    gsub(':', '-', .)    %>% 
     gsub(' ', '_', .)    %>%
     str_glue('Test_', .)
   
@@ -531,10 +529,8 @@ print_Title(str_glue("Iteration ",
   # NATMI results are contaminated with results from earlier runs if you
   # don't specify a special output folder for the results to go in
   
-  natmi_output <-  Sys.time()           %>%
     as.character()       %>%
-    gsub(':', '_', .)    %>% 
-    gsub('-', '_', .)    %>% 
+    gsub(':', '-', .)    %>% 
     gsub(' ', '_', .)    %>%
     str_glue('Test_', .)
   
