@@ -172,10 +172,9 @@
       # it. 
       
       # Define time of run and remove characters problematic for file names
-      time_of_run <- Sys.time()     %>%
+      time_of_run <-  Sys.time() %>%
         as.character()       %>%
-        gsub(':', '_', .)    %>% 
-        gsub('-', '_', .)    %>% 
+        gsub(':', '-', .)    %>% 
         gsub(' ', '_', .)
       
       # If necessary, create a log name, store it in script params, then remove
@@ -682,10 +681,9 @@
     }
     
     # Define the time of run to uniquely tag every save file
-    time_of_run <-  Sys.time()%>%
+    time_of_run <-  Sys.time() %>%
       as.character()       %>%
-      gsub(':', '_', .)    %>% 
-      gsub('-', '_', .)    %>% 
+      gsub(':', '-', .)    %>% 
       gsub(' ', '_', .)
     
     # Generate the filepaths to save the data under
