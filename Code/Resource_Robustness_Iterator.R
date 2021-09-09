@@ -38,88 +38,15 @@
 #------------------------------------------------------------------------------#
 # 1. Script  Parameters --------------------------------------------------------
 {
-  # 1.1 Define Script Parameters
-  {
-    # More information on most of these can be found in the resource_Robustness
-    # description.
-    
-    # Which scRNA data set do you want to use?
-    testdata_type  <- c("liana_test") # choose "liana_test" or "seurat_pbmc"
-    
-    # Should dilution be with any genes from testdata or most variable ones?
-    feature_type <- c("variable") # choose "generic" or "variable"
-    
-    # TRUE = preserve_Dilute(), FALSE = random_Dilute()
-    preserve_topology <- FALSE # Preserve topology after dilution or not?
-    
-    # Which proportions should the resources that are analysed have?
-    # have at least two else the plotting fails
-    dilution_props <- c(seq(0.40, 1.00, 0.40)) 
-    
+
     # How many permutations of dilution should be performed?
     master_seed_list <- as.list(c(1:2))
-    
-    # Which Outputs from resource_Robustness() do you want? Choose from:
-    # outputs = c("liana_results_OP", "resources_OP", "top_ranks_OP", 
-    #             "top_ranks_analysis","metadata", "testdata")
-    outputs = c("liana_results_OP", "resources_OP", "top_ranks_OP",
-                "top_ranks_analysis","metadata", "testdata")
-    
-    
-    # Which methods should resource_Robustness() use? Choose from:
-    # methods_vector <- c('call_connectome', 'call_squidpy', 'call_natmi', 
-    #                     'call_italk', 'call_sca', 'cellchat')
-    # Squidpy doesn't work on windows.
-    methods_vector <- c('call_connectome', 'call_natmi',
-                        'call_italk', 'call_sca', 'cellchat')
-    
-    # Which top n of interactions should be considered top-ranked per method?
-    number_ranks   <- list("call_connectome" = 20,
-                           "call_squidpy"    = 20,
-                           "call_natmi"      = 20,
-                           "call_italk"      = 20,
-                           "call_sca"        = 20,
-                           "cellchat"        = 20)
-    
-    cellchat_nperms <- 10 # number of cellchat permutations, default 100
     
     # A tag for your results that will mark them as a test run or serious data.
     run_mode <- "trial_run" # select between "trial_run" and "real"
     
     # should the results automatically be saved? TRUE or FALSE
     save_results <- TRUE # Saved under automatically generated name in Outputs
-    
-    sink_output <- FALSE # Should the entire output be redirected to a log file?
-    
-    # Should liana warnings be visible in output? 
-    liana_warnings <- "divert" # TRUE, FALSE, or "divert" to create a log file.
-  } # end of subpoint
-  
-  # 1.2 Process Script Parameters
-  {
-    
-    ## Process Dilution Proportions List
-    {
-      # By naming each dilution proportion we can use this to label data easily
-      # By formatting proportions as a list we can lapply over them conveniently
-      
-      # intitialize dilution names
-      dilution_names <- c()
-      
-      # Generate a dilution name for each proportion
-      for (i in dilution_props) {
-        dilution_names <- 
-          c(dilution_names, str_glue("OmniPath_", as.character(i*100)))
-      }
-      
-      # Convert dilution.proprs to a list and name it, creating a named list
-      dilution_props <- as.list(dilution_props)
-      names(dilution_props) <- dilution_names
-      
-      #remove clutter
-      rm(dilution_names, i)
-    }
-    
     
     ## Process Master Seed List
     {
@@ -139,113 +66,7 @@
       # Remove clutter
       rm(seed_names, seed)
     }
-    
-    
-    ## Initialize Script_Params
-    {
-      # Summarize all the above parameters into one compact item
-      script_params <- list("master_seed_list"  = master_seed_list,
-                            "dilution_props"    = dilution_props, 
-                            "number_ranks"      = number_ranks, 
-                            "feature_type"      = feature_type, 
-                            "methods_vector"    = methods_vector, 
-                            "testdata_type"     = testdata_type,
-                            "preserve_topology" = preserve_topology,
-                            
-                            "outputs"         = outputs,
-                            "cellchat_nperms" = cellchat_nperms, 
-                            "run_mode"        = run_mode, 
-                            "save_results"    = save_results,
-                            "sink_output"     = sink_output,
-                            "liana_warnings"  = liana_warnings,
-                            "sink_logfile"    = "",
-                            "warning_logfile" = "")
-      # Notice sink_logfile and warning_logfile, these are both variables that
-      # haven't been defined yet above, but based on whether or not they will
-      # be needed they will be generated and inserted into the blank spaces here
-      # later.
-    }
 
-    ## Define File Paths for Logs
-    {
-      # If they are required, we auto generate log filepaths here. The filepaths
-      # have the current time imminetnly before the lapply in them. Each lapply
-      # should be assigned to a unique log this way that has all iterations in
-      # it. 
-      
-      # Define time of run and remove characters problematic for file names
-      time_of_run <-  Sys.time() %>%
-        as.character()       %>%
-        gsub(':', '-', .)    %>% 
-        gsub(' ', '_', .)
-      
-      # If necessary, create a log name, store it in script params, then remove
-      # the leftover clutter
-      if(sink_output == TRUE) {
-        # The file name includes many script_params in it to be informative and
-        # unique.
-        sink_logfile <- str_glue(
-          "Outputs/Logs/Complete_Log_",
-          script_params$run_mode,
-          "_",
-          testdata_type,
-          "_top",
-          as.character(median(unlist(number_ranks))),
-          "_res",
-          as.character(length(dilution_props)),
-          "_",
-          feature_type,
-          "_dil_at_",
-          time_of_run,
-          ".txt"
-        )
-        
-        script_params[["sink_logfile"]] <- sink_logfile
-        
-        rm(sink_logfile)
-      }
-      
-      # If necessary, create a log name, store it in script params, then remove
-      # the leftover clutter
-      if(liana_warnings == "divert") {
-        # The file name includes many script_params in it to be informative and
-        # unique.
-        warning_logfile <- str_glue(
-          "Outputs/Logs/LIANA_warnings_",
-          script_params$run_mode,
-          "_",
-          testdata_type,
-          "_top",
-          as.character(median(unlist(number_ranks))),
-          "_res",
-          as.character(length(dilution_props)),
-          "_",
-          feature_type,
-          "_dil_at_",
-          time_of_run,
-          ".txt"
-        )
-        
-        script_params[["warning_logfile"]] <- warning_logfile
-        
-        rm(warning_logfile)
-      }
-    }
-
-    
-    ## Remove Clutter
-    {
-      # Since all the relevant args are stored in script_params now, we can delete
-      # all the random variables still scattered in the environment.
-      
-      rm(master_seed_list, dilution_props, number_ranks, feature_type, 
-         methods_vector, testdata_type, preserve_topology, outputs, 
-         cellchat_nperms, run_mode, save_results, sink_output, liana_warnings,
-         time_of_run)
-    }
-
-    
-    } # end of subpoint
 
 }   
 
@@ -261,29 +82,15 @@
   # and tally up their results. In this way, master_seed serves as an index too.
   
   # Apply resource_Robustness(), provide every argument but master_seed
-  results <- lapply(script_params$master_seed_list, 
-                    resource_Robustness,
+  results <- lapply(master_seed_list, 
+                    wrap_resource_Robustness)
                     
-                    testdata_type     = script_params$testdata_type,
-                    feature_type      = script_params$feature_type,
-                    preserve_topology = script_params$preserve_topology,
-                    dilution_props    = script_params$dilution_props,
-                    number_ranks      = script_params$number_ranks,
-                    outputs           = script_params$outputs,
-                    
-                    methods_vector    = script_params$methods_vector,
-                    cellchat_nperms   = script_params$cellchat_nperms,
-                    sink_output       = script_params$sink_output,
-                    liana_warnings    = script_params$liana_warnings,
-                    
-                    sink_logfile      = script_params$sink_logile,
-                    warning_logfile   = script_params$warning_logfile)
 }
 
 
 
 #------------------------------------------------------------------------------#
-# 3. Extracting Results --------------------------------------------------------
+# 3. Reformatting Results --------------------------------------------------------
 {
   # In this segment we extract the data from the results object, which is poorly
   # formatted by default, and put it into a more appropriate hierarchy. We then
