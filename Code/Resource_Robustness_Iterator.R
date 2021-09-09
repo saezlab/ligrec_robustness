@@ -40,7 +40,7 @@
 {
   # 1.1 Define Script Parameters
   {
-    # More information on most of these can be found in the dilution_Robustness
+    # More information on most of these can be found in the resource_Robustness
     # description.
     
     # Which scRNA data set do you want to use?
@@ -59,14 +59,14 @@
     # How many permutations of dilution should be performed?
     master_seed_list <- as.list(c(1:2))
     
-    # Which Outputs from dilution_Robustness() do you want? Choose from:
+    # Which Outputs from resource_Robustness() do you want? Choose from:
     # outputs = c("liana_results_OP", "resources_OP", "top_ranks_OP", 
     #             "top_ranks_analysis","metadata", "testdata")
     outputs = c("liana_results_OP", "resources_OP", "top_ranks_OP",
                 "top_ranks_analysis","metadata", "testdata")
     
     
-    # Which methods should dilution_Robustness() use? Choose from:
+    # Which methods should resource_Robustness() use? Choose from:
     # methods_vector <- c('call_connectome', 'call_squidpy', 'call_natmi', 
     #                     'call_italk', 'call_sca', 'cellchat')
     # Squidpy doesn't work on windows.
@@ -184,19 +184,21 @@
       if(sink_output == TRUE) {
         # The file name includes many script_params in it to be informative and
         # unique.
-        sink_logfile <- str_glue("Outputs/Logs/Complete_Log_", 
-                                 script_params$run_mode,
-                                 "_",
-                                 testdata_type, 
-                                 "_top",
-                                 as.character(median(unlist(number_ranks))),
-                                 "_res",
-                                 as.character(length(dilution_props)),
-                                 "_",
-                                 feature_type,                            
-                                 "_dil_at_",
-                                 time_of_run,
-                                 ".txt")
+        sink_logfile <- str_glue(
+          "Outputs/Logs/Complete_Log_",
+          script_params$run_mode,
+          "_",
+          testdata_type,
+          "_top",
+          as.character(median(unlist(number_ranks))),
+          "_res",
+          as.character(length(dilution_props)),
+          "_",
+          feature_type,
+          "_dil_at_",
+          time_of_run,
+          ".txt"
+        )
         
         script_params[["sink_logfile"]] <- sink_logfile
         
@@ -208,19 +210,21 @@
       if(liana_warnings == "divert") {
         # The file name includes many script_params in it to be informative and
         # unique.
-        warning_logfile <- str_glue("Outputs/Logs/LIANA_warnings_", 
-                                    script_params$run_mode,
-                                    "_",
-                                    testdata_type, 
-                                    "_top",
-                                    as.character(median(unlist(number_ranks))),
-                                    "_res",
-                                    as.character(length(dilution_props)),
-                                    "_",
-                                    feature_type,                            
-                                    "_dil_at_",
-                                    time_of_run,
-                                    ".txt")
+        warning_logfile <- str_glue(
+          "Outputs/Logs/LIANA_warnings_",
+          script_params$run_mode,
+          "_",
+          testdata_type,
+          "_top",
+          as.character(median(unlist(number_ranks))),
+          "_res",
+          as.character(length(dilution_props)),
+          "_",
+          feature_type,
+          "_dil_at_",
+          time_of_run,
+          ".txt"
+        )
         
         script_params[["warning_logfile"]] <- warning_logfile
         
@@ -248,17 +252,17 @@
 
 
 #------------------------------------------------------------------------------#
-# 2. Iterate dilution_Robustness() ---------------------------------------------
+# 2. Iterate resource_Robustness() ---------------------------------------------
 {
-  # dilution_Robustness is an entire script that can be iterated as a function
+  # resource_Robustness is an entire script that can be iterated as a function
   # There is randomness in dilution. Each master seed passed to 
   # dilute_Resource() gives us one permutation of many theoretically possible
   # dilutions. By iterating over master_seed, we can produce many permutations
   # and tally up their results. In this way, master_seed serves as an index too.
   
-  # Apply dilution_Robustness(), provide every argument but master_seed
+  # Apply resource_Robustness(), provide every argument but master_seed
   results <- lapply(script_params$master_seed_list, 
-                    dilution_Robustness,
+                    resource_Robustness,
                     
                     testdata_type     = script_params$testdata_type,
                     feature_type      = script_params$feature_type,
@@ -407,10 +411,10 @@
   
   # We name our restructured results more informatively, then extract the most
   # relevant sublists from them for the rest of the analysis
-  dilution_robustness_results <- restructured_results
+  resource_Robustness_results <- restructured_results
   
-  top_ranks_analysis <- dilution_robustness_results$top_ranks_analysis
-  runtime            <- dilution_robustness_results$runtime
+  top_ranks_analysis <- resource_Robustness_results$top_ranks_analysis
+  runtime            <- resource_Robustness_results$runtime
   
   
   # Remove unnecessary clutter from the environment.
@@ -440,7 +444,7 @@
     runtime_numeric <- as.numeric(runtime)
     
     # We calculate the passage of time between checkpoints in the 
-    # dilution_Robustness().
+    # resource_Robustness().
     # Step duration is the duration of a step between neighboring checkpoints.
     # Time elapsed is the duration between the completion of a step and the 
     # start of the script.

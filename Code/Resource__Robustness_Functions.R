@@ -96,7 +96,7 @@
 #' @return Depending on outputs arg, a list with many possible contents is 
 #' returned.
 
-dilution_Robustness <- function(testdata_type,
+resource_Robustness <- function(testdata_type,
                                 feature_type,
                                 preserve_topology,
                                 dilution_props,
