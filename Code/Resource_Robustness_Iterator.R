@@ -95,138 +95,17 @@
   # In this segment we extract the data from the results object, which is poorly
   # formatted by default, and put it into a more appropriate hierarchy. We then
   # extract the most relevant sublists for the rest of the analysis.
-  
-  # Initiate the restructured results list.
-  restructured_results <- list()
-  
-  # The two outputs mentioned here can be formatted the same way
-  # But only execute this code if that output is actually in results
-  for(output in intersect(script_params$outputs, c("liana_results_OP",
-                                                   "top_ranks_OP"))) {
-  
-  # We need the name of the method, name of dilution and seed as coordinates to
-  # uniquely identify the tibbles we want to transfer, so we iterate over every 
-  # combination of these three markers.
-  # Using these three markers, we identify a tibble, and then copy it over in
-  # a more convenient hierarchy to the restructure_results list. 
-    for(method in script_params$methods_vector) {
-      
-      # All the dilution names plus OmniPath_0
-      for(dilution_name in c("OmniPath_0", 
-                             names(script_params$dilution_props))) {
-        
-        for (seed in names(script_params$master_seed_list)) {
-          
-          # For tracking purposes we tack the seed name onto the data
-          name <- str_glue(dilution_name, "_",seed)
-          
-          # This top line is the hierarchy we are trying to achieve
-          restructured_results[[output]][[method]][[dilution_name]][[name]] <- 
-            results[[seed]][[output]][[method]][[dilution_name]]
-          # This lower line is the hierarchy as it is per default
-          
-        }
-      }
-    }
-  }
-  
-  
-  if ("resources_OP" %in% script_params$outputs == TRUE) {
-    
-    # We need the name of dilution and seed as coordinates to uniquely identify 
-    # the tibbles we want to transfer, so we iterate over every combination of 
-    # these two markers.
-    # Using these two markers, we identify a tibble, and then copy it over in
-    # a more convenient hierarchy to the restructure_results list. 
-      
-    # All the dilution names plus OmniPath_0
-    for(dilution_name in c("OmniPath_0", 
-                           names(script_params$dilution_props))) {
-      
-      for (seed in names(script_params$master_seed_list)) {
-        
-        # For tracking purposes we tack the seed name onto the data
-        name <- str_glue(dilution_name, "_",seed)
-        
-        # This top line is the hierarchy we are trying to achieve
-        restructured_results[["resources_OP"]][[dilution_name]][[name]] <- 
-          results[[seed]][["resources_OP"]][[dilution_name]]
-        # This lower line is the hierarchy as it is per default
-        
-      }
-    }
-  }
-  
-  
-  # This code formats top_ranks_analysis outputs, but only if they are actually
-  # in results. We need the seed and the top_ranks analysis type to subset this 
-  # part of results into the units of data we want to transfer, so we iterate 
-  # over all combinations of these two.
-  if("top_ranks_analysis" %in% script_params$outputs == TRUE) {
-    
-    for (analysis in names(results$Seed_1$top_ranks_analysis)) {
-      
-      for (seed in names(script_params$master_seed_list)) {
-        
-        # For tracking purposes we tack the seed name onto the data
-        name <- str_glue(analysis, "_", seed)
-        
-        # This top line represents the list hierarchy as we would like it
-        restructured_results[["top_ranks_analysis"]][[analysis]][[name]] <- 
-          results[[seed]][["top_ranks_analysis"]][[analysis]]
-        # and this lower line represents the hierarchy in results.
-        
-      }
-    }
-  }
-  
-  
-  
-  # Only format metadata if its actually in the results
-  if("metadata" %in% script_params$outputs == TRUE) {
-    
-    # We iterate over every permutation seed
-    for (seed in names(script_params$master_seed_list)) {
-      
-      # Mark the runtime with the iteration it belongs to
-      name <- str_glue("Runtime", "_", seed)
-      # Grab the runtime from the metadata and save it as its own sublist
-      restructured_results[["runtime"]][[name]] <-      # new hierarchy
-        results[[seed]][["metadata"]][["runtime"]]      # old hierarchy
-      
-      
-    }
-    
-  }
-  
-  
-  
-  # Only format testdata if its actually in the results
-  if("testdata" %in% script_params$outputs == TRUE) {
-    
-    # We only need the seed to access the testdata tibble of every seed, the 
-    # hierarchy is very simple and flat here.
-    for (seed in names(script_params$master_seed_list)) {
-      
-      # new hierarchy
-      restructured_results[["testdata"]][[str_glue("Testdata", "_", seed)]] <- 
-        results[[seed]][["testdata"]] # old hierarchy
-    }
-    
-  }
-  
-  
+
   # We name our restructured results more informatively, then extract the most
   # relevant sublists from them for the rest of the analysis
-  resource_Robustness_results <- restructured_results
+  resource_Robustness_results <- reformat_Results(results = results)
   
   top_ranks_analysis <- resource_Robustness_results$top_ranks_analysis
-  runtime            <- resource_Robustness_results$runtime
+  runtime            <- resource_Robustness_results$metadata
   
   
   # Remove unnecessary clutter from the environment.
-  rm(analysis, dilution_name, name, method, output, seed, results, 
-     restructured_results)
+  rm(results)
 }
 
 
@@ -336,8 +215,11 @@
 #------------------------------------------------------------------------------#
 # 5. Aggregate top_ranks_analysis ----------------------------------------------
 {
-  complete_top_ranks_overlap <- top_ranks_analysis$Overlap %>%
+  where_overlap <- str_detect(names(top_ranks_analysis), "Overlap")
+  
+  complete_top_ranks_overlap <- top_ranks_analysis[where_overlap] %>%
     bind_rows() 
+  
   
   seed_assignment <- sort(rep(1:length(script_params$master_seed_list),
                               length(script_params$dilution_props) +1 ))
@@ -349,7 +231,7 @@
     arrange(Method) %>%
     rename("Overlap" = value) 
   
-  rm(seed_assignment)
+  rm(seed_assignment, where_overlap)
   
 
 }
