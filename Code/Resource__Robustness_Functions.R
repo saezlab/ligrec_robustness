@@ -323,6 +323,8 @@ print_Title(str_glue("Iteration ",
 
     
   }
+    
+    rm(method)
   
   # an interesting note here is that NATMI produces far more unique LR Pairs in 
   # its top rankings than other methods. Cellchat identifies less for example, 
@@ -481,7 +483,7 @@ print_Title(str_glue("Iteration ",
   
   
   # Remove uneccesary Variables
-  rm(dilutions_OP, method, dilution, top_rank_list)
+  rm(dilutions_OP, top_rank_list)
   
   
   
