@@ -53,26 +53,29 @@
     preserve_topology <- FALSE # Preserve topology after dilution or not?
     
     # Which proportions should the resources that are analysed have?
-    dilution_props <- c(seq(0.20, 0.80, 0.20))
+    # have at least two else the plotting fails
+    dilution_props <- c(seq(0.40, 1.00, 0.40)) 
     
     # How many permutations of dilution should be performed?
-    master_seed_list <- as.list(c(1:5))
+    master_seed_list <- as.list(c(1:2))
     
     # Which Outputs from dilution_Robustness() do you want? Choose from:
     # outputs = c("liana_results_OP", "resources_OP", "top_ranks_OP", 
     #             "top_ranks_analysis","metadata", "testdata")
     outputs = c("liana_results_OP", "resources_OP", "top_ranks_OP",
-                "top_ranks_analysis","metadata")
+                "top_ranks_analysis","metadata", "testdata")
     
     
     # Which methods should dilution_Robustness() use? Choose from:
-    # methods_vector <- c('call_connectome', 'call_natmi', 'call_italk', 
-    #                     'call_sca', 'cellchat')
-    methods_vector <- c('call_connectome', 'call_italk', 
-                        'call_sca')
-    # no squidpy until it works on windows.
+    # methods_vector <- c('call_connectome', 'call_squidpy', 'call_natmi', 
+    #                     'call_italk', 'call_sca', 'cellchat')
+    # Squidpy doesn't work on windows.
+    methods_vector <- c('call_connectome', 'call_natmi',
+                        'call_italk', 'call_sca', 'cellchat')
     
     # Which top n of interactions should be considered top-ranked per method?
+    number_ranks   <- list("call_connectome" = 20,
+                           "call_squidpy"    = 20,
                            "call_natmi"      = 20,
                            "call_italk"      = 20,
                            "call_sca"        = 20,
@@ -532,6 +535,7 @@
     mutate("Seed" = seed_assignment) %>%
     arrange(dilution_prop) %>%
     pivot_longer(cols = script_params$methods_vector, names_to = "Method") %>%
+    arrange(Method) %>%
     rename("Overlap" = value) 
   
   rm(seed_assignment)
@@ -549,22 +553,24 @@
     # We format 
     alpha <- 0.4
     
-    
+    # The dilution proportion and overlap are clearer in percentage
+    # NAs can't be displayed in the plot anyway and cause uneccesary warnings
+    # And we rename the methods from the liana++ internal string to their 
+    # official names.
     tr_overlap_for_plot <-  complete_top_ranks_overlap  %>%
       as.data.frame()                             %>%
       mutate(dilution_prop = dilution_prop * 100) %>%
       mutate(Overlap       = Overlap       * 100) %>%
       as_tibble()                                 %>%
-      drop_na() 
-    
-    tr_overlap_for_plot$Method <- tr_overlap_for_plot$Method %>%
-      str_replace("call_connectome", "Connectome")        %>%
-      str_replace("call_squidpy"   , "CellPhoneDB")       %>%
-      str_replace("call_natmi"     , "NATMI")             %>%
-      str_replace("call_italk"     , "iTALK")             %>%
-      str_replace("call_sca"       , "SingleCellSignalR") %>%
-      str_replace("cellchat"       , "CellChat") 
-    
+      drop_na()                                   %>%
+      mutate("Method" = recode(Method,
+                               "call_connectome" = "Connectome",
+                               "call_squidpy"    = "CellPhoneDB",
+                               "call_natmi"      = "NATMI",   
+                               "call_italk"      = "iTALK", 
+                               "call_sca"        = "SingleCellSignalR", 
+                               "cellchat"        = "CellChat")) 
+     
     # Automatically assemble a file name and plot subtitle
     if (script_params$preserve_topology == FALSE) {
       
