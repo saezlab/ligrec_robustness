@@ -181,33 +181,33 @@
   }
   
   # 4.2 Reformat Metadata
-  {
-    # Create a metadata subsection of script_params and assign it runtime
-    script_params[["metadata"]][["runtime"]]      <- runtime
-    
-    # If output was sunk, store the file path to metadata
-    if(script_params$sink_output == TRUE) {
-      
-      script_params$metadata[["sink_logfile"]] <- 
-        script_params[["sink_logfile"]]
-      
-    }
-    
-    # If warnings were diverted, store the file path to metadata 
-    if(script_params$liana_warnings == "divert") {
-      
-      script_params$metadata[["warning_logfile"]] <- 
-        script_params[["warning_logfile"]]
-      
-    }
-    
-    # Remove any file paths and session info outside of metadata
-    script_params[["sink_logfile"]]    <- NULL
-    script_params[["warning_logfile"]] <- NULL
-    
-    # Remove runtime now that it's a part of script_params$metadata
-    rm(runtime)
-  }
+  # {
+  #   # Create a metadata subsection of script_params and assign it runtime
+  #   script_params[["metadata"]][["runtime"]]      <- runtime
+  #   
+  #   # If output was sunk, store the file path to metadata
+  #   if(script_params$sink_output == TRUE) {
+  #     
+  #     script_params$metadata[["sink_logfile"]] <- 
+  #       script_params[["sink_logfile"]]
+  #     
+  #   }
+  #   
+  #   # If warnings were diverted, store the file path to metadata 
+  #   if(script_params$liana_warnings == "divert") {
+  #     
+  #     script_params$metadata[["warning_logfile"]] <- 
+  #       script_params[["warning_logfile"]]
+  #     
+  #   }
+  #   
+  #   # Remove any file paths and session info outside of metadata
+  #   script_params[["sink_logfile"]]    <- NULL
+  #   script_params[["warning_logfile"]] <- NULL
+  #   
+  #   # Remove runtime now that it's a part of script_params$metadata
+  #   rm(runtime)
+  # }
   
 }
 
@@ -482,15 +482,12 @@
     
     
     # Store save locations for plots and session info in script_params metadata
-    script_params$metadata[["box_plot_png_name"]]  <- box_plot_png_name
-    script_params$metadata[["line_plot_png_name"]] <- line_plot_png_name
-    script_params$metadata[["env_save_path"]]      <- env_save_path
-    
-    script_params$metadata[["Session_Info"]]       <- sessionInfo
-    
-    # Remove clutter
-    rm(box_plot_png_name, line_plot_png_name, env_save_path, test_run_comment, 
-       topology_comment, time_of_run)
+    # script_params$metadata[["box_plot_png_name"]]  <- box_plot_png_name
+    # script_params$metadata[["line_plot_png_name"]] <- line_plot_png_name
+    # script_params$metadata[["env_save_path"]]      <- env_save_path
+    # 
+    # script_params$metadata[["Session_Info"]]       <- sessionInfo
+    # 
     
     
     # Save R environment and all the results within it
