@@ -255,7 +255,7 @@
       drop_na()                                   %>%
       mutate("Method" = recode(Method,
                                "call_connectome" = "Connectome",
-                               "call_squidpy"    = "CellPhoneDB",
+                               "squidpy"    = "CellPhoneDB",
                                "call_natmi"      = "NATMI",   
                                "call_italk"      = "iTALK", 
                                "call_sca"        = "SingleCellSignalR", 

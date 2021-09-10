@@ -1,3 +1,34 @@
+# wrap_resource_Robustness()
+
+
+# Which scRNA data set do you want to use?
+
+
+# Should dilution be with any genes from testdata or most variable ones?
+
+
+# Preserve topology after dilution or not?
+# TRUE = preserve_Dilute(), FALSE = random_Dilute()
+
+
+# Which proportions should the resources that are analysed have?
+# Must be at least one integer.
+
+
+# Which Outputs from resource_Robustness() do you want? Choose from:
+
+
+# Which methods should resource_Robustness() use? Choose from:
+# Squidpy doesn't work on windows.
+
+# Which top n of interactions should be considered top-ranked per method?
+
+
+# number of cellchat permutations, default 100
+
+# Should the entire output be redirected to a log file?
+
+# Should liana warnings be visible in output? 
 
 wrap_resource_Robustness <- 
   function(master_seed,
@@ -18,7 +49,7 @@ wrap_resource_Robustness <-
            
            methods_vector = c(
               'call_connectome' ,
-      #        'call_squidpy'    ,
+      #        'squidpy'    ,
               'call_natmi'      ,
               'call_italk'      ,
               'call_sca'        ,
@@ -27,7 +58,7 @@ wrap_resource_Robustness <-
            
            number_ranks = list(
              "call_connectome" = 20,
-             "call_squidpy"    = 20,
+             "squidpy"    = 20,
              "call_natmi"      = 20,
              "call_italk"      = 20,
              "call_sca"        = 20,
@@ -157,37 +188,7 @@ wrap_resource_Robustness <-
 
 
 
-# wrap_resource_Robustness()
 
-
-# Which scRNA data set do you want to use?
-
-
-# Should dilution be with any genes from testdata or most variable ones?
-
-
-# Preserve topology after dilution or not?
-# TRUE = preserve_Dilute(), FALSE = random_Dilute()
-
-
-# Which proportions should the resources that are analysed have?
-# Must be at least one integer.
-
-
-# Which Outputs from resource_Robustness() do you want? Choose from:
-
-
-# Which methods should resource_Robustness() use? Choose from:
-# Squidpy doesn't work on windows.
-
-# Which top n of interactions should be considered top-ranked per method?
-
-
-# number of cellchat permutations, default 100
-
-# Should the entire output be redirected to a log file?
-
-# Should liana warnings be visible in output? 
 
 
 
