@@ -421,19 +421,19 @@
 # 7. Saving Results ------------------------------------------------------------
 {
   # Save the plot automatically to the outputs folder, if desired
-  if (script_params$save_results == TRUE) {
-    if (script_params$run_mode == "real") {
+  if (save_results == TRUE) {
+    if (run_mode == "real") {
       test_run_comment <- ""
       
-    } else if (script_params$run_mode == "trial_run") {
+    } else if (run_mode == "trial_run") {
       test_run_comment <- "TRIAL_RUN_"
       
     }
     
-    if (script_params$preserve_topology == FALSE) {
+    if (formals(wrap_resource_Robustness)$preserve_topology == FALSE) {
       topology_comment <- "_random_topology_"
       
-    } else if (script_params$preserve_topology == TRUE) {
+    } else if (formals(wrap_resource_Robustness)$preserve_topology == TRUE) {
       topology_comment <- "_preserved_topology_"
       
     }
@@ -444,18 +444,19 @@
       gsub(':', '-', .)    %>% 
       gsub(' ', '_', .)
     
+    top_ranks_vector <- 
+      unlist(as.list(formals(wrap_resource_Robustness)$number_ranks)[-1])
+    
     # Generate the filepaths to save the data under
     box_plot_png_name <-
       str_glue(
         test_run_comment,
         "Boxplot_Resource_Dilution_",
-        script_params$testdata_type,
+        formals(wrap_resource_Robustness)$testdata_type,
         topology_comment,
-        script_params$feature_type,
+        formals(wrap_resource_Robustness)$feature_type,
         "_top",
-        as.character(median(unlist(
-          script_params$number_ranks
-        ))),
+        median(top_ranks_vector),
         "_",
         time_of_run,
         ".png"
@@ -465,13 +466,11 @@
       str_glue(
         test_run_comment,
         "Lineplot_Resource_Dilution_",
-        script_params$testdata_type,
+        formals(wrap_resource_Robustness)$testdata_type,
         topology_comment,
-        script_params$feature_type,
+        formals(wrap_resource_Robustness)$feature_type,
         "_top",
-        as.character(median(unlist(
-          script_params$number_ranks
-        ))),
+        median(top_ranks_vector),
         "_",
         time_of_run,
         ".png"
@@ -483,19 +482,16 @@
         "Outputs/",
         test_run_comment,
         "DilutionEnv_",
-        script_params$testdata_type,
+        formals(wrap_resource_Robustness)$testdata_type,
         topology_comment,
-        script_params$feature_type,
+        formals(wrap_resource_Robustness)$feature_type,
         "_top",
-        as.character(median(unlist(
-          script_params$number_ranks
-        ))),
+        median(top_ranks_vector),
         "_",
         time_of_run,
         ".RData"
       )
     
-    env_save_path
     
     
     # Save both plots
@@ -526,17 +522,17 @@
     
     
     # Save R environment and all the results within it
-    save.image(file = script_params$metadata$env_save_path)
+    save.image(file = env_save_path)
     
     # Let the user know where everything was stored.
     print(str_glue("Box Plot saved at ~/Outputs/", 
-                   script_params$metadata$box_plot_png_name, "."))
+                   box_plot_png_name, "."))
     
     print(str_glue("Line Plot saved at ~/Outputs/", 
-                   script_params$metadata$line_plot_png_name, "."))
+                   line_plot_png_name, "."))
     
     print(str_glue("Environment saved at ~/", 
-                   script_params$metadata$env_save_path, "."))
+                   env_save_path, "."))
     
   }
 }
