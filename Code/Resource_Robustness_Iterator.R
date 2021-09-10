@@ -247,7 +247,7 @@
     # NAs can't be displayed in the plot anyway and cause uneccesary warnings
     # And we rename the methods from the liana++ internal string to their 
     # official names.
-    tr_overlap_for_plot <-  complete_top_ranks_overlap  %>%
+    tr_overlap_for_plot <-  collated_top_ranks_overlap  %>%
       as.data.frame()                             %>%
       mutate(dilution_prop = dilution_prop * 100) %>%
       mutate(Overlap       = Overlap       * 100) %>%
@@ -262,39 +262,77 @@
                                "cellchat"        = "CellChat")) 
      
     # Automatically assemble a file name and plot subtitle
-    if (script_params$preserve_topology == FALSE) {
+    if (formals(wrap_resource_Robustness)$preserve_topology == FALSE) {
       
       topology_comment <- "random_Dilute()"
       
-    } else if (script_params$preserve_topology == TRUE) {
+    } else if (formals(wrap_resource_Robustness)$preserve_topology == TRUE) {
       
       topology_comment <- "preserve_Dilute()"
       
     }
     
+    dilution_overview <- count(tr_overlap_for_plot, dilution_prop)
+    
+    if (nrow(dilution_overview) > 1) {
+      dilution_comment <- str_glue("The dilution occured in ", 
+                                   dilution_overview$dilution_prop[2] -
+                                     dilution_overview$dilution_prop[1],
+                                   " % increments up to a maximum of ",
+                                   max(tr_overlap_for_plot$dilution_prop),
+                                   " %. ")
+    } else {
+      stop("Expected at least two dilution proportions in input (0, and one ",
+           "more. But found only one instead, namely ",
+           dilution_overview$dilution_prop)
+    }
+    
+    if (length(unique(dilution_overview$n)) != 1) {
+      stop("There should be an equal number of samples for every dilution, ",
+           "but there is not.")
+    }
+    
+    top_ranks_vector <- 
+      unlist(as.list(formals(wrap_resource_Robustness)$number_ranks)[-1])
+    
+    permutations_overview <- tr_overlap_for_plot %>%
+      filter(dilution_prop == 0) %>%
+      count(Method)
+    
+    if (length(unique(permutations_overview$n)) != 1) {
+      stop("There should be an equal number of samples for each method at , ",
+           "dilution proportion 0, but there is not.")
+    }
+    
+    
+    top_ranks_permutations_comment <-
+      str_glue(
+        "The overlap was compared between the ",
+        median(top_ranks_vector),
+        " highest ranked interactions over ",
+        permutations_overview$n[1],
+        " permutations."
+      )
+    
     plotting_caption <- 
       str_glue("This plot was created using the ",
-               script_params$testdata_type,
+               formals(wrap_resource_Robustness)$testdata_type,
                " data. Dilution was performed using ",
-               script_params$feature_type,
+               formals(wrap_resource_Robustness)$feature_type,
                " features and the ",
                topology_comment,
                " function. \n",
-               "The dilution occured in ",
-               (script_params$dilution_props[[2]] -
-                  script_params$dilution_props[[1]]) * 100,
-               " % increments up to a maximum of ",
-               max(tr_overlap_for_plot$dilution_prop),
-               " %. \n\n",
+               dilution_comment,
+               "\n\n",
                "The overlap was compared between the ",
-               as.character(median(unlist(script_params$number_ranks))),
+               median(top_ranks_vector),
                " highest ranked interactions over ",
-               length(script_params$master_seed_list),
+               dilution_overview$n[1],
                " permutations."
                )
                
     
-    if (script_params$run_mode == "trial_run") {
+    if (run_mode == "trial_run") {
       plotting_caption <- 
         str_glue(plotting_caption, "   --   [TRIAL RUN]")
     }
