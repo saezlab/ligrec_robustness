@@ -215,19 +215,16 @@
 #------------------------------------------------------------------------------#
 # 5. Aggregate top_ranks_analysis ----------------------------------------------
 {
+  
   where_overlap <- str_detect(names(top_ranks_analysis), "Overlap")
   
-  complete_top_ranks_overlap <- top_ranks_analysis[where_overlap] %>%
+  collated_top_ranks_overlap <- top_ranks_analysis[where_overlap] %>%
     bind_rows() 
   
   
-  seed_assignment <- sort(rep(1:length(script_params$master_seed_list),
-                              length(script_params$dilution_props) +1 ))
-  
-  complete_top_ranks_overlap <- complete_top_ranks_overlap %>%
-    mutate("Seed" = seed_assignment) %>%
+  collated_top_ranks_overlap <- collated_top_ranks_overlap %>%
     arrange(dilution_prop) %>%
-    pivot_longer(cols = script_params$methods_vector, names_to = "Method") %>%
+    pivot_longer(cols = !(starts_with("dilution_prop")), names_to = "Method") %>%
     arrange(Method) %>%
     rename("Overlap" = value) 
   
