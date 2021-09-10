@@ -6,7 +6,7 @@
 #' with the code before using this script, it is well commented throughout.
 #' 
 #' In brief, this script runs six LIANA methods from LIANA++ (call_connectome,
-#' call_squidpy, call_natmi, call_italk, call_sca and cellchat) on one 
+#' squidpy, call_natmi, call_italk, call_sca and cellchat) on one 
 #' benchmarking data set and stores their predictions for which are the top most
 #' relevant CCIs occuring. The resource used is OmniPath.
 #' 
@@ -67,7 +67,7 @@
 #' reproducibly.
 #' 
 #' @param methods_vector Which methods should the function run? Choose from
-#' "call_connectome", "call_squidpy", "call_natmi", "call_italk", "call_sca" and
+#' "call_connectome", "squidpy", "call_natmi", "call_italk", "call_sca" and
 #' "cellchat". Supply the argument in the form of e.g. 
 #' c("call_conncectome, "call_italk").
 #' 
