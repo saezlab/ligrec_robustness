@@ -2,8 +2,8 @@
 wrap_resource_Robustness <- 
   function(master_seed,
            
-           testdata_type     = c("liana_test"), # "liana_test" or "seurat_pbmc"
-           feature_type      = c("variable"),   # "generic" or "variable"
+           testdata_type     = "liana_test", # "liana_test" or "seurat_pbmc", only as a string, not a vector of a string
+           feature_type      = "variable",   # "generic" or "variable", only as a string, not a vector of a string
            preserve_topology = FALSE,           # TRUE or FALSE
            dilution_props    = c(seq(0.40, 1.00, 0.40)),
            
@@ -18,11 +18,11 @@ wrap_resource_Robustness <-
            
            methods_vector = c(
               'call_connectome' ,
-           #  'call_squidpy'    ,
-           #  'call_natmi'      ,
+      #        'call_squidpy'    ,
+              'call_natmi'      ,
               'call_italk'      ,
-              'call_sca'        #,
-           #  'cellchat'
+              'call_sca'        ,
+              'cellchat'
            ), 
            
            number_ranks = list(
@@ -34,7 +34,7 @@ wrap_resource_Robustness <-
              "cellchat"        = 20
            ),
            
-           cellchat_nperms = 10,      # default 100
+           cellchat_nperms = 10,      # default 100 for real data
            sink_output     = FALSE,   # TRUE or FALSE
            liana_warnings  = "divert" # TRUE, FALSE, or "divert"
            
@@ -171,7 +171,7 @@ wrap_resource_Robustness <-
 
 
 # Which proportions should the resources that are analysed have?
-# have at least two else the plotting fails
+# Must be at least one integer.
 
 
 # Which Outputs from resource_Robustness() do you want? Choose from:
