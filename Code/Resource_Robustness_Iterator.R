@@ -234,7 +234,7 @@ source("Code/Resource_Iterator_Functions.R")
   }
   
   # Removing Clutter
-  rm(tr_overlap_for_plot, alpha, plotting_caption,topology_comment)
+  rm(tr_overlap_for_plot, alpha, plotting_caption)
   
 }
 
