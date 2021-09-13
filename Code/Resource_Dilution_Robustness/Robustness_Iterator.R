@@ -32,24 +32,17 @@
 }
 
 
-source("Code/Ranking_Misc_Functions.R")
-source("Code/Resource_Dilution_Functions.R")
-source("Code/Resource_Robustness_Functions.R")
-source("Code/Resource_Iterator_Functions.R")
 
-
+source("Code/Resource_Dilution_Robustness/Ranking_and_Misc_Functions.R")
+source("Code/Resource_Dilution_Robustness/Resource_Robustness_Functions.R")
+source("Code/Resource_Dilution_Robustness/Resource_Dilution_Functions.R")
+source("Code/Resource_Dilution_Robustness/Iterator_Functions.R")
+source("Code/Resource_Dilution_Robustness/Iterator_Parameters.R")
 
 
 #------------------------------------------------------------------------------#
 # 1. Master Seed list --------------------------------------------------------
 {
-  # Define script params
-  {
-    source("Code/Iterator_Parameter_Functions.R")
-    # Define the time of run to uniquely tag every save file
-
-    
-  }
   
     # How many permutations of dilution should be performed?
     master_seed_list <- create_Params()$master_seed_list
