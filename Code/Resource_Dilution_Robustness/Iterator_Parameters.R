@@ -228,11 +228,13 @@ wrap_resource_Robustness <-
       if(sink_output == TRUE) {
         # The file name includes many script_params in it to be informative and
         # unique.
-        sink_logfile <- auto_file_Name(prefix = "Outputs/Logs/Complete_Log_",
-                                       suffix =  ".txt",
-                                       dilution_params = formals(wrap_resource_Robustness),
-                                       meta_params = formals(summarise_Metadata),
-                                       time_of_run = time_of_run)
+        sink_logfile <- 
+          auto_file_Name(
+            prefix = "Outputs/Resource_Dilution/Logs/Complete_Log_",
+            suffix =  ".txt",
+            dilution_params = formals(wrap_resource_Robustness),
+            meta_params = formals(summarise_Metadata),
+            time_of_run = time_of_run)
         
         
       }
@@ -242,11 +244,13 @@ wrap_resource_Robustness <-
       if(liana_warnings == "divert") {
         # The file name includes many script_params in it to be informative and
         # unique.
-        warning_logfile <- auto_file_Name(prefix = "Outputs/Logs/LIANA_warnings_",
-                                          suffix =  ".txt",
-                                          dilution_params = formals(wrap_resource_Robustness),
-                                          meta_params = formals(summarise_Metadata),
-                                          time_of_run = time_of_run)
+        warning_logfile <-
+          auto_file_Name(
+            prefix = "Outputs/Resource_Dilution/Logs/LIANA_warnings_",
+            suffix =  ".txt",
+            dilution_params = formals(wrap_resource_Robustness),
+            meta_params = formals(summarise_Metadata),
+            time_of_run = time_of_run)
           
         
       }

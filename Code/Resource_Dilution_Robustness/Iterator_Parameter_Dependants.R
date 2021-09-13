@@ -224,7 +224,7 @@ save_Results <- function(dilution_params,
   
   
   env_save_path <- auto_file_Name(
-    prefix = "Outputs/DilutionEnv_",
+    prefix = "Outputs/Resource_Dilution/DilutionEnv_",
     suffix = ".RData",
     dilution_params = dilution_params,
     meta_params     = meta_params,
@@ -239,7 +239,7 @@ save_Results <- function(dilution_params,
     box_plot_png_name,
     height = 7.75,
     width = 8,
-    path = "Outputs"
+    path = "Outputs/Resource_Dilution"
   )
   
   ggsave(
@@ -247,7 +247,7 @@ save_Results <- function(dilution_params,
     line_plot_png_name,
     height = 8.5,
     width = 8,
-    path = "Outputs"
+    path = "Outputs/Resource_Dilution"
   )
   
   
