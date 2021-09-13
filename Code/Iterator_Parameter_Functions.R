@@ -1,3 +1,33 @@
+create_Params <- function(master_seeds = 1:3) {
+  
+  time_of_run <-  Sys.time() %>%
+    as.character()       %>%
+    gsub(':', '-', .)    %>% 
+    gsub(' ', '_', .)
+  
+  
+  master_seed_list <- as.list(master_seeds)
+  
+  # By naming each seed we can use this to label data conveniently later
+  # By formatting seeds as a list we can lapply over them for an easy-to-
+  # untangle results format.
+  seed_names <- c()
+  
+  # Name each element of master_seed_list appropriately name it
+  for (seed in master_seed_list) {
+    seed_names <- 
+      c(seed_names, str_glue("Seed_", seed))
+  }
+  
+  names(master_seed_list) <- seed_names
+
+  
+  parameters <- list("master_seed_list" = master_seed_list,
+                     "time_of_run"       = time_of_run)
+    
+  return(parameters)
+}
+
 summarise_Metadata <- function(runtime,
                                time_of_run,
                                dilution_params,

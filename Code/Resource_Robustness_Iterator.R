@@ -47,35 +47,13 @@ source("Code/Resource_Iterator_Functions.R")
   {
     source("Code/Iterator_Parameter_Functions.R")
     # Define the time of run to uniquely tag every save file
-    time_of_run <-  Sys.time() %>%
-      as.character()       %>%
-      gsub(':', '-', .)    %>% 
-      gsub(' ', '_', .)
+
     
   }
   
     # How many permutations of dilution should be performed?
-    master_seed_list <- as.list(c(1:2))
-    
-    
-    ## Process Master Seed List
-    {
-      # By naming each seed we can use this to label data conveniently later
-      # By formatting seeds as a list we can lapply over them for an easy-to-
-      # untangle results format.
-      seed_names <- c()
-      
-      # Name each element of master_seed_list appropriately name it
-      for (seed in master_seed_list) {
-        seed_names <- 
-          c(seed_names, str_glue("Seed_", seed))
-      }
-      
-      names(master_seed_list) <- seed_names
-      
-      # Remove clutter
-      rm(seed_names, seed)
-    }
+    master_seed_list <- create_Params()$master_seed_list
+    time_of_run      <- create_Params()$time_of_run
 
 
 }   
