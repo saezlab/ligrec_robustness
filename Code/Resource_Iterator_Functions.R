@@ -1,12 +1,24 @@
 
 
+extract_top_ranks <- function(results) {
+  
+  top_ranks_analysis <- results$top_ranks_analysis
+  
+  where_overlap <- str_detect(names(top_ranks_analysis), "Overlap")
+  
+  collated_top_ranks_overlap <- top_ranks_analysis[where_overlap] %>%
+    bind_rows() 
   
   
+  collated_top_ranks_overlap <- collated_top_ranks_overlap %>%
+    arrange(dilution_prop) %>%
+    pivot_longer(cols = !(starts_with("dilution_prop")), names_to = "Method") %>%
+    arrange(Method) %>%
+    rename("Overlap" = value) 
   
+  rm(where_overlap)
   
-  
-  
-  
+  return(collated_top_ranks_overlap)
 }
 
 

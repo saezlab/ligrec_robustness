@@ -119,24 +119,9 @@ source("Code/Resource_Iterator_Functions.R")
 
 
 #------------------------------------------------------------------------------#
-# 5. Aggregate top_ranks_analysis ----------------------------------------------
+# 5. Collate all iterations of  top_ranks_analysis -----------------------------
 {
-  
-  where_overlap <- str_detect(names(top_ranks_analysis), "Overlap")
-  
-  collated_top_ranks_overlap <- top_ranks_analysis[where_overlap] %>%
-    bind_rows() 
-  
-  
-  collated_top_ranks_overlap <- collated_top_ranks_overlap %>%
-    arrange(dilution_prop) %>%
-    pivot_longer(cols = !(starts_with("dilution_prop")), names_to = "Method") %>%
-    arrange(Method) %>%
-    rename("Overlap" = value) 
-  
-  rm(seed_assignment, where_overlap)
-  
-
+  collated_top_ranks_overlap <- extract_top_ranks(collated_robustness_results)
 }
 
 
