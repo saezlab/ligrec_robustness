@@ -80,3 +80,61 @@ summarise_Metadata <- function(runtime,
   return(metadata)
   
 }
+auto_file_Name <- function(prefix, 
+                           suffix, 
+                           dilution_params,
+                           meta_params,
+                           time_of_run) {
+  
+  if (meta_params$trial_run == FALSE) {
+    test_run_comment <- ""
+    
+  } else if (meta_params$trial_run == TRUE) {
+    test_run_comment <- "TRIAL_RUN_"
+    
+  }
+  
+  
+  
+  if (dilution_params$preserve_topology == FALSE) {
+    topology_comment <- "random_topology_"
+    
+  } else if (dilution_params$preserve_topology == TRUE) {
+    topology_comment <- "preserved_topology_"
+    
+  }
+  
+  
+  
+  testdata_comment <-     
+    str_glue(dilution_params$testdata_type, "_")
+  
+  
+  
+  feature_type_comment <-
+    str_glue(dilution_params$feature_type, "_")
+  
+  
+  
+  top_ranks_vector <- 
+    unlist(as.list(dilution_params$number_ranks)[-1])
+  
+  top_ranks_comment <- 
+    str_glue("top", median(top_ranks_vector), "_",)
+  
+  
+  
+  auto_file_path <- 
+    str_glue(
+      prefix,
+      test_run_comment,
+      testdata_comment,
+      topology_comment,
+      feature_type_comment,
+      top_ranks_comment, 
+      time_of_run,
+      suffix
+    )
+  
+  return(auto_file_path)
+}
