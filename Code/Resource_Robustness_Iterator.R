@@ -10,7 +10,8 @@
     #     remain, but of the remainder x% of the interactions have been diluted 
     #     and  replaced new genes not in the resource derived from the test 
     #     data, x =10,20,40% etc.
-    # .	Rerun methods on diluted omnipath resource, get top ranks -> R-modified
+    # .	Rerun methods on diluted omnipath resource and extract the top ranked 
+    #   CCI -> R-modified
     # .	plot percentage of R-zero in R-modified over x and investigate result
     
     
@@ -23,10 +24,7 @@
     require(tidyverse)
     require(Seurat)
     require(liana)
-    
-    library(lubridate)
-    
-    # each runtime is named after the section that it marks the conclusion of
+    require(lubridate)
     
   } # end of subpoint
   
@@ -43,7 +41,7 @@ source("Code/Resource_Iterator_Functions.R")
 
 
 #------------------------------------------------------------------------------#
-# 1. Script  Parameters --------------------------------------------------------
+# 1. Master Seed list --------------------------------------------------------
 {
 
     # How many permutations of dilution should be performed?
@@ -89,8 +87,10 @@ source("Code/Resource_Iterator_Functions.R")
   # and tally up their results. In this way, master_seed serves as an index too.
   
   # Apply resource_Robustness(), provide every argument but master_seed
-  results <- lapply(master_seed_list, 
-                    wrap_resource_Robustness)
+  collated_robustness_results <- lapply(master_seed_list, 
+                    wrap_resource_Robustness,
+                    time_of_run = time_of_run)
+  
                     
 }
 
@@ -105,14 +105,9 @@ source("Code/Resource_Iterator_Functions.R")
 
   # We name our restructured results more informatively, then extract the most
   # relevant sublists from them for the rest of the analysis
-  resource_Robustness_results <- reformat_Results(results = results)
-  
-  top_ranks_analysis <- resource_Robustness_results$top_ranks_analysis
-  runtime            <- resource_Robustness_results$metadata
-  
-  
-  # Remove unnecessary clutter from the environment.
-  rm(results)
+  collated_robustness_results <- 
+    reformat_Results(results = collated_robustness_results)
+
 }
 
 
@@ -262,7 +257,7 @@ source("Code/Resource_Iterator_Functions.R")
       drop_na()                                   %>%
       mutate("Method" = recode(Method,
                                "call_connectome" = "Connectome",
-                               "squidpy"    = "CellPhoneDB",
+                               "squidpy"         = "CellPhoneDB",
                                "call_natmi"      = "NATMI",   
                                "call_italk"      = "iTALK", 
                                "call_sca"        = "SingleCellSignalR", 
