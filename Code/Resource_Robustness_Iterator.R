@@ -152,82 +152,14 @@ source("Code/Resource_Iterator_Functions.R")
                                "call_sca"        = "SingleCellSignalR", 
                                "cellchat"        = "CellChat")) 
      
-    # Automatically assemble a file name and plot subtitle
-    if (formals(wrap_resource_Robustness)$preserve_topology == FALSE) {
-      
-      topology_comment <- "random_Dilute()"
-      
-    } else if (formals(wrap_resource_Robustness)$preserve_topology == TRUE) {
-      
-      topology_comment <- "preserve_Dilute()"
-      
-    }
-    
-    dilution_overview <- count(tr_overlap_for_plot, dilution_prop)
-    
-    if (nrow(dilution_overview) > 1) {
-      dilution_comment <- str_glue("The dilution occured in ", 
-                                   dilution_overview$dilution_prop[2] -
-                                     dilution_overview$dilution_prop[1],
-                                   " % increments up to a maximum of ",
-                                   max(tr_overlap_for_plot$dilution_prop),
-                                   " %. ")
-    } else {
-      stop("Expected at least two dilution proportions in input (0, and one ",
-           "more. But found only one instead, namely ",
-           dilution_overview$dilution_prop)
-    }
-    
-    if (length(unique(dilution_overview$n)) != 1) {
-      stop("There should be an equal number of samples for every dilution, ",
-           "but there is not.")
-    }
-    
-    top_ranks_vector <- 
-      unlist(as.list(formals(wrap_resource_Robustness)$number_ranks)[-1])
-    
-    permutations_overview <- tr_overlap_for_plot %>%
-      filter(dilution_prop == 0) %>%
-      count(Method)
-    
-    if (length(unique(permutations_overview$n)) != 1) {
-      stop("There should be an equal number of samples for each method at , ",
-           "dilution proportion 0, but there is not.")
-    }
-    
-    
-    top_ranks_permutations_comment <-
-      str_glue(
-        "The overlap was compared between the ",
-        median(top_ranks_vector),
-        " highest ranked interactions over ",
-        permutations_overview$n[1],
-        " permutations."
-      )
+    # automatically generate a plot description based on wrap_resource_Robustness
+    # defaults and the tr_overlaps_for_plot data structure
     
     plotting_caption <- 
-      str_glue("This plot was created using the ",
-               formals(wrap_resource_Robustness)$testdata_type,
-               " data. Dilution was performed using ",
-               formals(wrap_resource_Robustness)$feature_type,
-               " features and the ",
-               topology_comment,
-               " function. \n",
-               dilution_comment,
-               "\n\n",
-               "The overlap was compared between the ",
-               median(top_ranks_vector),
-               " highest ranked interactions over ",
-               dilution_overview$n[1],
-               " permutations."
-               )
-               
-    
-    if (run_mode == "trial_run") {
-      plotting_caption <- 
-        str_glue(plotting_caption, "   --   [TRIAL RUN]")
-    }
-    
+      auto_plot_Description(tr_overlap_for_plot, 
+                            formals(wrap_resource_Robustness),
+                            formals(summarise_Metadata), 
+                            time_of_run)
     
 
   }
