@@ -187,7 +187,7 @@ overlap_line_Plot <- function(top_ranks_overlap) {
                                            color = Method)) + 
     
     
-    geom_point(alpha = alpha) +
+    geom_point(alpha = 0.4) +
     stat_summary(alpha = 0.6,
                  fun   = mean, 
                  geom  = "line") +
@@ -220,7 +220,7 @@ overlap_box_Plot <- function(top_ranks_overlap, plotting_caption) {
                                            group = dilution_prop,
                                            color = Method)) + 
     geom_boxplot(outlier.shape = NA) + 
-    geom_point(alpha = alpha) + 
+    geom_point(alpha = 0.4) + 
     
     scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0,100)) +
     scale_x_continuous(breaks = seq(0, 100, 20)) +
