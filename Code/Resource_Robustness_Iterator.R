@@ -117,107 +117,6 @@ source("Code/Resource_Iterator_Functions.R")
 
 
 
-#------------------------------------------------------------------------------#
-# 4. Reformatting Runtime and Metadata -----------------------------------------
-{
-  # 4.1 Calculate Runtime
-  {
-    
-    
-    # By flattening we get one long seqence of time points and the portions of
-    # the script they belong to
-    runtime <- flatten(runtime)
-    
-    # save the names of the time-points for later
-    runtime_labels <- names(runtime)
-    
-    # convert run time to numeric so we can perform arithmetic operations on
-    # them. In this case we need it for subtractions, to calculate the duration
-    # between checkpoints
-    runtime_numeric <- as.numeric(runtime)
-    
-    # We calculate the passage of time between checkpoints in the 
-    # resource_Robustness().
-    # Step duration is the duration of a step between neighboring checkpoints.
-    # Time elapsed is the duration between the completion of a step and the 
-    # start of the script.
-    
-    step_duration <- c(0) # No time has passed when the script is initialized.
-    time_elapsed  <- c(0) # No time has passed when the script is initialized.
-    
-    # starting with the second index of runtime_numeric until the last index
-    for (i in 2:length(runtime_numeric)) {
-      
-      # subtract the preceding checkpoint from the checkpoint at i, this is the 
-      # amount of time that passed between these two checkpoints
-      step_duration <- c(step_duration, 
-                         runtime_numeric[[i]] - runtime_numeric[[i-1]])
-      
-      # subtract the very first checkpoint from the checkpoint at i, this is all
-      # the time that has elapsed up until now.
-      time_elapsed  <- c(time_elapsed,
-                         runtime_numeric[[i]] - runtime_numeric[[1]])
-      
-    }
-    
-    # Turn seconds into time periods using lubridate and round for simplicity
-    # Time periods are HH:MM:SS, which is earier to understand than just values
-    # in seconds.
-    step_duration <- round(seconds_to_period(step_duration))
-    time_elapsed  <- round(seconds_to_period(time_elapsed))
-    
-    
-    # summarize all the runtime data in a tibble
-    runtime <- runtime               %>%
-      as_tibble_col()                %>%
-      unnest(cols = c(value))        %>%
-      rename("Start Time" = "value") %>% 
-      add_column("Step Name"      = runtime_labels, .before = 1) %>%
-      add_column("Step Duration"  = step_duration) %>%
-      add_column("Time Elapsed"   = time_elapsed) 
-    
-    
-    # Get rid of clutter in the environment
-    rm(runtime_numeric, 
-       step_duration, 
-       time_elapsed, 
-       runtime_labels,
-       i)
-    
-    
-  }
-  
-  # 4.2 Reformat Metadata
-  # {
-  #   # Create a metadata subsection of script_params and assign it runtime
-  #   script_params[["metadata"]][["runtime"]]      <- runtime
-  #   
-  #   # If output was sunk, store the file path to metadata
-  #   if(script_params$sink_output == TRUE) {
-  #     
-  #     script_params$metadata[["sink_logfile"]] <- 
-  #       script_params[["sink_logfile"]]
-  #     
-  #   }
-  #   
-  #   # If warnings were diverted, store the file path to metadata 
-  #   if(script_params$liana_warnings == "divert") {
-  #     
-  #     script_params$metadata[["warning_logfile"]] <- 
-  #       script_params[["warning_logfile"]]
-  #     
-  #   }
-  #   
-  #   # Remove any file paths and session info outside of metadata
-  #   script_params[["sink_logfile"]]    <- NULL
-  #   script_params[["warning_logfile"]] <- NULL
-  #   
-  #   # Remove runtime now that it's a part of script_params$metadata
-  #   rm(runtime)
-  # }
-  
-}
-
 
 #------------------------------------------------------------------------------#
 # 5. Aggregate top_ranks_analysis ----------------------------------------------
@@ -422,7 +321,29 @@ source("Code/Resource_Iterator_Functions.R")
   
 }
 
+#------------------------------------------------------------------------------#
+# 4. Reformatting Runtime and Metadata -----------------------------------------
+{
+  # 4.1 Calculate Runtime
+  {
+    # By flattening we get one long seqence of time points and the portions of
+    # the script they belong to
+    runtime <- collated_robustness_results$runtime %>% 
+      flatten() %>%
+      calculate_Runtime()
 
+
+  }
+  
+  #4.2 format metadata
+  metadata <- summarise_Metadata(runtime, 
+                                 time_of_run,
+                                 formals(wrap_resource_Robustness),
+                                 master_seed_list)
+  
+  rm(runtime, master_seed_list)
+  
+}
 
 #------------------------------------------------------------------------------#
 # 7. Saving Results ------------------------------------------------------------
