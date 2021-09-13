@@ -10,9 +10,13 @@ Data/**
 !Data/.gitkeep 
 
 Outputs/**
-!Outputs/.gitkeep 
-!Outputs/Logs
-!Outputs/Logs/.gitkeep 
+!Outputs/Resource_Dilution/
+!Outputs/Resource_Dilution/Logs/
+!Outputs/Resource_Dilution/Logs/.gitkeep 
+
+!Outputs/Cluster_Dilution/
+!Outputs/Cluster_Dilution/Logs/
+!Outputs/Cluster_Dilution/Logs/.gitkeep 
 
 omnipathr-log/
 filtered_gene_bc_matrices/hg19/barcodes.tsv
