@@ -43,15 +43,20 @@ source("Code/Resource_Iterator_Functions.R")
 #------------------------------------------------------------------------------#
 # 1. Master Seed list --------------------------------------------------------
 {
-
+  # Define script params
+  {
+    source("Code/Iterator_Parameter_Functions.R")
+    # Define the time of run to uniquely tag every save file
+    time_of_run <-  Sys.time() %>%
+      as.character()       %>%
+      gsub(':', '-', .)    %>% 
+      gsub(' ', '_', .)
+    
+  }
+  
     # How many permutations of dilution should be performed?
     master_seed_list <- as.list(c(1:2))
     
-    # A tag for your results that will mark them as a test run or serious data.
-    run_mode <- "trial_run" # select between "trial_run" and "real"
-    
-    # should the results automatically be saved? TRUE or FALSE
-    save_results <- TRUE # Saved under automatically generated name in Outputs
     
     ## Process Master Seed List
     {
