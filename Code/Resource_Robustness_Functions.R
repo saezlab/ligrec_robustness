@@ -873,9 +873,6 @@ print_Title(str_glue("Iteration ",
       
     # stop the stopwatch
     runtime[[str_glue("Iteration Epilogue - Seed ", master_seed)]] <- Sys.time()  
-      
-    # Summarizing runtime
-    metadata <- list("runtime" = runtime)
     
     # If the output was sunk the location of the log is brought to the user's 
     # attention
@@ -902,7 +899,7 @@ print_Title(str_glue("Iteration ",
   
     
     # Removing now-superfluous meta data
-    rm(dilution_props, number_ranks, runtime, cellchat_nperms, feature_type, 
+    rm(dilution_props, number_ranks, cellchat_nperms, feature_type, 
        methods_vector, testdata_type, preserve_topology)
     
     
@@ -924,7 +921,7 @@ print_Title(str_glue("Iteration ",
                      "top_ranks_OP"       = top_ranks_OP,
                      "top_ranks_analysis" = top_ranks_analysis,
                      
-                     "metadata"           = metadata,
+                     "runtime"            = runtime,
                      "testdata"           = testdata)
     
     # Filter it by the outputs the user requested

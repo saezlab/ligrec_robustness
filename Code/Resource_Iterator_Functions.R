@@ -35,6 +35,8 @@ extract_top_ranks <- function(results) {
 
 
 
+
+
 flatten_names <- function(three_tier_list, depth) {
   
   new_three_tier <-
@@ -67,17 +69,17 @@ reformat_Results <- function(results) {
   # At most, there are six outputs. They fall into three pairs of two that are
   # each formatted the same way. Liana results and top ranks are formatted
   # the same way, resources and top_ranks analysis are formatted the same way,
-  # and metadata and testdata is formatted the same way.
+  # and runtime and testdata is formatted the same way.
   
   
   # We start by transposing results
   results <- transpose(results)
   
   
-  # This is the segment of the results containing metadata and testdata
-  segment_meta_test <-
+  # This is the segment of the results containing runtime and testdata
+  segment_runtime_test <-
     results[names(results) %in% intersect(names(results),
-                                          c("metadata",
+                                          c("runtime",
                                             "testdata"))]
   
   # This is the segment of the results containing resources and analysis
@@ -92,10 +94,7 @@ reformat_Results <- function(results) {
                                           c("liana_results_OP",
                                             "top_ranks_OP"))]
   
-  # Format  meta_test
-  segment_meta_test[["metadata"]]  <- segment_meta_test[["metadata"]] %>%
-    map_depth(.depth = 0, transpose) %>%
-    flatten_names(depth = 0)
+  # Runtime_test is already corrrectly formatted.
   
   # Format resources_analysis, we transpose at a deeper level
   segment_resources_analysis <- segment_resources_analysis %>%
@@ -110,7 +109,7 @@ reformat_Results <- function(results) {
     
   restructured_results <- list(segment_results_ranks, 
                                segment_resources_analysis,
-                               segment_meta_test) %>%
+                               segment_runtime_test) %>%
     flatten()
 
    return(restructured_results) 
