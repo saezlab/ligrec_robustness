@@ -1,8 +1,7 @@
 #------------------------------------------------------------------------------#
 # 0. Setup ---------------------------------------------------------------------
 {
-  # 0.1 Overview of Goals:
-  {
+  # 0.1 Overview of Goals
     # The Idea with this script is to:
     # .	run all methods on a single resource (OP)
     # .	take the topmost ranked interactions for each method -> R-zero
@@ -13,40 +12,43 @@
     # .	Rerun methods on diluted omnipath resource and extract the top ranked 
     #   CCI -> R-modified
     # .	plot percentage of R-zero in R-modified over x and investigate result
-    
-    
-  } # end of subpoint
-  
-  
-  # 0.2 Loading Packages and Starting Runtime
-  {
-
-    require(tidyverse)
-    require(Seurat)
-    require(liana)
-    require(lubridate)
-    
-  } # end of subpoint
   
   
 }
 
 
 
-source("Code/Resource_Dilution_Robustness/Ranking_and_Misc_Functions.R")
-source("Code/Resource_Dilution_Robustness/Resource_Robustness_Functions.R")
-source("Code/Resource_Dilution_Robustness/Resource_Dilution_Functions.R")
-source("Code/Resource_Dilution_Robustness/Iterator_Functions.R")
-source("Code/Resource_Dilution_Robustness/Iterator_Parameters.R")
+
+
 
 
 #------------------------------------------------------------------------------#
-# 1. Master Seed list --------------------------------------------------------
+# 1. Setup ---------------------------------------------------------------------
 {
+  require(tidyverse)
+  require(Seurat)
+  require(liana)
+  require(lubridate)
   
-    # How many permutations of dilution should be performed?
-    master_seed_list <- create_Params()$master_seed_list
-    time_of_run      <- create_Params()$time_of_run
+  
+  # Define Parameters for the following iterative robustness test
+  source("Code/Resource_Dilution_Robustness/Iterator_Parameters.R")
+  # Define functions needed for the iterator itself
+  source("Code/Resource_Dilution_Robustness/Iterator_Functions.R")
+  # Define iterator functions that specifically reference the iterator parameters
+  source("Code/Resource_Dilution_Robustness/Iterator_Parameter_Dependants.R")
+  
+  # Define functions for testing resource robustness
+  source("Code/Resource_Dilution_Robustness/Resource_Dilution_Functions.R")
+  # Define functions to dilute resources 
+  source("Code/Resource_Dilution_Robustness/Ranking_and_Misc_Functions.R")
+  # Define functions to work with top_ranked CCIs and other miscellanea
+  source("Code/Resource_Dilution_Robustness/Resource_Robustness_Functions.R")
+  
+  
+  # How many permutations of dilution should be performed?
+  master_seed_list <- create_Params()$master_seed_list
+  time_of_run      <- create_Params()$time_of_run
 
 
 }   
