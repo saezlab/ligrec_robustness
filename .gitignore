@@ -12,10 +12,14 @@ Data/**
 Outputs/**
 !Outputs/.gitkeep
 
+!Outputs/Resource_Dilution/
 !Outputs/Resource_Dilution/.gitkeep
+!Outputs/Resource_Dilution/Logs/
 !Outputs/Resource_Dilution/Logs/.gitkeep 
 
+!Outputs/Cluster_Dilution/
 !Outputs/Cluster_Dilution/.gitkeep
+!Outputs/Cluster_Dilution/Logs/
 !Outputs/Cluster_Dilution/Logs/.gitkeep 
 
 omnipathr-log/
