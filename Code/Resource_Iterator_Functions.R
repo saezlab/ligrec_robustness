@@ -175,3 +175,72 @@ reformat_Results <- function(results) {
   return(runtime)
 }
 
+
+overlap_line_Plot <- function(top_ranks_overlap) {
+  
+  plot_line <- 
+    ggplot(data = top_ranks_overlap, aes(dilution_prop,
+                                           Overlap,
+                                           group = Method,
+                                           color = Method)) + 
+    
+    
+    geom_point(alpha = alpha) +
+    stat_summary(alpha = 0.6,
+                 fun   = mean, 
+                 geom  = "line") +
+    
+    
+    scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0,100)) +
+    scale_x_continuous(breaks = seq(0, 100, 20), limits = c(0,100)) +
+    
+    ggtitle("Robustness of Method Predictions") +
+    ylab("Overlap of Top Ranks [%]") +
+    xlab("Dilution of Resource [%]") +
+    labs(subtitle = "Point scatter plot.",
+         caption = plotting_caption,
+         color = "Method") +
+    
+    theme_bw() +
+    
+    theme(plot.caption = element_text(hjust = 0),
+          legend.position = "bottom")
+  
+  return(plot_line)
+  
+}
+
+overlap_box_Plot <- function(top_ranks_overlap, plotting_caption) {
+  
+  plot_box <- 
+    ggplot(data = tr_overlap_for_plot, aes(x = dilution_prop, 
+                                           y = Overlap, 
+                                           group = dilution_prop,
+                                           color = Method)) + 
+    geom_boxplot(outlier.shape = NA) + 
+    geom_point(alpha = alpha) + 
+    
+    scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0,100)) +
+    scale_x_continuous(breaks = seq(0, 100, 20)) +
+    
+    
+    ggtitle("Robustness of Method Predictions") +
+    ylab("Overlap of Top Ranks [%]") +
+    xlab("Dilution of Resource [%]") +
+    labs(subtitle = "Boxplot by Method.",
+         caption = plotting_caption,
+         color = "Method") +
+    
+    theme_bw() + 
+    
+    
+    theme(plot.caption = element_text(hjust = 0),
+          legend.position = "bottom") +     
+    
+    facet_wrap(~Method, nrow = 2, ncol = 3, scales = "free")
+  
+  return(plot_box)
+  
+}
+
+
