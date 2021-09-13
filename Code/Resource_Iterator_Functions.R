@@ -116,6 +116,9 @@ reformat_Results <- function(results) {
    return(restructured_results) 
   
 }
+
+calculate_Runtime <- function(runtime) {
+
   # save the names of the time-points for later
   runtime_labels <- names(runtime)
   
