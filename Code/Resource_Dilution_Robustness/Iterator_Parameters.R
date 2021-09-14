@@ -188,24 +188,47 @@ wrap_resource_Robustness <-
            time_of_run
            
   ) {
+# extract_Testdata()
+{
+  #' Helper function that gets a specific seurat object from the outputs folder
+  #' 
+  #' @param testdata_type As a string. Which testdata should be retrieved? 
+  #' Either "seurat_pbmc" or "liana_test". Seurat_pbmc is the data set used in 
+  #' the seurat tutorial, while liana_test is the testdata that comes with 
+  #' LIANA++, and is a small subset of seurat_pbmc.
+  #' 
+  #' @return A seurat object loaded from the outputs folder or liana apckage.
+  
+  
+  extract_Testdata <- function(testdata_type = "liana_test") {
     
     ## Process Dilution Proportions List
     {
       # By naming each dilution proportion we can use this to label data easily
       # By formatting proportions as a list we can lapply over them conveniently
+    # Get seurat or liana test data
+    if (testdata_type == "seurat_pbmc") {
       
       # intitialize dilution names
       dilution_names <- c()
+      # Read testdata from outputs
+      testdata <- readRDS(file = "Data/pbmc3k_final.rds")     
       
       # Generate a dilution name for each proportion
       for (i in dilution_props) {
         dilution_names <- 
           c(dilution_names, str_glue("OmniPath_", as.character(i*100)))
       }
+    } else if (testdata_type == "liana_test") {
       
       # Convert dilution.proprs to a list and name it, creating a named list
       dilution_props <- as.list(dilution_props)
       names(dilution_props) <- dilution_names
+      # Where is the liana testdata located?
+      liana_path <- system.file(package = 'liana')       
+      # Read the testdata from its location.
+      testdata <- 
+        readRDS(file.path(liana_path, "testdata", "input", "testdata.rds"))   
       
       #remove clutter
       rm(dilution_names, i)
@@ -215,12 +238,15 @@ wrap_resource_Robustness <-
     {
       sink_logfile <- ""
       warning_logfile <- ""
+      # removing superfluous values
+      rm(liana_path)
       
       
       # If they are required, we auto generate log filepaths here. The filepaths
       # have the current time imminetnly before the lapply in them. Each lapply
       # should be assigned to a unique log this way that has all iterations in
       # it. 
+    } else {
       
 
       # If necessary, create a log name, store it in script params, then remove
@@ -238,6 +264,8 @@ wrap_resource_Robustness <-
         
         
       }
+      # error if its not one of the supported data sets
+      stop("Testdata name not recognized!")
       
       # If necessary, create a log name, store it in script params, then remove
       # the leftover clutter
@@ -257,6 +285,11 @@ wrap_resource_Robustness <-
     }
     
     
+    # Return the seurat.
+    return(testdata)
+    
+  }
+}
     
     resource_Robustness(
       master_seed       = master_seed, 
