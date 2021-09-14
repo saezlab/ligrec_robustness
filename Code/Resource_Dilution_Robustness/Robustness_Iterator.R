@@ -109,11 +109,17 @@
   # multiple starting seeds in master_seed_list, and will collate these samples
   # later.
   
+  # Retrieve either seurat_pbmc or liana_test data
+  testdata <- extract_Testdata()
+  
   # Apply resource_Robustness() wrapper, provide every argument but master_seed
   # To modify the defaults of the wrapper, go to Iterator_Params.R
   collated_robustness_results <- lapply(master_seed_list,
                                         wrap_resource_Robustness,
+                                        testdata    = testdata,
                                         time_of_run = time_of_run)
+  
+  rm(testdata)
   
   
 }
@@ -178,12 +184,14 @@
       tr_overlap_for_plot,
       formals(wrap_resource_Robustness),
       formals(summarise_Metadata),
+      formals(extract_Testdata)$testdata_type,
       time_of_run)
   
   
   
   # Generate our plots with functions.
-  plot_line <- overlap_line_Plot(tr_overlap_for_plot)
+  plot_line <- overlap_line_Plot(tr_overlap_for_plot,
+                                 plotting_caption)
   
   plot_box <- overlap_box_Plot(tr_overlap_for_plot,
                                plotting_caption)
@@ -222,6 +230,7 @@
   metadata <- summarise_Metadata(runtime,
                                  time_of_run,
                                  formals(wrap_resource_Robustness),
+                                 formals(extract_Testdata)$testdata_type,
                                  master_seed_list)
   
   # Now that these objects are stored in the metadata object, we can remove
@@ -242,9 +251,12 @@
     
     save_Results(dilution_params = formals(wrap_resource_Robustness),
                  meta_params     = formals(summarise_Metadata),
+                 testdata_type   = formals(extract_Testdata)$testdata_type,
                  time_of_run     = time_of_run)
     
   }
   
   
 }
+
+
