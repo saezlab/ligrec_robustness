@@ -2,6 +2,7 @@ auto_file_Name <- function(prefix,
                            suffix, 
                            dilution_params,
                            meta_params,
+                           testdata_type,
                            time_of_run) {
   
   if (meta_params$trial_run == FALSE) {
@@ -25,7 +26,7 @@ auto_file_Name <- function(prefix,
   
   
   testdata_comment <-     
-    str_glue(dilution_params$testdata_type, "_")
+    str_glue(testdata_type, "_")
   
   
   
@@ -61,6 +62,7 @@ auto_file_Name <- function(prefix,
 auto_plot_Description <- function(top_ranks_overlap, 
                                   dilution_params, 
                                   meta_params,
+                                  testdata_type,
                                   time_of_run) {
   
   ## General comment, on testdata type, feature_type and topology 
@@ -77,7 +79,7 @@ auto_plot_Description <- function(top_ranks_overlap,
     
     
     general_comment <- str_glue("This plot was created using the ",
-                                dilution_params$testdata_type,
+                                testdata_type,
                                 " data. Dilution was performed using ",
                                 dilution_params$feature_type,
                                 " features and the ",
@@ -182,6 +184,7 @@ auto_plot_Description <- function(top_ranks_overlap,
 
 save_Results <- function(dilution_params,
                          meta_params, 
+                         testdata_type,
                          time_of_run) {
   
   if (meta_params$trial_run == FALSE) {
@@ -210,6 +213,7 @@ save_Results <- function(dilution_params,
       suffix = ".png",
       dilution_params = dilution_params,
       meta_params     = meta_params,
+      testdata_type   = testdata_type,
       time_of_run     = time_of_run
     )
   
@@ -219,6 +223,7 @@ save_Results <- function(dilution_params,
       suffix = ".png",
       dilution_params = dilution_params,
       meta_params     = meta_params,
+      testdata_type   = testdata_type,
       time_of_run     = time_of_run
     )
   
@@ -228,6 +233,7 @@ save_Results <- function(dilution_params,
     suffix = ".RData",
     dilution_params = dilution_params,
     meta_params     = meta_params,
+    testdata_type   = testdata_type,
     time_of_run     = time_of_run
   )
   
@@ -238,15 +244,15 @@ save_Results <- function(dilution_params,
     plot = plot_box,
     box_plot_png_name,
     height = 7.75,
-    width = 8,
+    width = 8.00,
     path = "Outputs/Resource_Dilution"
   )
   
   ggsave(
     plot = plot_line,
     line_plot_png_name,
-    height = 8.5,
-    width = 8,
+    height = 9.00,
+    width = 8.00,
     path = "Outputs/Resource_Dilution"
   )
   
