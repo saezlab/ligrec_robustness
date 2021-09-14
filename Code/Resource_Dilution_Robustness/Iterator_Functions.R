@@ -178,7 +178,7 @@ calculate_Runtime <- function(runtime) {
 }
 
 
-overlap_line_Plot <- function(top_ranks_overlap) {
+overlap_line_Plot <- function(top_ranks_overlap, plotting_caption) {
   
   plot_line <- 
     ggplot(data = top_ranks_overlap, aes(dilution_prop,
@@ -199,7 +199,7 @@ overlap_line_Plot <- function(top_ranks_overlap) {
     ggtitle("Robustness of Method Predictions") +
     ylab("Overlap of Top Ranks [%]") +
     xlab("Dilution of Resource [%]") +
-    labs(subtitle = "Point scatter plot.",
+    labs(subtitle = "Line / point scatter plot.",
          caption = plotting_caption,
          color = "Method") +
     
