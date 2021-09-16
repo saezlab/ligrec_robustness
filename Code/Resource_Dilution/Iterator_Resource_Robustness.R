@@ -95,7 +95,9 @@ wrap_resource_Iterator <-
   time_of_run <-  Sys.time() %>%
     as.character()    %>% 
     gsub(':', '-', .) %>% # save files can't have colons
-    gsub(' ', '_', .)     # save files shouldn't have spaces
+    gsub(' ', '_', .) %>% # save files shouldn't have spaces
+    str_sub(1 , nchar(.) - 3) # the code never runs in under a minute, so the 
+                              # number of seconds isn't valuable information.
   
 }  
 
