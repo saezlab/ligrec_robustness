@@ -118,41 +118,21 @@
   wrap_resource_Robustness <-
     function(master_seed,
              testdata,
-
-             feature_type      = "variable", # "generic" or "variable"
-             preserve_topology = FALSE,      # TRUE or FALSE
-             dilution_props    = c(seq(0.40, 1.00, 0.40)),
+             feature_type,
+             preserve_topology, 
+             dilution_props,
+             number_ranks,
+             methods_vector,
              
-             outputs = c(
-               "liana_results_OP"  ,
-               "resources_OP"      ,
-               "top_ranks_OP"      ,
-               "top_ranks_analysis",
-               "runtime"          ,
-               "testdata"
-             ),
+             bundled_outputs,
+             cellchat_nperms,
              
-             methods_vector = c('call_connectome' ,
-                                #'squidpy'         ,
-                                'call_natmi'      ,
-                                'call_italk'      ,
-                                'call_sca'        ,
-                                'cellchat'),
-             
-             number_ranks = list(
-               "call_connectome" = 20,
-               "squidpy"         = 20,
-               "call_natmi"      = 20,
-               "call_italk"      = 20,
-               "call_sca"        = 20,
-               "cellchat"        = 20
-             ),
-             
-             cellchat_nperms = 10,       # default 100 for real data
-             sink_output     = FALSE,    # TRUE or FALSE
-             liana_warnings  = "divert", # TRUE, FALSE, or "divert"
-             
-             time_of_run) {
+             sink_output,     
+             liana_warnings,
+             trial_run,
+             time_of_run,
+             testdata_type) {
+      
       
       ## Process Dilution Proportions List
       {
@@ -193,11 +173,13 @@
             auto_file_Name(
               prefix = "Outputs/Resource_Dilution/Logs/Complete_Log_",
               suffix =  ".txt",
-              dilution_params = formals(wrap_resource_Robustness),
-              meta_params     = formals(summarise_Metadata),
-              testdata_type   = formals(extract_Testdata)$testdata_type,
-              time_of_run     = time_of_run
-            )
+              
+              preserve_topology  = preserve_topology,
+              testdata_type      = testdata_type,
+              feature_type       = feature_type,
+              number_ranks       = number_ranks,
+              time_of_run        = time_of_run,
+              trial_run          = trial_run)
           
           
         }
@@ -211,11 +193,13 @@
             auto_file_Name(
               prefix = "Outputs/Resource_Dilution/Logs/LIANA_warnings_",
               suffix =  ".txt",
-              dilution_params = formals(wrap_resource_Robustness),
-              meta_params     = formals(summarise_Metadata),
-              testdata_type   = formals(extract_Testdata)$testdata_type,
-              time_of_run     = time_of_run
-            )
+              
+              preserve_topology  = preserve_topology,
+              testdata_type      = testdata_type,
+              feature_type       = feature_type,
+              number_ranks       = number_ranks,
+              time_of_run        = time_of_run,
+              trial_run          = trial_run)
           
           
         }
@@ -231,7 +215,7 @@
         preserve_topology = preserve_topology,
         dilution_props    = dilution_props,
         number_ranks      = number_ranks,
-        outputs           = outputs,
+        bundled_outputs   = bundled_outputs,
         
         methods_vector    = methods_vector,
         cellchat_nperms   = cellchat_nperms,
@@ -331,13 +315,28 @@
   
   
   
-  summarise_Metadata <- function(runtime,
-                                 time_of_run,
-                                 dilution_params,
-                                 testdata_type,
+  summarise_Metadata <- function(number_seeds,
                                  master_seed_list,
-                                 save_results = TRUE,
-                                 trial_run    = TRUE) {
+                                 testdata_type,
+                                 feature_type, 
+                                 preserve_topology,    
+                                 dilution_props,
+                                 number_ranks,
+                                 methods_vector,
+                                
+                                 sink_output,    
+                                 liana_warnings,
+                                
+                                 cellchat_nperms,       
+                                 bundled_outputs,
+                                 master_outputs,
+                                
+
+                                 save_results,
+                                 trial_run,
+                            
+                                 runtime,
+                                 time_of_run) {
     
     # Summarize the metadata parameters
     meta_params <- list(
@@ -346,11 +345,28 @@
       "trial_run"    = trial_run
     )
     
+    dilution_params <- list(
+      "number_seeds"      = number_seeds,
+      "master_seed_list"  = master_seed_list,
+      "testdata_type"     = testdata_type,
+      "feature_type"      = feature_type, 
+      "preserve_topology" = preserve_topology,    
+      "dilution_props"    = dilution_props,
+      "number_ranks"      = number_ranks ,
+      "methods_vector"    = methods_vector,
+      
+      "sink_output"       = sink_output,    
+      "liana_warnings"    = liana_warnings,
+      
+      "cellchat_nperms"   = cellchat_nperms,       
+      "bundled_outputs"   = bundled_outputs,
+      "master_outputs"    = master_outputs
+    )
+    
     # Put all the parameters in a list
     metadata <- list(
       "runtime"         = runtime,
-      "dilution_params" = append(dilution_params,
-                                 master_seed_list),
+      "dilution_params" = dilution_params,
       "meta_params"     = meta_params,
       "sessionInfo"     = sessionInfo()
     )
@@ -364,66 +380,76 @@
         auto_file_Name(
           prefix = "Boxplot_Resource_Dilution_",
           suffix = ".png",
-          dilution_params = formals(wrap_resource_Robustness),
-          meta_params     = formals(summarise_Metadata),
-          testdata_type   = formals(extract_Testdata)$testdata_type,
-          time_of_run     = time_of_run
-        )
+          
+          preserve_topology  = preserve_topology,
+          testdata_type      = testdata_type,
+          feature_type       = feature_type,
+          number_ranks       = number_ranks,
+          time_of_run        = time_of_run,
+          trial_run          = trial_run)
       
       metadata[["line_plot_png_name"]] <-
         auto_file_Name(
           prefix = "Lineplot_Resource_Dilution_",
           suffix = ".png",
-          dilution_params = formals(wrap_resource_Robustness),
-          meta_params     = formals(summarise_Metadata),
-          testdata_type   = formals(extract_Testdata)$testdata_type,
-          time_of_run     = time_of_run
-        )
+          
+          preserve_topology  = preserve_topology,
+          testdata_type      = testdata_type,
+          feature_type       = feature_type,
+          number_ranks       = number_ranks,
+          time_of_run        = time_of_run,
+          trial_run          = trial_run)
       
-      metadata[["env_save_path"]] <-
+      metadata[["iterator_results_save_path"]] <-
         auto_file_Name(
-          prefix = "Outputs/DilutionEnv_",
+          prefix = "Outputs/Resource_Dilution/Iterator_Results_",
           suffix = ".RData",
-          dilution_params = formals(wrap_resource_Robustness),
-          meta_params     = formals(summarise_Metadata),
-          testdata_type   = formals(extract_Testdata)$testdata_type,
-          time_of_run     = time_of_run
-        )
+          
+          preserve_topology  = preserve_topology,
+          testdata_type      = testdata_type,
+          feature_type       = feature_type,
+          number_ranks       = number_ranks,
+          time_of_run        = time_of_run,
+          trial_run          = trial_run)
     }
     
     
     # If the resource_Robustness() output was sunk and logged, append the 
     # file name of the log to the metadata.
-    if (dilution_params$sink_output == TRUE) {
+    if (sink_output == TRUE) {
       # The file name includes many script_params in it to be informative and
       # unique.
       metadata[["sink_logfile"]] <-
         auto_file_Name(
-          prefix = "Outputs/Logs/Complete_Log_",
-          suffix =  ".txt",
-          dilution_params = formals(wrap_resource_Robustness),
-          meta_params     = formals(summarise_Metadata),
-          testdata_type   = formals(extract_Testdata)$testdata_type,
-          time_of_run     = time_of_run
-        )
+          prefix = "Outputs/Resource_Dilution/Logs/Complete_Log_",
+          suffix = ".txt",
+          
+          preserve_topology  = preserve_topology,
+          testdata_type      = testdata_type,
+          feature_type       = feature_type,
+          number_ranks       = number_ranks,
+          time_of_run        = time_of_run,
+          trial_run          = trial_run)
       
       
     }
     
     # If a warnings log was created for resource_Robustness(), append the file
     # name of the log to the metadata.
-    if (dilution_params$liana_warnings == "divert") {
+    if (liana_warnings == "divert") {
       # The file name includes many script_params in it to be informative and
       # unique.
       metadata[["warning_logfile"]] <-
         auto_file_Name(
-          prefix = "Outputs/Logs/LIANA_warnings_",
-          suffix =  ".txt",
-          dilution_params = formals(wrap_resource_Robustness),
-          meta_params     = formals(summarise_Metadata),
-          testdata_type   = formals(extract_Testdata)$testdata_type,
-          time_of_run     = time_of_run
-        )
+          prefix = "Outputs/Resource_Dilution/Logs/LIANA_warnings_",
+          suffix = ".txt",
+          
+          preserve_topology  = preserve_topology,
+          testdata_type      = testdata_type,
+          feature_type       = feature_type,
+          number_ranks       = number_ranks,
+          time_of_run        = time_of_run,
+          trial_run          = trial_run)
       
       
     }

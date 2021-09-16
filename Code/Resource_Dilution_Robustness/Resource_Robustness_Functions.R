@@ -100,19 +100,14 @@ resource_Robustness <- function(testdata,
                                 dilution_props,
                                 number_ranks,
                                 master_seed,
-                                outputs = c("liana_results_OP",
-                                            "resources_OP",
-                                            "top_ranks_OP",
-                                            "top_ranks_analysis",
-                                            "metadata", 
-                                            "testdata"),
+                                bundled_outputs,
                                 
                                 methods_vector,
-                                cellchat_nperms = 100,
-                                sink_output     = FALSE,
-                                liana_warnings  = TRUE,
-                                sink_logfile    = "",
-                                warning_logfile = "") {
+                                cellchat_nperms,
+                                sink_output,
+                                liana_warnings,
+                                sink_logfile,
+                                warning_logfile) {
   
 runtime <- list()
 runtime[[str_glue("Iteration Start - Seed ", master_seed)]] <- Sys.time()

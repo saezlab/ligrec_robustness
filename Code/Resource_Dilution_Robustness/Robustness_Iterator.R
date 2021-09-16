@@ -169,9 +169,24 @@ wrap_resource_Iterator <-
   # To modify the defaults of the wrapper, go to Iterator_Params.R
   collated_robustness_results <- lapply(master_seed_list,
                                         wrap_resource_Robustness,
-                                        testdata    = testdata,
-                                        time_of_run = time_of_run)
+                                        
+                                        testdata          = testdata,
+                                        feature_type      = feature_type,
+                                        preserve_topology = preserve_topology, 
+                                        dilution_props    = dilution_props,
+                                        number_ranks      = number_ranks,
+                                        methods_vector    = methods_vector,
+                                        
+                                        bundled_outputs = bundled_outputs,
+                                        cellchat_nperms = cellchat_nperms, 
+                                        
+                                        sink_output     = sink_output,     
+                                        liana_warnings  = liana_warnings,
+                                        trial_run       = trial_run,
+                                        time_of_run     = time_of_run,
+                                        testdata_type   = testdata_type)
   
+  # We don't need the testdata after this point.
   rm(testdata)
   
   
@@ -235,10 +250,16 @@ wrap_resource_Iterator <-
   plotting_caption <-
     auto_plot_Description(
       tr_overlap_for_plot,
-      formals(wrap_resource_Robustness),
-      formals(summarise_Metadata),
-      formals(extract_Testdata)$testdata_type,
-      time_of_run)
+      
+      preserve_topology  = preserve_topology,
+      testdata_type      = testdata_type,
+      feature_type       = feature_type,
+      number_ranks       = number_ranks,
+      time_of_run        = time_of_run,
+      trial_run          = trial_run)
+  
+  
+  
   
   
   
@@ -280,11 +301,28 @@ wrap_resource_Iterator <-
   
   
   # We then summarise the above information and more into a single object
-  metadata <- summarise_Metadata(runtime,
-                                 time_of_run,
-                                 formals(wrap_resource_Robustness),
-                                 formals(extract_Testdata)$testdata_type,
-                                 master_seed_list)
+  metadata <- summarise_Metadata(number_seeds      = number_seeds,
+                                 master_seed_list  = master_seed_list,
+                                 testdata_type     = testdata_type,
+                                 feature_type      = feature_type, 
+                                 preserve_topology = preserve_topology,    
+                                 dilution_props    = dilution_props,
+                                 number_ranks      = number_ranks ,
+                                 methods_vector    = methods_vector,
+                                 
+                                 sink_output       = sink_output,    
+                                 liana_warnings    = liana_warnings,
+                                 
+                                 cellchat_nperms   = cellchat_nperms,       
+                                 bundled_outputs   = bundled_outputs,
+                                 master_outputs    = master_outputs,
+                                 
+                                 
+                                 save_results = save_results,
+                                 trial_run    = trial_run,
+                                 
+                                 runtime      = runtime,
+                                 time_of_run  = time_of_run)
   
   # Now that these objects are stored in the metadata object, we can remove
   # this clutter from the environment.
@@ -292,6 +330,7 @@ wrap_resource_Iterator <-
   
   
 }
+    
 
 
 #------------------------------------------------------------------------------#
@@ -316,16 +355,22 @@ wrap_resource_Iterator <-
     
     
 #------------------------------------------------------------------------------#
-# 6. Saving Results ------------------------------------------------------------
+# 7. Saving Results ------------------------------------------------------------
 {
   # In this segment we save the plots and environment to the outputs folder,
   # if it's specified in Iterator_Params.R
-  if (formals(summarise_Metadata)$save_results == TRUE) {
+  if (save_results == TRUE) {
     
-    save_Results(dilution_params = formals(wrap_resource_Robustness),
-                 meta_params     = formals(summarise_Metadata),
-                 testdata_type   = formals(extract_Testdata)$testdata_type,
-                 time_of_run     = time_of_run)
+    save_Results(plot_box  = plot_box,
+                 plot_line = plot_line, 
+                 iterator_results = iterator_results,
+                 
+                 preserve_topology  = preserve_topology,
+                 testdata_type      = testdata_type,
+                 feature_type       = feature_type,
+                 number_ranks       = number_ranks,
+                 time_of_run        = time_of_run,
+                 trial_run          = trial_run)
     
   }
   
