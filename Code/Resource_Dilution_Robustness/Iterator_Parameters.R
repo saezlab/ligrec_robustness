@@ -245,7 +245,7 @@
   #' @return A seurat object loaded from the outputs folder or liana apckage.
   
   
-  extract_Testdata <- function(testdata_type = "liana_test") {
+  extract_Testdata <- function(testdata_type) {
     
     # Get seurat or liana test data
     if (testdata_type == "seurat_pbmc") {
