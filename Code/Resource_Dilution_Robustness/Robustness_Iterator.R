@@ -152,7 +152,39 @@ wrap_resource_Iterator <-
       "metadata"
     )                                  
                                             ) {
+    
+#------------------------------------------------------------------------------#
+# 1. Generate Parameters  ------------------------------------------------------ 
+{
+  # Retrieve either seurat_pbmc or liana_test data
+  testdata <- extract_Testdata(testdata_type = testdata_type)
+                               
+                               
+  
+  # Format a named list of seeds, it contains as many seeds as the user 
+  # specified, from 1 to n, and each entry has an appropriate name, "Seed_n"
+  master_seed_list <- as.list(1:number_seeds)
+  
+  names(master_seed_list) <-
+    map(master_seed_list, function(seed) {
+      
+      # Name each element of master_seed_list appropriately
+      str_glue("Seed_", seed)
+      
+    })
+  
+  # Format the Sys.time() of the run to not contain characters that are bad to
+  # have in save file names. We will later use this to tag file names and
+  # plots so they can be grouped according to run, and all have unique names.
+  time_of_run <-  Sys.time() %>%
+    as.character()    %>% 
+    gsub(':', '-', .) %>% # save files can't have colons
+    gsub(' ', '_', .)     # save files shouldn't have spaces
+  
+}  
 
+  
+  
 #------------------------------------------------------------------------------#
 # 2. Iterate resource_Robustness() ---------------------------------------------
 {
@@ -161,9 +193,6 @@ wrap_resource_Iterator <-
   # resources. Since there is randomness to resource dilution, we iterate over
   # multiple starting seeds in master_seed_list, and will collate these samples
   # later.
-  
-  # Retrieve either seurat_pbmc or liana_test data
-  testdata <- extract_Testdata()
   
   # Apply resource_Robustness() wrapper, provide every argument but master_seed
   # To modify the defaults of the wrapper, go to Iterator_Params.R
