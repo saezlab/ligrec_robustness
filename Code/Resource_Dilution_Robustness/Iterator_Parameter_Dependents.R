@@ -203,3 +203,103 @@
   }  # end of function
   
 }
+
+
+# save_Results()
+{
+  #' 
+  #'
+  #'
+  #'
+  #'
+  #'
+  
+  save_Results <- function(plot_box,
+                           plot_line,
+                           iterator_results,
+                           
+                           trial_run,
+                           preserve_topology,
+                           testdata_type,
+                           feature_type,
+                           number_ranks,
+                           time_of_run) {
+    
+    # Generate the filepaths to save the data under
+    box_plot_png_name <-
+      auto_file_Name(
+        prefix = "Boxplot_Resource_Dilution_",
+        suffix = ".png",
+        
+        preserve_topology  = preserve_topology,
+        testdata_type      = testdata_type,
+        feature_type       = feature_type,
+        number_ranks       = number_ranks,
+        time_of_run        = time_of_run,
+        trial_run          = trial_run)
+    
+    line_plot_png_name <-
+      auto_file_Name(
+        prefix = "Lineplot_Resource_Dilution_",
+        suffix = ".png",
+        
+        preserve_topology  = preserve_topology,
+        testdata_type      = testdata_type,
+        feature_type       = feature_type,
+        number_ranks       = number_ranks,
+        time_of_run        = time_of_run,
+        trial_run          = trial_run)
+    
+    iterator_results_save_path <- 
+      auto_file_Name(
+      prefix = "Outputs/Resource_Dilution/Iterator_Results_",
+      suffix = ".RData",
+      
+      preserve_topology  = preserve_topology,
+      testdata_type      = testdata_type,
+      feature_type       = feature_type,
+      number_ranks       = number_ranks,
+      time_of_run        = time_of_run,
+      trial_run          = trial_run)
+    
+    
+    
+    
+    # Save both plots
+    ggsave(
+      plot = plot_box,
+      box_plot_png_name,
+      height = 7.75,
+      width = 8.00,
+      path = "Outputs/Resource_Dilution"
+    )
+    
+    ggsave(
+      plot = plot_line,
+      line_plot_png_name,
+      height = 9.00,
+      width = 8.00,
+      path = "Outputs/Resource_Dilution"
+    )
+    
+    # Save R environment and all the results within it
+    save(iterator_results, file = iterator_results_save_path)
+    
+    
+    
+    
+    # Let the user know where everything was stored.
+    print(str_glue("Box Plot saved at ~/Outputs/Resource_Dilution/",
+                   box_plot_png_name, "."))
+    
+    print(str_glue("Line Plot saved at ~/Outputs/Resource_Dilution/",
+                   line_plot_png_name, "."))
+    
+    print(str_glue("Iterator Results saved at ~/",
+                   iterator_results_save_path, "."))
+    
+  }  # end of function
+}
+
+
+
