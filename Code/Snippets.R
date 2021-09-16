@@ -462,3 +462,152 @@ for (method in methods_vector){
 ## 14. Check if all the testdata is the same ----
 
 lapply(testdata, all.equal, testdata$Testdata_Seed_1)
+
+
+
+## 15. Check if parts of the new results and unit test are the same
+
+# unit test and new run agree on overlap
+all_equal(robustness_old$complete_top_ranks_overlap[, c(1, 3, 4)], +
+            robustness_standard$collated_top_ranks_overlap)
+
+# unit test and new run don't agree on plot data structure but are visually 
+# identical
+
+# agreement liana results connectome 80% seed 1, 2
+all_equal(
+  robustness_old$dilution_robustness_results$liana_results_OP$call_connectome$OmniPath_80$OmniPath_80_Seed_1,
+  robustness_standard$collated_robustness_results$liana_results_OP$call_connectome$OmniPath_80_Seed_1
+)
+
+all_equal(
+  robustness_old$dilution_robustness_results$liana_results_OP$call_connectome$OmniPath_80$OmniPath_80_Seed_2,
+  robustness_standard$collated_robustness_results$liana_results_OP$call_connectome$OmniPath_80_Seed_2
+)
+
+
+# same for natmi
+all_equal(
+  robustness_old$dilution_robustness_results$liana_results_OP$call_natmi$OmniPath_80$OmniPath_80_Seed_1,
+  robustness_standard$collated_robustness_results$liana_results_OP$call_natmi$OmniPath_80_Seed_1
+)
+
+all_equal(
+  robustness_old$dilution_robustness_results$liana_results_OP$call_natmi$OmniPath_80$OmniPath_80_Seed_2,
+  robustness_standard$collated_robustness_results$liana_results_OP$call_natmi$OmniPath_80_Seed_2
+)
+
+# only the list names for testdata are different
+all.equal(robustness_old$dilution_robustness_results$testdata, 
+          robustness_standard$collated_robustness_results$testdata)
+
+# resources are the same
+all.equal(robustness_old$dilution_robustness_results$resources_OP$OmniPath_40$OmniPath_40_Seed_2, 
+          robustness_standard$collated_robustness_results$resources_OP$OmniPath_40_Seed_2)
+
+all.equal(robustness_old$dilution_robustness_results$resources_OP$OmniPath_80$OmniPath_80_Seed_1, 
+          robustness_standard$collated_robustness_results$resources_OP$OmniPath_80_Seed_1)
+
+all.equal(robustness_old$dilution_robustness_results$resources_OP$OmniPath_80$OmniPath_80_Seed_2, 
+          robustness_standard$collated_robustness_results$resources_OP$OmniPath_80_Seed_2)
+
+
+
+
+## 16. Setup testenvironment for editing the iterator
+
+
+
+
+{
+  # Load required Packages
+  require(tidyverse)
+  require(Seurat)
+  require(liana)
+  require(lubridate)
+  
+  
+  # Define the functions needed to perform our analysis
+  
+  # Define the iterator wrapper function, which produces the end results
+  source("Code/Resource_Dilution_Robustness/Robustness_Iterator.R")
+  # Define Parameters for the following iterative robustness test
+  source("Code/Resource_Dilution_Robustness/Iterator_Parameters.R")
+  # Define functions needed for the iterator directly itself
+  source("Code/Resource_Dilution_Robustness/Iterator_Functions.R")
+  # Define functions that specifically reference the iterator parameters
+  source("Code/Resource_Dilution_Robustness/Iterator_Parameter_Dependents.R")
+  
+  # Define functions for testing resource robustness
+  source("Code/Resource_Dilution_Robustness/Resource_Dilution_Functions.R")
+  # Define functions to dilute resources
+  source("Code/Resource_Dilution_Robustness/Ranking_and_Misc_Functions.R")
+  # Define functions to work with top_ranked CCIs and other miscellanea
+  source("Code/Resource_Dilution_Robustness/Resource_Robustness_Functions.R")
+  
+  
+  
+  number_seeds      <- 2
+  testdata_type     <- "liana_test"
+  feature_type      <- "variable"
+  preserve_topology <- FALSE
+  dilution_props    <- c(seq(0.40, 1.00, 0.40))
+  
+  number_ranks <- list(
+    "call_connectome" = 20,
+    "squidpy"         = 20,
+    "call_natmi"      = 20,
+    "call_italk"      = 20,
+    "call_sca"        = 20,
+    "cellchat"        = 20
+  )
+  
+  methods_vector <- c('call_connectome' ,
+                      #'squidpy'         ,
+                      #'call_natmi'      ,
+                      'call_italk'      ,
+                      'call_sca'        #,
+                      #'cellchat'
+  )
+  
+  sink_output     <- FALSE    
+  liana_warnings  <- "divert" 
+  
+  save_results    <- TRUE
+  trial_run       <- TRUE
+  
+  
+  
+  
+  cellchat_nperms <- 10       
+  
+  bundled_outputs <- c(
+    "liana_results_OP"  ,
+    "resources_OP"      ,
+    "top_ranks_OP"      ,
+    "top_ranks_analysis",
+    "runtime"          ,
+    "testdata"
+  )
+  
+  master_outputs <- c(
+    "collated_top_ranks_overlap",
+    "plot_box",
+    "plot_line",
+    "collated_robustness_results",
+    "metadata"
+  )                           
+  
+}
+
+
+save.image("Outputs/Resource_Dilution/testenv_wrap_iterator.RData")
+
+
+load("Outputs/Resource_Dilution/testenv_wrap_iterator.RData")
+
+
+
+
+
+
