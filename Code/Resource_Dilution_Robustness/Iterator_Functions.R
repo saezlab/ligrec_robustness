@@ -215,7 +215,7 @@ overlap_line_Plot <- function(top_ranks_overlap, plotting_caption) {
 overlap_box_Plot <- function(top_ranks_overlap, plotting_caption) {
   
   plot_box <- 
-    ggplot(data = tr_overlap_for_plot, aes(x = dilution_prop, 
+    ggplot(data = top_ranks_overlap, aes(x = dilution_prop, 
                                            y = Overlap, 
                                            group = dilution_prop,
                                            color = Method)) + 
