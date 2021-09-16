@@ -41,14 +41,30 @@
 #' with 10 % of its rows diluted, undiluted vs 20 % diluted, and undiluted vs
 #' 30 % diluted.
 #' 
-#' @param outputs Which outputs of the calculation would you like to return? 
-#' By default, all the method results, resources used, top ranked CCIs, analysis 
-#' of top ranks, script parameters and the chosen testdata are returned in a
-#' list. Construct an atomic vector using all or some of "liana_results_OP", 
-#' "resources_OP", "top_ranks_OP", "top_ranks_analysis","metadata", and 
-#' "testdata" to tell the script which outputs should go in the returned list.
-#' It's probably best to run this once with testdata to better understand which
-#' list element holds which data, and then pair it down to what is needed.
+#' @param bundled_outputs Which outputs of the calculation would you like to 
+#' return? Outputs are returned bundled up in a list. By default, only the analysis
+#' of top_ranks and runtime data is returned, but more infomation can be returned.
+#' Construct an atomic vector using all or some of "liana_results_OP", 
+#' "resources_OP", "top_ranks_OP", "top_ranks_analysis","runtime", and 
+#' "testdata" to tell the script which outputs should go in the output bundle.
+#' 
+#' "liana_results_OP": All the predicted CCI's from LIANA++ for each method and
+#' dilution stage.
+#' 
+#' "resources_OP": All the resources that were used are returned.
+#' 
+#' "top_ranks_OP": All the highest ranked CCI's from LIANA++ for each method 
+#' and dilution stage.
+#' 
+#' "top_ranks_analysis": How the diluted top predictions related to the 
+#' undiluted predictions in terms of overlap, mismatch, proportion of fake 
+#' interactions in top_ranks, and proportion of mismatch caused by fake 
+#' interactions. 
+#' 
+#' "runtime": What was the runtime of this function was like.
+#' 
+#' "testdata": What was the testdata that was used in this run. Since that's 
+#' also a user supplied Seurat, there is almost never a reason to return this.
 #' 
 #' @param number_ranks A named list. Each item is named after a method and is 
 #' equal to the number of top interactions considered relevant for that method. 
@@ -146,7 +162,6 @@ print_Title(str_glue("Iteration ",
   
   # 0.2 Printing Iteration Header to Warnings Log
   {
-    
     
   if(liana_warnings == "divert") {
     
