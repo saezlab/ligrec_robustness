@@ -202,10 +202,10 @@
         # removethe leftover clutter
         if (sink_output == TRUE) {
         # The file name includes many script_params in it to be informative and
-        # unique.
+        # unique. RD stands for Resource Dilution.
           sink_logfile <-
             auto_file_Name(
-              prefix = "Outputs/Resource_Dilution/Logs/Complete_Log_",
+              prefix = "Outputs/Resource_Dilution/Logs/Complete_Log_RD_",
               suffix =  ".txt",
               
               preserve_topology  = preserve_topology,
@@ -222,10 +222,10 @@
         # remove the leftover clutter
         if (liana_warnings == "divert") {
         # The file name includes many script_params in it to be informative and
-        # unique.
+        # unique. RD stands for Resource Dilution.
           warning_logfile <-
             auto_file_Name(
-              prefix = "Outputs/Resource_Dilution/Logs/LIANA_warnings_",
+              prefix = "Outputs/Resource_Dilution/Logs/LIANA_warnings_RD_",
               suffix =  ".txt",
               
               preserve_topology  = preserve_topology,
@@ -412,10 +412,11 @@
     # If the results were saved, tack the file names that the saves are under 
     # onto the end of metadata.
     if (save_results == TRUE) {
-      # Generate the filepaths to save the data under
+      # Generate the filepaths data was saved under. 
+      # RD stands for Resource Dilution.
       metadata[["box_plot_png_name"]] <-
         auto_file_Name(
-          prefix = "Boxplot_Resource_Dilution_",
+          prefix = "Boxplot_RD_",
           suffix = ".png",
           
           preserve_topology  = preserve_topology,
@@ -427,7 +428,7 @@
       
       metadata[["line_plot_png_name"]] <-
         auto_file_Name(
-          prefix = "Lineplot_Resource_Dilution_",
+          prefix = "Lineplot_RD_",
           suffix = ".png",
           
           preserve_topology  = preserve_topology,
@@ -439,7 +440,7 @@
       
       metadata[["iterator_results_save_path"]] <-
         auto_file_Name(
-          prefix = "Outputs/Resource_Dilution/Iterator_Results_",
+          prefix = "Outputs/Resource_Dilution/Iterator_Results_RD_",
           suffix = ".RData",
           
           preserve_topology  = preserve_topology,
@@ -455,11 +456,11 @@
     # file name of the log to the metadata.
     if (sink_output == TRUE) {
       # The file name includes many script_params in it to be informative and
-      # unique.
+      # unique. RD stands for Resource Dilution.
       metadata[["sink_logfile"]] <-
         auto_file_Name(
-          prefix = "Outputs/Resource_Dilution/Logs/Complete_Log_",
-          suffix = ".txt",
+          prefix = "Outputs/Resource_Dilution/Logs/Complete_Log_RD_",
+          suffix =  ".txt",
           
           preserve_topology  = preserve_topology,
           testdata_type      = testdata_type,
@@ -475,11 +476,11 @@
     # name of the log to the metadata.
     if (liana_warnings == "divert") {
       # The file name includes many script_params in it to be informative and
-      # unique.
+      # unique. RD stands for Resource Dilution.
       metadata[["warning_logfile"]] <-
         auto_file_Name(
-          prefix = "Outputs/Resource_Dilution/Logs/LIANA_warnings_",
-          suffix = ".txt",
+          prefix = "Outputs/Resource_Dilution/Logs/LIANA_warnings_RD_",
+          suffix =  ".txt",
           
           preserve_topology  = preserve_topology,
           testdata_type      = testdata_type,
@@ -490,6 +491,9 @@
       
       
     }
+    
+    
+    
     
     
     # return the metadata.

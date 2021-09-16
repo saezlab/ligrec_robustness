@@ -71,20 +71,20 @@
   # Define the functions needed to perform our analysis
   
   # Define the iterator wrapper function, which produces the end results
-  source("Code/Resource_Dilution_Robustness/Robustness_Iterator.R")
+  source("Code/Resource_Dilution/Iterator_Resource_Robustness.R")
   # Define Parameters for the following iterative robustness test
-  source("Code/Resource_Dilution_Robustness/Iterator_Parameters.R")
+  source("Code/Resource_Dilution/Iterator_Parameters.R")
   # Define functions needed for the iterator directly itself
-  source("Code/Resource_Dilution_Robustness/Iterator_Functions.R")
+  source("Code/Resource_Dilution/Iterator_Functions.R")
   # Define functions that specifically reference the iterator parameters
-  source("Code/Resource_Dilution_Robustness/Iterator_Parameter_Dependents.R")
+  source("Code/Resource_Dilution/Iterator_Parameter_Dependents.R")
   
   # Define functions for testing resource robustness
-  source("Code/Resource_Dilution_Robustness/Resource_Robustness_Functions.R")
+  source("Code/Resource_Dilution/Resource_Robustness_Functions.R")
   # Define functions to dilute resources
-  source("Code/Resource_Dilution_Robustness/Resource_Dilution_Functions.R")
+  source("Code/Resource_Dilution/Resource_Dilution_Functions.R")
   # Define functions to work with top_ranked CCIs and other miscellaney
-  source("Code/Resource_Dilution_Robustness/Ranking_and_Misc_Functions.R")
+  source("Code/Resource_Dilution/Ranking_and_Misc_Functions.R")
   
   
   
@@ -94,6 +94,9 @@
 #------------------------------------------------------------------------------#
 # 2. Get Resource Dilution Robustness Results ----------------------------------
 
-robustness_new <- wrap_resource_Iterator()
+robustness_new <- 
+  wrap_resource_Iterator(
+    methods_vector = c("call_connectome", "call_sca"),
+    trial_run = FALSE)
 
 

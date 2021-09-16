@@ -94,10 +94,10 @@
     # How was the topology of diluted resources handled? Make an appropiate 
     # comment.
     if (preserve_topology == FALSE) {
-      topology_comment <- "random_topology_"
+      topology_comment <- "rand_topo_"
       
     } else if (preserve_topology == TRUE) {
-      topology_comment <- "preserved_topology_"
+      topology_comment <- "pres_topo_"
       
     }
     
@@ -320,10 +320,11 @@
                            number_ranks,
                            time_of_run) {
     
-    # Generate the filepaths to save the data under
+    # Generate the filepaths to save the data under. 
+    # RD stands for Resource Dilution.
     box_plot_png_name <-
       auto_file_Name(
-        prefix = "Boxplot_Resource_Dilution_",
+        prefix = "Boxplot_RD_",
         suffix = ".png",
         
         preserve_topology  = preserve_topology,
@@ -335,7 +336,7 @@
     
     line_plot_png_name <-
       auto_file_Name(
-        prefix = "Lineplot_Resource_Dilution_",
+        prefix = "Lineplot_RD_",
         suffix = ".png",
         
         preserve_topology  = preserve_topology,
@@ -347,7 +348,7 @@
     
     iterator_results_save_path <- 
       auto_file_Name(
-      prefix = "Outputs/Resource_Dilution/Iterator_Results_",
+      prefix = "Outputs/Resource_Dilution/Iterator_Results_RD_",
       suffix = ".RData",
       
       preserve_topology  = preserve_topology,
@@ -384,14 +385,14 @@
     
     
     # Let the user know where everything was stored.
-    print(str_glue("Box Plot saved at ~/Outputs/Resource_Dilution/",
-                   box_plot_png_name, "."))
+    cat(str_wrap(str_glue("Box Plot saved at ~/Outputs/Resource_Dilution/",
+                   box_plot_png_name, "."), width = 60), "\n\n")
     
-    print(str_glue("Line Plot saved at ~/Outputs/Resource_Dilution/",
-                   line_plot_png_name, "."))
+    cat(str_wrap(str_glue("Line Plot saved at ~/Outputs/Resource_Dilution/",
+                   line_plot_png_name, "."), width = 60), "\n\n")
     
-    print(str_glue("Iterator Results saved at ~/",
-                   iterator_results_save_path, "."))
+    cat(str_wrap(str_glue("Iterator Results saved at ~/",
+                   iterator_results_save_path, "."), width = 60), "\n\n")
     
   }  # end of function
 }

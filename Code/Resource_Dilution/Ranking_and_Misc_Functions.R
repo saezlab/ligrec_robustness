@@ -115,15 +115,15 @@
       # describe the output to the user
       if (verbose == TRUE) {
         print(str_glue(""))
-        print(
-          str_glue(
-            "The main ranking and the comparison ranking have ",
-            as.character(overlap),
-            " LR_IDs in common. Which corrsponds to a ",
-            as.character(round(percentage_overlap * 100, 2)),
-            "% overlap."
-          )
-        )
+        cat(
+          str_wrap(
+            str_glue(
+              "The main ranking and the comparison ranking have ",
+              as.character(overlap),
+              " LR_IDs in common. Which corresponds to a ",
+              as.character(round(percentage_overlap * 100, 2)),
+              "% overlap."), 
+            width = 60), "\n")
       }
       
       
@@ -198,7 +198,6 @@
     if(overlap == nrow(main_ranks)) {
       
       percentage_overlap <- overlap / nrow(comparison_ranks)
-      print("cellchat overlap worked")
       
     } else {
       
@@ -213,15 +212,15 @@
     # describe the output to the user
     if (verbose == TRUE) {
       print(str_glue(""))
-      print(
-        str_glue(
-          "The main ranking and the comparison ranking have ",
-          as.character(overlap),
-          " LR_IDs in common. Which corrsponds to a ",
-          as.character(round(percentage_overlap * 100, 2)),
-          "% overlap."
-        )
-      )
+      cat(
+        str_wrap(
+          str_glue(
+            "The main ranking and the comparison ranking have ",
+            as.character(overlap),
+            " LR_IDs in common. Which corresponds to a ",
+            as.character(round(percentage_overlap * 100, 2)),
+            "% overlap."), 
+          width = 60), "\n")
     }
     
     return(percentage_overlap)

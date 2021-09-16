@@ -860,7 +860,8 @@ print_Title(str_glue("Iteration ",
     # attention
     if(sink_output == TRUE) {
       
-      print(str_glue("Complete log saved at ~/", sink_logfile, "."))
+      cat(str_wrap(str_glue("Complete log saved at ~/", 
+                     sink_logfile, "."), width = 60), " \n\n")
       
       # Keep the environment tidy
       rm(sink_logfile)
@@ -871,8 +872,8 @@ print_Title(str_glue("Iteration ",
     if(liana_warnings == "divert") {
       
       # let the user know where to find the log
-      print(str_glue("LIANA warnings saved at ~/", 
-                     warning_logfile, "."))
+      cat(str_wrap(str_glue("LIANA warnings saved at ~/", 
+                            warning_logfile, "."), width = 60), " \n\n")
       
       # Keep the environment tidy
       rm(warning_logfile)
