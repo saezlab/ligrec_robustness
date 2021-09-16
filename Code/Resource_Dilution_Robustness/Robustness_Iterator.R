@@ -97,8 +97,61 @@
   
   
 }
+# 1. Define wrap_resource_Iterator() -------------------------------------------
 
+wrap_resource_Iterator <- 
+  function(
+    number_seeds      = 2,    # how many seeds should we iterate over
+    testdata_type     = "liana_test",
+    feature_type      = "variable", # "generic" or "variable"
+    preserve_topology = FALSE,      # TRUE or FALSE
+    dilution_props    = c(seq(0.40, 1.00, 0.40)),
+    
+    number_ranks = list(
+      "call_connectome" = 20,
+      "call_natmi"      = 20,
+      "call_italk"      = 20,
+      "call_sca"        = 20,
+      "cellchat"        = 20,
+      "squidpy"         = 20
+    ),
+    
+    methods_vector = c('call_connectome' ,
+                       'call_natmi'      ,
+                       'call_italk'      ,
+                       'call_sca'        ,
+                       'cellchat'        #,
+                       #'squidpy'
+                       ),
+    
+    sink_output     = FALSE,    # TRUE or FALSE
+    liana_warnings  = "divert", # TRUE, FALSE, or "divert"
+    
+    save_results    = TRUE,
+    trial_run       = TRUE,
+    
+    
+    
+    
+    cellchat_nperms = 10,       # default 100 for real data
 
+    bundled_outputs = c(
+      "liana_results_OP"  ,
+      "resources_OP"      ,
+      "top_ranks_OP"      ,
+      "top_ranks_analysis",
+      "runtime"          ,
+      "testdata"
+    ),
+    
+    master_outputs = c(
+      "collated_top_ranks_overlap",
+      "plot_box",
+      "plot_line",
+      "collated_robustness_results",
+      "metadata"
+    )                                  
+                                            ) {
 
 #------------------------------------------------------------------------------#
 # 2. Iterate resource_Robustness() ---------------------------------------------
@@ -241,7 +294,27 @@
 }
 
 
+#------------------------------------------------------------------------------#
+# 6. Packaging Results to return them ------------------------------------------
+{
+  iterator_results <- 
+    list(
+      "collated_top_ranks_overlap"  = collated_top_ranks_overlap,
+      "plot_box"  = plot_box,
+      "plot_line" = plot_line,
+      "collated_robustness_results" = collated_robustness_results,
+      "metadata"  = metadata
+    )
+  
+  iterator_results <- iterator_results[master_outputs]
+  
+  rm(collated_top_ranks_overlap,
+     collated_robustness_results,
+     metadata)
+}
 
+    
+    
 #------------------------------------------------------------------------------#
 # 6. Saving Results ------------------------------------------------------------
 {
@@ -257,6 +330,14 @@
   }
   
   
+  # And now return our results to the user
+  return(iterator_results)
+  
+  
 }
+
+
+
+} # end of function
 
 

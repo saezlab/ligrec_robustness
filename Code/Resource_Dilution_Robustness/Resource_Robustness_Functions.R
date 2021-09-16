@@ -897,7 +897,7 @@ print_Title(str_glue("Iteration ",
                      "testdata"           = testdata)
     
     # Filter it by the outputs the user requested
-    results <- results[outputs]
+    results <- results[bundled_outputs]
    
     
   }
