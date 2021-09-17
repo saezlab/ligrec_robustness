@@ -3,19 +3,20 @@
 {
   # This is the robustness iterator. It funnels data into a robustness test for
   # various dilutions (resource_Robustness()), repeats this test many times, and
-  # collates the resulting information and presents it to the user. This is the
-  # script that needs to be executed to obtain the resource dilution robustness
-  # for each LIANA method. All the other scripts are infrastructure for this
-  # script. To set the parameters for this script, go to Iterator_Params.R.
+  # collates the resulting information and presents it to the user. The code to
+  # accomplish this is presented in a  wrapper with default arguments below.
+  
+  # Running parameters can be left a their defaults or altered when the function
+  # is called.
 }
 
 
 
 
 #------------------------------------------------------------------------------#
-# 1. Define wrap_resource_Iterator() -------------------------------------------
+# 1. Define wrap_robustness_Iterator() -----------------------------------------
 
-wrap_resource_Iterator <- 
+wrap_robustness_Iterator <- 
   function(
     number_seeds      = 2,    # how many seeds should we iterate over
     testdata_type     = "liana_test",

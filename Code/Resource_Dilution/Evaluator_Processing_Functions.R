@@ -1,5 +1,6 @@
 #------------------------------------------------------------------------------#
 # A. For Resource Robustness
+
 # get_top_n_ranks()
 {
   #' Get the top n ranked items of a method from the tibble liana wrapper or
@@ -92,6 +93,7 @@
   
 }
 
+
 # rank_overlap()
 {
   #' Takes get_n_top_ranks outputs that have an LR_ID and determines their 
@@ -142,6 +144,7 @@
   
   
 }
+
 
 # cellchat_rank_overlap()
 {
@@ -229,6 +232,7 @@
   
   
 }
+
 
 # prop_isRandom()
 {
@@ -342,5 +346,4 @@
   } # end of function
   
 }
-
 

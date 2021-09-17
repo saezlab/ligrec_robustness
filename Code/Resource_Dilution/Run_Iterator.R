@@ -3,9 +3,11 @@
 {
   # Welcome! This is the Run_Iterator.R script.
   
-  # The goal of this script is to measure the robustness of CCI inference
-  # methods in LIANA when it comes to resource change. This is accomplished in
-  # the following steps:
+  # This script runs a wrapper function that analyses the robustness of 
+  # predictions made by SC transciptomic CCI inference methods in relation to
+  # resource change. If you want to understand the wrapper, go to 
+  # RD_Robustness_Iterator.R, where it is defined. In short, it analyses 
+  # robustness in the the following steps:
   
   # 1. Run every Cell-Cell-Interaction (CCI) prediction method in LIANA++ while
   #    using OmniPath (OP) and a user specified test data.
@@ -40,16 +42,12 @@
   # 6. Since dilution has elements of randomness, we repeat the above process
   #    a few times so we can collate information from multiple samples. 1-5 are
   #    all handled by resource_Robustness(), a function we iterate here and that
-  #    can be found in Resource_Robustness_Functions.R.
+  #    can be found in RD_Robustness_Evaluator.R.
   
   # 7. We plot the overlap over the dilution proportion for each method,
   #    combining all the iterations into one box plot. Then we save the plots
   #    and all the results to automatically generated, descriptive file names.
   
-  # This entire process is handled by the wrap_resource_Iterator() function, 
-  # found in the Robustness_Iterator.R script. In this script, we simply run
-  # that wrapper with varying parameters fed to wrap_resource_Iterator(). If you
-  # want to understand more on how the function works, please check that script.
 }
 
 
@@ -57,9 +55,10 @@
 #------------------------------------------------------------------------------#
 # 1. Setup ---------------------------------------------------------------------
 {
-  # In this segment, we set up all the required infrastructure to run this
-  # script. The parameters for how this script runs are not set here, they are
-  # set in Iterator_Parameters.R
+  # In this segment, we set up all the required infrastructure to run the 
+  # wrapper. The default parameters for the wrapper are set in 
+  # RD_Robustness_Iterator.R, but custom parameters can be set in the function 
+  # call.
   
   # Load required Packages
   require(tidyverse)
@@ -70,21 +69,28 @@
   
   # Define the functions needed to perform our analysis
   
-  # Define the iterator wrapper function, which produces the end results
-  source("Code/Resource_Dilution/Iterator_Resource_Robustness.R")
-  # Define Parameters for the following iterative robustness test
-  source("Code/Resource_Dilution/Iterator_Parameters.R")
-  # Define functions needed for the iterator directly itself
-  source("Code/Resource_Dilution/Iterator_Functions.R")
-  # Define functions that specifically reference the iterator parameters
-  source("Code/Resource_Dilution/Iterator_Parameter_Dependents.R")
+  # Define the iterator wrapper function (wrap_robustness_Iterator), which 
+  # produces the end results. The wrapper iterates the evaluator function and 
+  # collates its results.
+  source("Code/Resource_Dilution/RD_Robustness_Iterator.R")
+  # Define general functions for data processing in the iterator
+  source("Code/Resource_Dilution/Iterator_Processing_Functions.R")
+  # Define functions for plotting the iterator results
+  source("Code/Resource_Dilution/Iterator_Plotting.R")
+  # Define functions for capturing metadata and saving iterator results
+  source("Code/Resource_Dilution/Iterator_Metadata_and_Saves.R")
   
-  # Define functions for testing resource robustness
-  source("Code/Resource_Dilution/Resource_Robustness_Functions.R")
-  # Define functions to dilute resources
-  source("Code/Resource_Dilution/Resource_Dilution_Functions.R")
-  # Define functions to work with top_ranked CCIs and other miscellaney
-  source("Code/Resource_Dilution/Ranking_and_Misc_Functions.R")
+  # The evaluator function tests method robustness over multiple dilution stages
+  # The script below defines resource_Robustness, a function for testing 
+  # resource robustness
+  source("Code/Resource_Dilution/RD_Robustness_Evaluator.R")
+  # Define functions that help the evaluator run.
+  source("Code/Resource_Dilution/Evaluator_Processing_Functions.R")
+  
+  # Define the dilutor function, a function that dilutes resources.
+  source("Code/Resource_Dilution/RD_Dilutor.R")
+  # Define general helper functions for the dilutor 
+  source("Code/Resource_Dilution/Dilutor_Processing_Functions.R")
   
   
   
@@ -94,9 +100,9 @@
 #------------------------------------------------------------------------------#
 # 2. Get Resource Dilution Robustness Results ----------------------------------
 
+# We run the wrapper
 robustness_new <- 
-  wrap_resource_Iterator(
-    methods_vector = c("call_connectome", "call_sca"),
-    trial_run = FALSE)
+  wrap_robustness_Iterator(
+    methods_vector = c("call_connectome", "call_sca"))
 
 
