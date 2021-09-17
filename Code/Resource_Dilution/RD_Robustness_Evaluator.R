@@ -1,3 +1,5 @@
+#------------------------------------------------------------------------------#
+# 0. Define resource_Robustness() ----------------------------------------------
 
 #' Analyses LIANA prediction robustness when diluting resources
 #'
@@ -28,7 +30,7 @@
 #' 
 #' @param feature_type Should dilution occur with all the genes profiled in
 #' testdata (choose "generic") or with the most variable features (choose 
-#' "variable").
+#' "variable")? As a string.
 #' 
 #' @param preserve_topology When diluting, two methods are implemented.
 #' random_Dilute makes only a small effort to preserve the topology of the rows
@@ -72,7 +74,8 @@
 #' For example, item one on the list may be called call_connectome and be equal 
 #' to 500. This would signal to the function that for call_connectome, the top 
 #' 500 CCI's are considered relevant and that these 500 are the ones that are to
-#' be compared between the dilutions.
+#' be compared between the dilutions. Usually you consider the same number of
+#' top_ranks for each method relevant.
 #' 
 #' @param master_seed  At some stages when diluting  a resource, randomness
 #' is at play. Setting a master seed will ensure that dilute_Resource(), the 
@@ -93,11 +96,12 @@
 #' visible in the console output if this is enabled, so unless there is a reason
 #' why such a record is necessary this option is not recommended.
 #' 
-#' @param liana_warnings Either TRUE, FALSE or "divert". Should the warnings 
-#' from liana, which are often repetitive and unhelpful, be either suppressed or 
-#' alternatively diverted to the log folder? When these types of warning are 
-#' left in, they can often displace valuable warnings. Be careful with this 
-#' setting, as suppressing warnings is obviously risky.
+#' @param liana_warnings Either TRUE, FALSE or "divert". A less extreme 
+#' alternative to sinking the output. Should the warnings from LIANA++, which 
+#' are often repetitive and unhelpful, be either suppressed or alternatively 
+#' diverted to the log folder? When these types of warning are left in, they can
+#' often displace valuable warnings. Be careful with this  setting, as 
+#' suppressing warnings is obviously risky.
 #' 
 #' @param sink_logfile Only if sink_output == TRUE. As a char, under what file 
 #' path (including the name of the log) should your sunk output be stored? For 

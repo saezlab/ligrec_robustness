@@ -1,27 +1,12 @@
 #------------------------------------------------------------------------------#
 # 0. Introduction and Goals ----------------------------------------------------
 {
-  # This is the Iterator_Parameter_Dependents.R script.
+  # This is the Iterator_Metadata_and_Saves.R script.
 
-  # The goal of this script is do define the higher-level functions in the 
-  # Robusntess_Iterator.R script that need to know the user defined iterator 
-  # parameters to function (see Iterator_Params.R). 
+  # The goal of this script is do define the more meta level functions in the 
+  # RD_Robustness_Iterator.R script that don't directly process data, but 
+  # instead are relevant for saving files and summarizing metadata.
 
-  # Of all the functions defined in this project, only  the functions below need
-  # to be passed the iterator parameters in order to execute, and these 
-  # functions are only called in the Robustness_Iterator.R and the 
-  # Iterator_Params.R script. There is one function, summarise_Metadata, that 
-  # both uses formals(fun) for iterator_parameters and also sets iterator 
-  # parameters. As such, summarise_Metadata() could go in this script or the 
-  # Iterator_Params.R script, but it's been saved in Iterator_Params.R.
-
-  # The reason the functions below need to know the iterator parameters is to 
-  # accurately name and describe the results produced by the iterator, whether
-  # this be naming a save file or giving a plot description. 
-
-  # Please read the documentation of the iterator and iterator parameters before
-  # diving into this script.
-  
 }
 
 
@@ -29,107 +14,108 @@
 #------------------------------------------------------------------------------#
 # 1. Defining Functions---------------------------------------------------------
 
-calculate_Runtime <- function(runtime) {
+# calculate_Runtime()
+{
+  #' Converts the resource_Robustness() runtime output into a convenient tibble
+  #' output
+  #' 
+  #' @description Takes the runtime output of resource_Robustness(), which is a 
+  #' named list of checkpoints in time, and creates a  output tibble that has 
+  #' the time between each checkpoint in it and the time elapsed up until that
+  #' checkpoint.
+  #' 
+  #' @param runtime The resource_Robustness() runtime output, as a list.
+  #' 
+  #' @return A tibble giving an overview of the runtime.
+
   
-  # save the names of the time-points for later
-  runtime_labels <- names(runtime)
-  
-  # convert run time to numeric so we can perform arithmetic operations on
-  # them. In this case we need it for subtractions, to calculate the duration
-  # between checkpoints
-  runtime_numeric <- as.numeric(runtime)
-  
-  # We calculate the passage of time between checkpoints in the 
-  # resource_Robustness().
-  # Step duration is the duration of a step between neighboring checkpoints.
-  # Time elapsed is the duration between the completion of a step and the 
-  # start of the script.
-  
-  step_duration <- c(0) # No time has passed when the script is initialized.
-  time_elapsed  <- c(0) # No time has passed when the script is initialized.
-  
-  # starting with the second index of runtime_numeric until the last index
-  for (i in 2:length(runtime_numeric)) {
+  calculate_Runtime <- function(runtime) {
     
-    # subtract the preceding checkpoint from the checkpoint at i, this is the 
-    # amount of time that passed between these two checkpoints
-    step_duration <- c(step_duration, 
-                       runtime_numeric[[i]] - runtime_numeric[[i-1]])
+    # save the names of the time-points for later
+    runtime_labels <- names(runtime)
     
-    # subtract the very first checkpoint from the checkpoint at i, this is all
-    # the time that has elapsed up until now.
-    time_elapsed  <- c(time_elapsed,
-                       runtime_numeric[[i]] - runtime_numeric[[1]])
+    # convert run time to numeric so we can perform arithmetic operations on
+    # them. In this case we need it for subtractions, to calculate the duration
+    # between checkpoints
+    runtime_numeric <- as.numeric(runtime)
     
+    # We calculate the passage of time between checkpoints in the 
+    # resource_Robustness().
+    # Step duration is the duration of a step between neighboring checkpoints.
+    # Time elapsed is the duration between the completion of a step and the 
+    # start of the script.
+    
+    step_duration <- c(0) # No time has passed when the script is initialized.
+    time_elapsed  <- c(0) # No time has passed when the script is initialized.
+    
+    # starting with the second index of runtime_numeric until the last index
+    for (i in 2:length(runtime_numeric)) {
+      
+      # subtract the preceding checkpoint from the checkpoint at i, this is the 
+      # amount of time that passed between these two checkpoints
+      step_duration <- c(step_duration, 
+                         runtime_numeric[[i]] - runtime_numeric[[i-1]])
+      
+      # subtract the very first checkpoint from the checkpoint at i, this is all
+      # the time that has elapsed up until now.
+      time_elapsed  <- c(time_elapsed,
+                         runtime_numeric[[i]] - runtime_numeric[[1]])
+      
+    }
+    
+    # Turn seconds into time periods using lubridate and round for simplicity
+    # Time periods are HH:MM:SS, which is earier to understand than just values
+    # in seconds.
+    step_duration <- round(seconds_to_period(step_duration))
+    time_elapsed  <- round(seconds_to_period(time_elapsed))
+    
+    
+    # summarize all the runtime data in a tibble
+    runtime <- runtime               %>%
+      as_tibble_col()                %>%
+      unnest(cols = c(value))        %>%
+      rename("Start Time" = "value") %>% 
+      add_column("Step Name"      = runtime_labels, .before = 1) %>%
+      add_column("Step Duration"  = step_duration) %>%
+      add_column("Time Elapsed"   = time_elapsed) 
+    
+    
+    # Get rid of clutter in the environment
+    rm(runtime_numeric, 
+       step_duration, 
+       time_elapsed, 
+       runtime_labels,
+       i)
+    
+    # return the runtime tibble
+    return(runtime)
   }
-  
-  # Turn seconds into time periods using lubridate and round for simplicity
-  # Time periods are HH:MM:SS, which is earier to understand than just values
-  # in seconds.
-  step_duration <- round(seconds_to_period(step_duration))
-  time_elapsed  <- round(seconds_to_period(time_elapsed))
-  
-  
-  # summarize all the runtime data in a tibble
-  runtime <- runtime               %>%
-    as_tibble_col()                %>%
-    unnest(cols = c(value))        %>%
-    rename("Start Time" = "value") %>% 
-    add_column("Step Name"      = runtime_labels, .before = 1) %>%
-    add_column("Step Duration"  = step_duration) %>%
-    add_column("Time Elapsed"   = time_elapsed) 
-  
-  
-  # Get rid of clutter in the environment
-  rm(runtime_numeric, 
-     step_duration, 
-     time_elapsed, 
-     runtime_labels,
-     i)
-  
-  return(runtime)
 }
+
 
 # summarise_Metadata()
 {
   #' Summarizes the metadate relevant for the Robustness Iterator
   #' 
-  #' @description This function summarizes all the iterator parameters and used
-  #' file names into one metadata object.
+  #' @description This function summarizes all the iterator parameters, file 
+  #' names that were used, runtime data, and more into one metadata object.
   #' 
-  #' @param runtime The output of the calculate_Runtime() function, showing
-  #' the time spent on various steps in resource_Robustness.
+  #' @inheritParams wrap_robustness_Iterator
   #' 
-  #' @param time_of_run What time was this script run at? Used as an argument 
-  #' for auto_file_Name() to generate the same file names that were used 
-  #' earlier. Also stored in the metadata object. Should always be passed the 
-  #' char tag generated by create_Params().
+  #' @param master_seed_list The list of seeds that resource_Robustness() 
+  #' iterated over.
   #' 
-  #' @param dilution_params What arguments were used in dilution robustness?
-  #' Should always be passed formals(wrap_resource_Robustness()).
+  #' @param runtime The tibble runtime output of calulate_Runtime().
   #' 
-  #' @param testdata_type What type of testdata was used in the iterator? Should
-  #' always be passed formals(extract_Testdata)$testdata_type.
+  #' @param time_of_run The char tag of the time the script started being 
+  #' executed.
   #' 
-  #' @param master_seed_list What master_seed_list was the iterator run with?
-  #' Should always be passed the seed list output from create_Params().
-  #' 
-  #' @param save_results Should the results from the iterator be saved 
-  #' (including plots)? The save_Results() function will later refer to this.
-  #' This value is also stored in the metadata. Only takes a boolean as a
-  #' default, not a vector of a boolean.
-  #' 
-  #' @param trial_run Is this a trial run of the iterator or serious results?
-  #' Takes a boolean. If this is a trial run, the save file names, logs and plot
-  #' captions will reflect this. Only takes a boolean as a default, not a vector
-  #' of a boolean.
-  #' 
-  #' @return Returns a list of metadata and parameters.
+  #' @return Returns a compiled list of metadata, parameters and save file 
+  #' locations (if files were saved to the computer).
   
   
   
   summarise_Metadata <- function(number_seeds,
-                                 master_seed_list,
                                  testdata_type,
                                  feature_type, 
                                  preserve_topology,    
@@ -148,6 +134,7 @@ calculate_Runtime <- function(runtime) {
                                  save_results,
                                  trial_run,
                                  
+                                 master_seed_list,
                                  runtime,
                                  time_of_run) {
     
@@ -158,6 +145,7 @@ calculate_Runtime <- function(runtime) {
       "trial_run"    = trial_run
     )
     
+    # summarise all the parameters from wrap_robustness_Iterator()
     dilution_params <- list(
       "number_seeds"      = number_seeds,
       "master_seed_list"  = master_seed_list,
@@ -281,14 +269,39 @@ calculate_Runtime <- function(runtime) {
   
 }
 
+
 # save_Results()
 {
+  #' Saves its three arguments to custom filepaths
+  #'
+  #' @param plot_box Takes the boxplot generated by overlap_box_Plot as an 
+  #' input. Saves it to the outputs folder under a descriptive name.
+  #'
+  #' @param plot_line Takes the lineplot generated by overlap_line_Plot as an 
+  #' input. Saves it to the outputs folder under a descriptive name.
   #' 
+  #' @param iterator_results Takes the list of results from the iterator, saves 
+  #' them to a descriptive file name in the outputs folder.
+  #' 
+  #' @param trial_run The same parameter from wrap_robustness_Iterator(). Used
+  #' in the file name to mark the file.
   #'
-  #'
-  #'
-  #'
-  #'
+  #' @param preserve_topology The same parameter from 
+  #' wrap_robustness_Iterator(). Used in the file name to mark the file.
+  #' 
+  #' @param testdata_type The same parameter from wrap_robustness_Iterator(). 
+  #' Used in the file name to mark the file.
+  #' 
+  #' @param feature_type The same parameter from wrap_robustness_Iterator(). 
+  #' Used in the file name to mark the file.
+  #' 
+  #' @param number_ranks The same parameter from wrap_robustness_Iterator(). 
+  #' Used in the file name to mark the file.
+  #' 
+  #' @param time_of_run The char tag of the time the script started being 
+  #' executed.
+
+  
   
   save_Results <- function(plot_box,
                            plot_line,
@@ -378,6 +391,7 @@ calculate_Runtime <- function(runtime) {
   }  # end of function
 }
 
+
 # auto_file_Name()
 {
   #' Automatically generates a file name or file path
@@ -390,25 +404,23 @@ calculate_Runtime <- function(runtime) {
   #' file extension such as ".txt" or ".RData" at minimum, but it could also be
   #' more, such as "report.txt".
   #' 
-  #' @param time_of_run What time was this script run at? Used to tag file names
-  #' with a unique descriptor that allows the user to associate all the saved 
-  #' files of the iterator together (the logs at 9:32 refer to the plot at 9:32 
-  #' and the environment saved at 9:32). It also ensures that files from the 
-  #' next time you run the iterator never overwrite old ones. Should always be 
-  #' passed the time_of_run char generated by create_Params().
+  #' @param trial_run The same parameter from wrap_robustness_Iterator(). Used
+  #' in the file name to mark the file.
+  #'
+  #' @param preserve_topology The same parameter from 
+  #' wrap_robustness_Iterator(). Used in the file name to mark the file.
   #' 
-  #' @param dilution_params What arguments were used in dilution robustness?
-  #' This function will add the most relevant dilution parameters to the file 
-  #' name. Should always be passed formals(wrap_resource_Robustness()).
+  #' @param testdata_type The same parameter from wrap_robustness_Iterator(). 
+  #' Used in the file name to mark the file.
   #' 
-  #' @param meta_params What meta_data parameters were specified for the 
-  #' iterator? If this was specified as a trial run of the iterator, file names
-  #' are tagged with "TRIAL_RUN". Should always be passed 
-  #' formals(summarise_Metadata).
+  #' @param feature_type The same parameter from wrap_robustness_Iterator(). 
+  #' Used in the file name to mark the file.
   #' 
-  #' @param testdata_type What type of testdata was used in the iterator? This
-  #' function adds the testdadta type into the file name. Should always be 
-  #' passed formals(extract_Testdata)$testdata_type.
+  #' @param number_ranks The same parameter from wrap_robustness_Iterator(). 
+  #' Used in the file name to mark the file.
+  #' 
+  #' @param time_of_run The char tag of the time the script started being 
+  #' executed.
   #' 
   #' @return A file name that starts with the prefix, ends with the suffix and 
   #' contains a bunch of parameter tags in between. This way the user can 

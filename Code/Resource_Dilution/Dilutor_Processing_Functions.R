@@ -1,3 +1,18 @@
+#------------------------------------------------------------------------------#
+# 0. Introduction and Goals ----------------------------------------------------
+{
+  
+  # This is the Dilutor_Processing_Functions.R script. These function work as 
+  # intermediary steps in the process of diluting a resource. Information on
+  # how exactly dilution is performed can be found in RD_Dilutor.R.
+  
+}
+
+
+
+#------------------------------------------------------------------------------#
+# 1. Defining Functions --------------------------------------------------------
+
 # extract_unconflicting_Genes()
 {
   #' Extract and filter genes
@@ -56,6 +71,7 @@
   
   
 }
+
 
 # random_Dilute()
 {
@@ -175,6 +191,7 @@
   
 }
 
+
 # preserve_Dilute()
 {
   #' Dilutes entire resources while semi-preserving topology
@@ -292,8 +309,45 @@
   
 }
 
+
 # dilution_Overview()
 {
+  #' Produces a console output for a diluted resource
+  #' 
+  #' @description  This function uses dilution parameters, the input resource
+  #' and the results of dilution to output important statistics about how the 
+  #' dilution process went to the user. While the statistics are output, the 
+  #' warning logic also contains the information on whether any of the 
+  #' displayed parameters are outside the bounds they are supposed to be in,
+  #' alerting the user if something is wrong.
+  #' 
+  #' @param warning_logic A list derived from the dilute_Resource() function
+  #' that states whether an error or warning in the dilution process has 
+  #' occurred.
+  #' 
+  #' @param dilution_prop An integer indicating to what percent the input
+  #' resource was supposed to be diluted to. 
+  #' 
+  #' @param feature_type Did dilution occur with all the genes profiled in
+  #' testdata (choose "generic") or with the most variable features (choose 
+  #' "variable")? As a string.
+  #' 
+  #' @param preserve_topology When diluting, two methods could've been
+  #' used. random_Dilute makes only a small effort to preserve the 
+  #' topology of the rows that are diluted from resource, preserve_Dilute makes 
+  #' a far greater effort. Choose TRUE for preserve_Dilute and FALSE for 
+  #' random_Dilute.
+  #' 
+  #' @param resource The original input resource before dilution. As a tibble.
+  #' 
+  #' @param new_resource The diluted resource derived from the original. As a 
+  #' tibble.
+  #' 
+  #' @param resource_dilute The diluted rows that are in new_resource, as a 
+  #' tibble.
+  #' 
+  #' @return Nothing directly, but an informative console output.
+  
   
   dilution_Overview <- function(warning_logic,
                                 
