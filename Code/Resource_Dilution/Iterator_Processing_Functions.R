@@ -381,7 +381,7 @@
     
     new_high_tier <-
       # map to the user specififed depth
-      map_depth(three_tier_list, depth, function(two_tier_list) {
+      map_depth(high_tier_list, depth, function(two_tier_list) {
         
         # Once at the second lowest tier, grab the name of the lists here
         # and the lists themselves.
@@ -395,7 +395,7 @@
       })
     
     # return our new list
-    return(new_three_tier)
+    return(new_high_tier)
     
   }
 }
