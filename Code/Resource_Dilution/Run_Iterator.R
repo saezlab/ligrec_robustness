@@ -100,9 +100,7 @@
 #------------------------------------------------------------------------------#
 # 2. Get Resource Dilution Robustness Results ----------------------------------
 
-# We run the wrapper
-robustness_new <- 
-  wrap_robustness_Iterator(
-    methods_vector = c("call_connectome", "call_sca"))
+# We run the wrapper with default settings and twice the standard permutations
+robustness_default <- wrap_robustness_Iterator(number_seeds = 20)
 
 

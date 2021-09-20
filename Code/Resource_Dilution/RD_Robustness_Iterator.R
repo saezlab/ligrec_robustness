@@ -147,27 +147,27 @@
 
 wrap_robustness_Iterator <- 
   function(
-    number_seeds      = 2,          # how many seeds should we iterate over
-    testdata_type     = "liana_test",
-    feature_type      = "variable", # "generic" or "variable"
-    preserve_topology = FALSE,      # TRUE or FALSE
-    dilution_props    = c(seq(0.40, 1.00, 0.40)),
+    number_seeds      = 10,            # how many seeds should we iterate over
+    testdata_type     = "seurat_pbmc", # seurat_pbmc or liana_test
+    feature_type      = "variable",    # "generic" or "variable"
+    preserve_topology = FALSE,         # TRUE or FALSE
+    dilution_props    = c(seq(0.05, 1.00, 0.05)),
     
     number_ranks = list(
-      "call_connectome" = 20,
-      "call_natmi"      = 20,
-      "call_italk"      = 20,
-      "call_sca"        = 20,
-      "cellchat"        = 20,
-      "squidpy"         = 20
+      "call_connectome" = 500,
+      "call_natmi"      = 500,
+      "call_italk"      = 500,
+      "call_sca"        = 500,
+      "cellchat"        = 500,
+      "squidpy"         = 500
     ),
     
     methods_vector = c('call_connectome' ,
                        'call_natmi'      ,
                        'call_italk'      ,
                        'call_sca'        ,
-                       'cellchat'        #,
-                       #'squidpy'
+                       'cellchat'        ,
+                       'squidpy'
     ),
     
     sink_output     = FALSE,    # TRUE or FALSE
