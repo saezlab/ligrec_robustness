@@ -142,19 +142,19 @@
   #' with this caption. The function takes data from the tibble's general 
   #' structure to describe it accurately. 
   #' 
-  #' @param trial_run The same parameter from wrap_robustness_Iterator(). Used
+  #' @param trial_run The same parameter from wrap_resource_Iterator(). Used
   #' in the file name to mark the file.
   #'
   #' @param preserve_topology The same parameter from 
-  #' wrap_robustness_Iterator(). Used in the file name to mark the file.
+  #' wrap_resource_Iterator(). Used in the file name to mark the file.
   #' 
-  #' @param testdata_type The same parameter from wrap_robustness_Iterator(). 
+  #' @param testdata_type The same parameter from wrap_resource_Iterator(). 
   #' Used in the file name to mark the file.
   #' 
-  #' @param feature_type The same parameter from wrap_robustness_Iterator(). 
+  #' @param feature_type The same parameter from wrap_resource_Iterator(). 
   #' Used in the file name to mark the file.
   #' 
-  #' @param number_ranks The same parameter from wrap_robustness_Iterator(). 
+  #' @param number_ranks The same parameter from wrap_resource_Iterator(). 
   #' Used in the file name to mark the file.
   #' 
   #' @param time_of_run The char tag of the time the script started being 

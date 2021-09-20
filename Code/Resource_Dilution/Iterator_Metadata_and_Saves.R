@@ -100,7 +100,7 @@
   #' @description This function summarizes all the iterator parameters, file 
   #' names that were used, runtime data, and more into one metadata object.
   #' 
-  #' @inheritParams wrap_robustness_Iterator
+  #' @inheritParams wrap_resource_Iterator
   #' 
   #' @param master_seed_list The list of seeds that resource_Robustness() 
   #' iterated over.
@@ -145,7 +145,7 @@
       "trial_run"    = trial_run
     )
     
-    # summarise all the parameters from wrap_robustness_Iterator()
+    # summarise all the parameters from wrap_resource_Iterator()
     dilution_params <- list(
       "number_seeds"      = number_seeds,
       "master_seed_list"  = master_seed_list,
@@ -283,19 +283,19 @@
   #' @param iterator_results Takes the list of results from the iterator, saves 
   #' them to a descriptive file name in the outputs folder.
   #' 
-  #' @param trial_run The same parameter from wrap_robustness_Iterator(). Used
+  #' @param trial_run The same parameter from wrap_resource_Iterator(). Used
   #' in the file name to mark the file.
   #'
   #' @param preserve_topology The same parameter from 
-  #' wrap_robustness_Iterator(). Used in the file name to mark the file.
+  #' wrap_resource_Iterator(). Used in the file name to mark the file.
   #' 
-  #' @param testdata_type The same parameter from wrap_robustness_Iterator(). 
+  #' @param testdata_type The same parameter from wrap_resource_Iterator(). 
   #' Used in the file name to mark the file.
   #' 
-  #' @param feature_type The same parameter from wrap_robustness_Iterator(). 
+  #' @param feature_type The same parameter from wrap_resource_Iterator(). 
   #' Used in the file name to mark the file.
   #' 
-  #' @param number_ranks The same parameter from wrap_robustness_Iterator(). 
+  #' @param number_ranks The same parameter from wrap_resource_Iterator(). 
   #' Used in the file name to mark the file.
   #' 
   #' @param time_of_run The char tag of the time the script started being 
@@ -404,19 +404,19 @@
   #' file extension such as ".txt" or ".RData" at minimum, but it could also be
   #' more, such as "report.txt".
   #' 
-  #' @param trial_run The same parameter from wrap_robustness_Iterator(). Used
+  #' @param trial_run The same parameter from wrap_resource_Iterator(). Used
   #' in the file name to mark the file.
   #'
   #' @param preserve_topology The same parameter from 
-  #' wrap_robustness_Iterator(). Used in the file name to mark the file.
+  #' wrap_resource_Iterator(). Used in the file name to mark the file.
   #' 
-  #' @param testdata_type The same parameter from wrap_robustness_Iterator(). 
+  #' @param testdata_type The same parameter from wrap_resource_Iterator(). 
   #' Used in the file name to mark the file.
   #' 
-  #' @param feature_type The same parameter from wrap_robustness_Iterator(). 
+  #' @param feature_type The same parameter from wrap_resource_Iterator(). 
   #' Used in the file name to mark the file.
   #' 
-  #' @param number_ranks The same parameter from wrap_robustness_Iterator(). 
+  #' @param number_ranks The same parameter from wrap_resource_Iterator(). 
   #' Used in the file name to mark the file.
   #' 
   #' @param time_of_run The char tag of the time the script started being 

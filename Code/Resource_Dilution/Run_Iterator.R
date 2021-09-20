@@ -4,7 +4,7 @@
   # Welcome! This is the Run_Iterator.R script.
   
   # This script runs a wrapper function that analyses the robustness of 
-  # predictions made by SC transciptomic CCI inference methods in relation to
+  # predictions made by SC transcriptomic CCI inference methods in relation to
   # resource change. If you want to understand the wrapper, go to 
   # RD_Robustness_Iterator.R, where it is defined. In short, it analyses 
   # robustness in the the following steps:
@@ -69,7 +69,7 @@
   
   # Define the functions needed to perform our analysis
   
-  # Define the iterator wrapper function (wrap_robustness_Iterator), which 
+  # Define the iterator wrapper function (wrap_resource_Iterator), which 
   # produces the end results. The wrapper iterates the evaluator function and 
   # collates its results.
   source("Code/Resource_Dilution/RD_Robustness_Iterator.R")
@@ -101,6 +101,9 @@
 # 2. Get Resource Dilution Robustness Results ----------------------------------
 
 # We run the wrapper with default settings and twice the standard permutations
-robustness_default <- wrap_robustness_Iterator(number_seeds = 20)
+robustness_default <- wrap_resource_Iterator(number_seeds = 2,
+                                             methods_vector = c("call_sca"),
+                                             testdata_type = "liana_test",
+                                             number_ranks = list("call_sca" = 20))
 
 

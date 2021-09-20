@@ -14,7 +14,7 @@
 
 
 #------------------------------------------------------------------------------#
-# 1. Define wrap_robustness_Iterator() -----------------------------------------
+# 1. Define wrap_resource_Iterator() -----------------------------------------
 {
   
 #' resource_Robustness() Iterator
@@ -145,7 +145,7 @@
 #'  bundled_outputs parameter.
 
 
-wrap_robustness_Iterator <- 
+wrap_resource_Iterator <- 
   function(
     number_seeds      = 10,            # how many seeds should we iterate over
     testdata_type     = "seurat_pbmc", # seurat_pbmc or liana_test
@@ -226,7 +226,7 @@ wrap_robustness_Iterator <-
       gsub(':', '-', .) %>% # save files can't have colons
       gsub(' ', '_', .) %>% # save files shouldn't have spaces
       str_sub(1 , nchar(.) - 3) # the code never runs in under a minute, so the 
-    # number of seconds isn't valuable information.
+                                # number of seconds isn't valuable information.
     
   }  
   

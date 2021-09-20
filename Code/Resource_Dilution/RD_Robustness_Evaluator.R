@@ -451,6 +451,7 @@ print_Title(str_glue("Iteration ",
   dilutions_OP <- list()
   
   # lapply dilute_Resource() over every dilution proportion
+  # and remove any dilution proportion entries that were impossible
   dilutions_OP <- 
     lapply(dilution_props, dilute_Resource, 
            resource          = resources_OP$OmniPath_0, 
@@ -459,9 +460,8 @@ print_Title(str_glue("Iteration ",
            data_set          = testdata,
            feature_type      = feature_type,
            verbose           = TRUE, 
-           master_seed       = master_seed)
-    
-  
+           master_seed       = master_seed) %>% 
+    discard(is_null)
   
   
   # Add new dilutions to resources_OP
@@ -578,9 +578,6 @@ print_Title(str_glue("Iteration ",
       
     }
   }
-  
-
-    
     
     
     
