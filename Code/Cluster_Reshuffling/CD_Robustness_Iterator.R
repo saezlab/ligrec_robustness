@@ -28,16 +28,14 @@
   
   # Define the functions needed to perform our analysis
   
-  # Define the iterator wrapper function (wrap_cluster_Iterator), which 
-  # produces the end results. The wrapper iterates the evaluator function and 
-  # collates its results.
-  source("Code/Cluster_Reshuffling/CD_Robustness_Iterator.R")
   # Define general functions for data processing in the iterator
   source("Code/Cluster_Reshuffling/Iterator_Processing_Functions.R")
   # Define functions for plotting the iterator results
   source("Code/Cluster_Reshuffling/Iterator_Plotting.R")
   # Define functions for capturing metadata and saving iterator results
   source("Code/Cluster_Reshuffling/Iterator_Metadata_and_Saves.R")
+  
+  source("Code/Cluster_Reshuffling/CD_Reshuffler.R")
   
   
   
@@ -61,8 +59,8 @@
 # wrap_cluster_Iterator <- 
 #  function(
     number_seeds      <- 3            # how many seeds should we iterate over
-    testdata_type     <- "liana_test" # seurat_pbmc or liana_test
-    dilution_props    <- c(seq(0.40, 1.00, 0.40))
+    testdata_type     <- "seurat_pbmc" # seurat_pbmc or liana_test
+    reshuffle_props    <- c(seq(0.40, 1.00, 0.40))
     
     number_ranks <- list(
       "call_connectome" = 20,
@@ -144,39 +142,33 @@
 
 
 #----------------------------------------------------------------------------#
-# 1.2 Iterate resource_Robustness() ------------------------------------------
+# 1.2 Create Reshuffled Cluster Annotations ----------------------------------
 {
-  # resource_Robustness is a function that performs a single test of 
-  # robustness by comparing unmodified LIANA predictions with ones run on 
-  # diluted OP resources. Since there is randomness to resource dilution, we 
-  # iterate over multiple starting seeds in master_seed_list, and will collate 
-  # these samples later.
+
+  # reshuffled_clusters <- lapply(master_seed_list,
+  #                               reshuffle_Clusters)
   
-  # Apply resource_Robustness() wrapper, provide every argument but 
-  # master_seed.
-  # To modify the defaults of the wrapper, go to Iterator_Params.R
-  collated_robustness_results <- lapply(master_seed_list,
-                                        wrap_resource_Robustness,
-                                        
-                                        testdata          = testdata,
-                                        feature_type      = feature_type,
-                                        preserve_topology = preserve_topology, 
-                                        dilution_props    = dilution_props,
-                                        number_ranks      = number_ranks,
-                                        methods_vector    = methods_vector,
-                                        
-                                        bundled_outputs = bundled_outputs,
-                                        cellchat_nperms = cellchat_nperms, 
-                                        
-                                        sink_output     = sink_output,     
-                                        liana_warnings  = liana_warnings,
-                                        trial_run       = trial_run,
-                                        time_of_run     = time_of_run,
-                                        testdata_type   = testdata_type)
+  # gimme: seed, proportion, an existing metadata, cluster column
   
-  # We don't need the testdata after this point.
-  rm(testdata)
   
+  # Convert dilution.props to a list and name it, creating a named list
+  reshuffle_props <- as.list(reshuffle_props)
+  
+  names(reshuffle_props) <- map(reshuffle_props, function(prop) {
+    
+    # Name every dilution proportion
+    str_glue("Reshuffle_", as.character(prop * 100))
+    
+  }) 
+  
+  
+  reshuffled_clusters <- lapply(master_seed_list,
+                                wrap_Shuffler,
+                                reshuffle_props = reshuffle_props,
+                                metadata        = testdata@meta.data,
+                                cluster_col     = "seurat_clusters")
+  
+
   
 }
 
