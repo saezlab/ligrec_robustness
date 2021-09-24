@@ -231,54 +231,13 @@
 
   
   
-  save_Results <- function(plot_box,
+  clust_save_Results <- function(plot_box,
                            plot_line,
                            iterator_results,
                            
-                           trial_run,
-                           preserve_topology,
-                           testdata_type,
-                           feature_type,
-                           number_ranks,
-                           time_of_run) {
-    
-    # Generate the filepaths to save the data under. 
-    # RD stands for Resource Dilution.
-    box_plot_png_name <-
-      auto_file_Name(
-        prefix = "Boxplot_RD_",
-        suffix = ".png",
-        
-        preserve_topology  = preserve_topology,
-        testdata_type      = testdata_type,
-        feature_type       = feature_type,
-        number_ranks       = number_ranks,
-        time_of_run        = time_of_run,
-        trial_run          = trial_run)
-    
-    line_plot_png_name <-
-      auto_file_Name(
-        prefix = "Lineplot_RD_",
-        suffix = ".png",
-        
-        preserve_topology  = preserve_topology,
-        testdata_type      = testdata_type,
-        feature_type       = feature_type,
-        number_ranks       = number_ranks,
-        time_of_run        = time_of_run,
-        trial_run          = trial_run)
-    
-    iterator_results_save_path <- 
-      auto_file_Name(
-      prefix = "Outputs/Resource_Dilution/Iterator_Results_RD_",
-      suffix = ".RData",
-      
-      preserve_topology  = preserve_topology,
-      testdata_type      = testdata_type,
-      feature_type       = feature_type,
-      number_ranks       = number_ranks,
-      time_of_run        = time_of_run,
-      trial_run          = trial_run)
+                           line_plot_png_name,
+                           box_plot_png_name,
+                           iterator_results_save_path) {
     
     
     
@@ -289,7 +248,7 @@
       box_plot_png_name,
       height = 7.75,
       width = 8.00,
-      path = "Outputs/Resource_Dilution"
+      path = "Outputs/Cluster_Dilution"
     )
     
     ggsave(
@@ -297,25 +256,21 @@
       line_plot_png_name,
       height = 9.00,
       width = 8.00,
-      path = "Outputs/Resource_Dilution"
+      path = "Outputs/Cluster_Dilution"
     )
     
     # Save R environment and all the results within it
     save(iterator_results, file = iterator_results_save_path)
     
-    
-    
-    
     # Let the user know where everything was stored.
-    cat(str_wrap(str_glue("Box Plot saved at ~/Outputs/Resource_Dilution/",
-                   box_plot_png_name, "."), width = 60), "\n\n")
+    cat(str_wrap(str_glue("Box Plot saved at ~/Outputs/Cluster_Dilution/",
+                          box_plot_png_name, "."), width = 60), "\n\n")
     
-    cat(str_wrap(str_glue("Line Plot saved at ~/Outputs/Resource_Dilution/",
-                   line_plot_png_name, "."), width = 60), "\n\n")
+    cat(str_wrap(str_glue("Line Plot saved at ~/Outputs/Cluster_Dilution/",
+                          line_plot_png_name, "."), width = 60), "\n\n")
     
     cat(str_wrap(str_glue("Iterator Results saved at ~/",
-                   iterator_results_save_path, "."), width = 60), "\n\n")
-    
+                          iterator_results_save_path, "."), width = 60), "\n\n")
   }  # end of function
 }
 

@@ -79,34 +79,26 @@
                       'call_sca'        #,
                       # 'cellchat'        ,
                       # 'squidpy'
-    )
-    
-    sink_output     <- FALSE   # TRUE or FALSE
-    liana_warnings  <- "divert" # TRUE, FALSE, or "divert"
-    
-    save_results    <- TRUE
-    trial_run       <- FALSE
-    
-    
-    
-    
-    cellchat_nperms <- 10      # default 100 for real data
-    
-    bundled_outputs <- c(
-      "top_ranks_analysis",
-      "runtime"          
-    )
-    
-    master_outputs <- c(
-      "collated_top_ranks_overlap",
-      "plot_box",
-      "plot_line",
-      "collated_robustness_results",
-      "metadata"
-    )                                  
+                      )
+                      
+                      
+                      liana_warnings  <- "divert" # TRUE, FALSE, or "divert"
+                      
+                      save_results    <- TRUE
+                      trial_run       <- FALSE
+                      
+                      cellchat_nperms <- 10      # default 100 for real data
+                      
+                      outputs <- c(
+                        "top_ranks_overlap",
+                        "plot_box",
+                        "plot_line",
+                        "reshuffling_results",
+                        "metadata"
+                      )
+                      
+}
 
-}    
-    
 
 
 #----------------------------------------------------------------------------#
@@ -494,22 +486,32 @@ rm(overlaps)
 #----------------------------------------------------------------------------#
 # 1.6 Packaging Results to return them ---------------------------------------
 {
+  # Reshuffling results
+  reshuffling_results <- list("testdata"      = testdata,
+                              "reshuffled_clusters" = reshuffled_clusters,
+                              "liana_results" = liana_results,
+                              "top_ranks"     = top_ranks)
+  
+  rm(reshuffled_clusters,testdata,liana_results, top_ranks)
+  
   #In order to save and return our results we package it in a succinct object
-  iterator_results <- 
+  iterator_results <-
     list(
-      "collated_top_ranks_overlap"  = collated_top_ranks_overlap,
+      "top_ranks_overlap"  = top_ranks_overlap,
       "plot_box"  = plot_box,
       "plot_line" = plot_line,
-      "collated_robustness_results" = collated_robustness_results,
+      "reshuffling_results" = reshuffling_results,
       "metadata"  = metadata
     )
   
-  # Filter our results by the master_outputs the user wants to retrieve
+  # Filter our results by the outputs the user wants to retrieve
   # Usually´all the data is requested so this step doesn't chaneg anything.
-  iterator_results <- iterator_results[master_outputs]
+  iterator_results <- iterator_results[outputs]
   
   # Get rid of clutter we already summarized in different objects
-  rm(collated_top_ranks_overlap, collated_robustness_results, metadata)
+  rm(top_ranks_overlap,
+     reshuffling_results,
+     metadata)
 }
 
 
@@ -517,36 +519,25 @@ rm(overlaps)
 #----------------------------------------------------------------------------#
 # 1.7 Saving Results ---------------------------------------------------------
 {
+
+  
   # In this segment we save the plots and environment to the outputs folder,
   # if it's specified in by the user.
   if (save_results == TRUE) {
-    
-    save_Results(plot_box  = plot_box,
-                 plot_line = plot_line, 
-                 iterator_results = iterator_results,
-                 
-                 preserve_topology  = preserve_topology,
-                 testdata_type      = testdata_type,
-                 feature_type       = feature_type,
-                 number_ranks       = number_ranks,
-                 time_of_run        = time_of_run,
-                 trial_run          = trial_run)
+    clust_save_Results(
+      plot_box  = plot_box,
+      plot_line = plot_line,
+      iterator_results = iterator_results,
+      
+      line_plot_png_name = line_plot_png_name,
+      box_plot_png_name  = box_plot_png_name,
+      iterator_results_save_path = iterator_results_save_path)
     
   }
   
   
   # And now return our results to the user
-  return(iterator_results)
+  # return(iterator_results)
   
   
 }
-
-
-
-
-
-
-
-
-
-
