@@ -400,16 +400,11 @@ rm(overlaps)
   # rescource_Robustness return the points in time certain processes started,
   # we use this long list of named points in time to create a succinct and
   # informative runtime overview.
-  runtime <- collated_robustness_results$runtime %>%
-    flatten() %>%
+  runtime <- runtime %>%
     calculate_Runtime()
   
-  # Delete the old unordered runtime from the collated robustness results 
-  # bundle
-  collated_robustness_results$runtime <- NULL
   
-  
-  # We then summarise the above information and more metadata into a single 
+  # We then summarise the above information and more metadata into a single
   # object
   metadata <- summarise_Metadata(number_seeds      = number_seeds,
                                  master_seed_list  = master_seed_list,
