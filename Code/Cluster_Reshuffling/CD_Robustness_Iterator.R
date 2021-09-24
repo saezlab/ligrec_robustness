@@ -329,19 +329,22 @@ rm(overlaps)
   # The dilution proportion and overlap are clearer in percentage
   # NAs can't be displayed in the plot anyway and cause uneccesary warnings
   # Rename the methods from the LIANA++ internal string to their official name
-  tr_overlap_for_plot <-  collated_top_ranks_overlap  %>%
+  tr_overlap_for_plot <- top_ranks_overlap  %>%
     as.data.frame()                             %>%
-    mutate(dilution_prop = dilution_prop * 100) %>% # proportion to percent
+    mutate(mismatch_prop = mismatch_prop * 100) %>% # proportion to percent
     mutate(Overlap       = Overlap       * 100) %>% # proportion to percent
     as_tibble()                                 %>%
-    drop_na()                                   %>% # no NAs
-    mutate("Method" = recode(Method,
-                             "call_connectome" = "Connectome",
-                             "squidpy"         = "CellPhoneDB",
-                             "call_natmi"      = "NATMI",
-                             "call_italk"      = "iTALK",
-                             "call_sca"        = "SingleCellSignalR",
-                             "cellchat"        = "CellChat")) # renaming
+    mutate(
+      "Method" = recode(
+        Method,
+        "call_connectome" = "Connectome",
+        "squidpy"         = "CellPhoneDB",
+        "call_natmi"      = "NATMI",
+        "call_italk"      = "iTALK",
+        "call_sca"        = "SingleCellSignalR",
+        "cellchat"        = "CellChat"
+      )
+    ) # renaming
   
   # To directly be able to associate the box plot with the settings that
   # produced it, we automatically generate a plot description
