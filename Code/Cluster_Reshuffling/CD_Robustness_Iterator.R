@@ -14,9 +14,9 @@
 #------------------------------------------------------------------------------#
 # 1. Setup ---------------------------------------------------------------------
 {
-  # In this segment, we set up all the required infrastructure to run the 
-  # wrapper. The default parameters for the wrapper are set in 
-  # CD_Robustness_Iterator.R, but custom parameters can be set in the function 
+  # In this segment, we set up all the required infrastructure to run the
+  # wrapper. The default parameters for the wrapper are set in
+  # CD_Robustness_Iterator.R, but custom parameters can be set in the function
   # call.
   
   # Load required Packages
@@ -108,24 +108,37 @@
 
 
 #----------------------------------------------------------------------------#
-# 1.1 Generate Parameters  --------------------------------------------------- 
+# 1.1 Generate Parameters  ---------------------------------------------------
 {
   # Retrieve either seurat_pbmc or liana_test data
   testdata <- extract_Testdata(testdata_type = testdata_type)
   
   
   
-  # Format a named list of seeds, it contains as many seeds as the user 
+  # Format a named list of seeds, it contains as many seeds as the user
   # specified, from 1 to n, and each entry has an appropriate name, "Seed_n"
+  # This list can be used to iterate over for every seed.
   master_seed_list <- as.list(1:number_seeds)
   
   names(master_seed_list) <-
     map(master_seed_list, function(seed) {
-      
       # Name each element of master_seed_list appropriately
       str_glue("Seed_", seed)
       
     })
+  
+  
+  # This is our second iterable structure, we iterate over every mismatch
+  # proportion the user specified.
+  
+  # Convert mismatch_props to a list and name it, creating a named list
+  mismatch_props <- as.list(mismatch_props)
+  
+  names(mismatch_props) <- map(mismatch_props, function(prop) {
+    # Name every dilution proportion
+    str_glue("Reshuffle_", as.character(prop * 100))
+    
+  })
   
   # depending on the testdata type, the name of the column in the metadata
   # that has the cluster annotations is different. We need the name of that
@@ -146,13 +159,19 @@
   # have in save file names. We will later use this to tag file names and
   # plots so they can be grouped according to run, and all have unique names.
   time_of_run <-  Sys.time() %>%
-    as.character()    %>% 
+    as.character()    %>%
     gsub(':', '-', .) %>% # save files can't have colons
     gsub(' ', '_', .) %>% # save files shouldn't have spaces
-    str_sub(1 , nchar(.) - 3) # the code never runs in under a minute, so the 
-                              # number of seconds isn't valuable information.
+    str_sub(1 , nchar(.) - 3) # the code never runs in under a minute, so the
+  # number of seconds isn't valuable information.
   
-}  
+  
+  
+
+  
+  
+  
+}
 
 
 
@@ -170,16 +189,9 @@
     append(list("Reshuffle_0" = testdata@meta.data), .)
   
   
-  # Convert dilution.props to a list and name it, creating a named list
-  reshuffle_props <- as.list(reshuffle_props)
   
-  names(reshuffle_props) <- map(reshuffle_props, function(prop) {
     
-    # Name every dilution proportion
-    str_glue("Reshuffle_", as.character(prop * 100))
     
-  }) 
-  
   
   reshuffled_clusters <- lapply(master_seed_list,
                                 wrap_Shuffler,
