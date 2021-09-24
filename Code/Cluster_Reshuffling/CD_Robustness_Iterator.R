@@ -349,18 +349,14 @@ rm(overlaps)
   # To directly be able to associate the box plot with the settings that
   # produced it, we automatically generate a plot description
   plotting_caption <-
-    auto_plot_Description(
-      tr_overlap_for_plot,
-      
-      preserve_topology  = preserve_topology,
-      testdata_type      = testdata_type,
-      feature_type       = feature_type,
-      number_ranks       = number_ranks,
-      time_of_run        = time_of_run,
-      trial_run          = trial_run)
-  
-  
-  
+    clust_plot_Description(
+      mismatch_props   = mismatch_props,
+      trial_run        = trial_run,
+      testdata_type    = testdata_type,
+      master_seed_list = master_seed_list,
+      number_ranks     = number_ranks,
+      time_of_run      = time_of_run
+    )
   
   
   

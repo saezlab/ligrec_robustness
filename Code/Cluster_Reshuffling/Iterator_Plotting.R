@@ -163,105 +163,67 @@
   #' @return A verbose caption describing the parameters used to generate the 
   #' results in the plot.
   
-  auto_plot_Description <- function(top_ranks_overlap,
-                                    
-                                    trial_run,
-                                    preserve_topology,
-                                    testdata_type,
-                                    feature_type,
-                                    number_ranks,
-                                    time_of_run) {
+  clust_plot_Description <- function(mismatch_props,
+                                     trial_run,
+                                     testdata_type,
+                                     master_seed_list,
+                                     number_ranks,
+                                     time_of_run) {
     
     ## General comment, on testdata type, feature_type and topology
     {
-      if (preserve_topology == FALSE) {
-        topology_comment <- "random_Dilute()"
-        
-      } else if (preserve_topology == TRUE) {
-        topology_comment <- "preserve_Dilute()"
-        
-      }
       
       
       general_comment <-
         str_glue(
           "This plot was created using the ",
           testdata_type,
-          " data. Dilution was performed using ",
-          feature_type,
-          " features and the ",
-          topology_comment,
-          " function. "
+          " data.  "
         )
-      
-      rm(topology_comment)
+
     }
     
     
     
     ## Dilution comment, on proportions
     {
-      dilution_overview <- count(top_ranks_overlap,
-                                 dilution_prop,
-                                 run_mode = "real")
       
-      
-      dilution_comment <- str_glue(
-        "The dilution occured in ",
-        dilution_overview$dilution_prop[2] -
-          dilution_overview$dilution_prop[1],
-        " % increments up to a maximum of ",
-        max(top_ranks_overlap$dilution_prop),
-        " %. "
-      )
-      
-      if (nrow(dilution_overview) < 1) {
-        stop(
-          "Expected at least two dilution proportions in input (0, and one ",
-          "more. But found only one instead, namely ",
-          dilution_overview$dilution_prop
+      if (length(mismatch_props) > 1) {
+        
+        reshuffle_comment <- str_glue(
+          "The cluster annotations were reshuffled in ",
+          (mismatch_props[[2]]-mismatch_props[[1]]) *100, 
+          " % intervals to a maximum of ",
+          max(unlist(mismatch_props))*100,
+          " %. When an annotation was being reshuffled, it was replaced by a
+        random sign from all annotations that did not match itself."
+        )
+        
+      } else {
+        reshuffle_comment <- str_glue(
+          "The cluster annotations were reshuffled to ",
+          (mismatch_props[[1]]) *100, 
+          " %. When an annotation was being reshuffled, it was replaced by a
+        random sign from all annotations that did not match itself."
         )
       }
       
-      if (length(unique(dilution_overview$n)) != 1) {
-        stop(
-          "There should be an equal number of samples for every dilution, ",
-          "but there is not."
-        )
-      }
-      
-      
-      rm(dilution_overview)
-      
+     
     }
     
     
     ## Nperms and top_ranks comment
     {
-      top_ranks_vector <- unlist(number_ranks)
-      
-      permutations_overview <- top_ranks_overlap %>%
-        filter(dilution_prop == 0) %>%
-        count(Method)
-      
-      
+
       top_ranks_permutations_comment <-
         str_glue(
           "The overlap was compared between the ",
-          median(top_ranks_vector),
+          median(unlist(number_ranks)),
           " highest ranked interactions over ",
-          permutations_overview$n[1],
+          length(master_seed_list),
           " permutations."
         )
-      
-      if (length(unique(permutations_overview$n)) != 1) {
-        stop(
-          "There should be an equal number of samples for each method at , ",
-          "dilution proportion 0, but there is not."
-        )
-      }
-      
-      rm(permutations_overview, top_ranks_vector)
+
     }
     
     
@@ -276,7 +238,7 @@
       str_glue(
         general_comment,
         "\n",
-        dilution_comment,
+        reshuffle_comment,
         "\n\n",
         top_ranks_permutations_comment,
         "\n",
