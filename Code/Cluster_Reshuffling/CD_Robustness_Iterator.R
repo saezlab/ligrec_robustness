@@ -267,7 +267,62 @@ liana_results$runtime <- NULL
 
 liana_results <- liana_results %>%
   map_depth(., .depth = 1, transpose) %>%
-  map_depth(., .depth = 0, transpose)
+  map_depth(., .depth = 0, transpose) %>%
+  map_depth(., .depth = 3, function(result) {
+    
+    if(is_tibble(result) == FALSE && trial_run == FALSE) {
+      
+      metadata <- clust_summarise_Metadata(
+        master_seed_list = master_seed_list,
+        mismatch_props   = mismatch_props,
+        methods_list     = methods_list,
+        
+        testdata_type    = testdata_type,
+        cluster_col      = cluster_col,
+        number_ranks     = number_ranks,
+        
+        cellchat_nperms  = cellchat_nperms,
+        outputs          = outputs,
+        
+        liana_warnings   = liana_warnings,
+        save_results     = save_results,
+        trial_run        = trial_run,
+        
+        runtime     = runtime,
+        time_of_run = time_of_run,
+        
+        warning_logfile    = warning_logfile,
+        line_plot_png_name = line_plot_png_name,
+        box_plot_png_name  = box_plot_png_name,
+        iterator_results_save_path = iterator_results_save_path
+      )
+      
+      error_results <- list("metadata" = metadata,
+                            "liana_results" = liana_results,
+                            "reshuffled_clusters" = reshuffled_clusters)
+      
+      save(error_results, 
+           file = str_glue(str_sub(iterator_results_save_path,
+                                   1, 
+                                   nchar(iterator_results_save_path) - 6),
+                           "_ERROR.RData"))
+      
+      stop(str_glue("An error occured in one of the LIANA methods.
+                    Instead of an output tibble, LIANA returned: \n",
+                    as.character(result)))
+    } else {
+      
+      return(result)
+      
+    }
+    
+  }) %>%
+  
+  map_depth(., .depth = 2, function(sublist) {
+ 
+    keep(sublist, is_tibble)
+    
+  })
 
 
 if(liana_warnings == "divert") {
@@ -313,8 +368,18 @@ overlaps <- map(methods_list, function(method) {
 })
 
 
+if(trial_run == TRUE) {
   
+  # add NAs to the end of the overlaps to replace where errors were produced.
+  overlaps <- overlaps %>%
+    map_depth(., .depth = 2, function(x) { 
+      c(x, rep(NA, length(mismatch_props)+1-length(x)))
+    })
   
+}
+
+
+         
 
 
 # reformatting overlap as a tibble
@@ -363,7 +428,8 @@ rm(overlaps)
         "call_sca"        = "SingleCellSignalR",
         "cellchat"        = "CellChat"
       )
-    ) # renaming
+    ) %>% # renaming
+    drop_na()
   
   # To directly be able to associate the box plot with the settings that
   # produced it, we automatically generate a plot description
