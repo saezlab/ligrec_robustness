@@ -193,11 +193,6 @@
     
     
   
-  reshuffled_clusters <- lapply(master_seed_list,
-                                wrap_Shuffler,
-                                reshuffle_props = reshuffle_props,
-                                metadata        = testdata@meta.data,
-                                cluster_col     = "seurat_clusters")
   
 
   
