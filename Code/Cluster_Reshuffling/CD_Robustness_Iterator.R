@@ -240,19 +240,6 @@ if(liana_warnings == "divert") {
 
 
 #----------------------------------------------------------------------------#
-# 1.3 Reformatting Results ---------------------------------------------------
-{
-  # In this segment we extract the data from the results object, which is 
-  # poorly formatted by default, and put it into a more appropriate hierarchy.
-  # We then extract the most important information from it for visualization.
-  
-  # We reformat the results so they are grouped more intuitively
-  collated_robustness_results <-
-    reformat_Results(results = collated_robustness_results)
-  
-  # We extract the top_ranks_overlap data and turn it into a convenient tibble
-  collated_top_ranks_overlap <-
-    extract_top_ranks(collated_robustness_results)
 # 1.4 Compare Top-Ranked Predictions -----------------------------------------
 
 top_ranks <-
