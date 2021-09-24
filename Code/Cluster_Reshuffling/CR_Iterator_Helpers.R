@@ -1,3 +1,23 @@
+#------------------------------------------------------------------------------#
+# A. For Resource Robustness
+
+# get_top_n_ranks()
+{
+  #' Get the top n ranked items of a method from the tibble liana wrapper or
+  #' call_x results
+  #'
+  #' @param data_set The tibble output by the liana wrapper function or call_x
+  #' functions.
+  #' @param method The method for which you would like to extract the top ranked
+  #' interactions, as a string.
+  #' @param top_n The number of items to return, returns items ranked #1 to #n.
+  #' @param with_ties TRUE or FALSE. An argument passed to slice_min and 
+  #' slice_max respectively. When slicing the top_n, sometimes a cutoff occurs
+  #' between equally ranked items. Should the items also be included, expanding 
+  #' the selection (TRUE), or should preserving top_n be prioritized (FALSE). 
+  #'
+  #' @return Returns the tibble input cut down to the top n highest ranked
+  #' interactions.
   
   get_top_ranks_clust <- function(data_set, method, top_n, with_ties = FALSE) {
     # generate a list that describes how to rank in each method to get what the
