@@ -12,6 +12,7 @@
 
 # overlap_line_Plot()
 {
+  
   #' Draw a line/scatter plot from the collated top_ranks_overlap data
   #' 
   #' @param top_ranks_overlap As a tibble, formatted like the collated_top_ranks
@@ -60,14 +61,14 @@
       
       # shift caption and legend position
       theme(plot.caption = element_text(hjust = 0),
-            legend.position = "bottom")
+            legend.position = "bottom",
+            plot.margin = unit(c(0.5,0.5,1,0.5),"cm"))    
     
     
     # return the plot
     return(plot_line)
     
   }
-  
   
 }
 
@@ -121,7 +122,8 @@
       
       # adjust legend and caption position
       theme(plot.caption = element_text(hjust = 0),
-            legend.position = "bottom") +     
+            legend.position = "bottom",
+            plot.margin = unit(c(0.5,1,0.5,0.5),"cm")) +    
       
       # facet wrap for each method, so they don't overlap and are easily 
       # comparable between subplots
@@ -136,6 +138,7 @@
   
   
 }
+
 
 
 # auto_plot_Description()

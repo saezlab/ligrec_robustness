@@ -61,7 +61,8 @@
       
       # shift caption and legend position
       theme(plot.caption = element_text(hjust = 0),
-            legend.position = "bottom")
+            legend.position = "bottom",
+            plot.margin = unit(c(0.5,0.5,1,0.5),"cm"))    
     
     
     # return the plot
@@ -121,8 +122,9 @@
       
       # adjust legend and caption position
       theme(plot.caption = element_text(hjust = 0),
-            legend.position = "bottom") +     
-      
+            legend.position = "bottom",
+            plot.margin = unit(c(0.5,1,0.5,0.5),"cm")) +    
+
       # facet wrap for each method, so they don't overlap and are easily 
       # comparable between subplots
       facet_wrap(~Method, nrow = 2, ncol = 3, scales = "free")
@@ -176,41 +178,38 @@
                                      number_ranks,
                                      time_of_run) {
     
-    ## General comment, on testdata type, feature_type and topology
-    {
-      
-      
-      general_comment <-
-        str_glue(
-          "This plot was created using the ",
-          testdata_type,
-          " data.  "
-        )
 
-    }
     
-    
-    
-    ## Dilution comment, on proportions
+    ## 
     {
       
       if (length(mismatch_props) > 1) {
         
         reshuffle_comment <- str_glue(
+          "This plot was created using the ",
+          testdata_type,
+          " data. ",
           "The cluster annotations were reshuffled in ",
           (mismatch_props[[2]]-mismatch_props[[1]]) *100, 
           " % intervals to a maximum of ",
           max(unlist(mismatch_props))*100,
-          " %. When an annotation was being reshuffled, it was replaced by a
-        random sign from all annotations that did not match itself."
+          " %. \n",
+          "When an annotation was being reshuffled, ",
+          "it was replaced by a random sign from ",
+          "all annotations that did not match itself."
         )
         
       } else {
         reshuffle_comment <- str_glue(
+          "This plot was created using the ",
+          testdata_type,
+          " data. ",
           "The cluster annotations were reshuffled to ",
           (mismatch_props[[1]]) *100, 
-          " %. When an annotation was being reshuffled, it was replaced by a
-        random sign from all annotations that did not match itself."
+          " %. \n",
+          "When an annotation was being reshuffled, ",
+          "it was replaced by a random sign from ",
+          "all annotations that did not match itself."
         )
       }
       
@@ -242,8 +241,6 @@
     ## Assemple plotting caption
     plotting_caption <-
       str_glue(
-        general_comment,
-        "\n",
         reshuffle_comment,
         "\n\n",
         top_ranks_permutations_comment,
