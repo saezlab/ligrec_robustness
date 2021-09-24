@@ -59,10 +59,9 @@
   # turn this into wrapper
   # wrap_cluster_Iterator <-
   #  function(
-  number_seeds      <-
-    3            # how many seeds should we iterate over
+  number_seeds      <- 3            # how many seeds should we iterate over
   testdata_type     <- "liana_test" # seurat_pbmc or liana_test
-  mismatch_props    <- c(seq(0.40, 1.00, 0.40))
+  mismatch_props    <- c(seq(0.60, 0.30, -0.30))
   
   number_ranks <- list(
     "call_connectome" = 20,
@@ -76,8 +75,8 @@
   methods_vector <- c('call_connectome' ,
                       # 'call_natmi'      ,
                       'call_italk'      ,
-                      'call_sca'        #,
-                      # 'cellchat'        ,
+                      'call_sca'        ,
+                      'cellchat'        #,
                       # 'squidpy'
                       )
                       
@@ -85,9 +84,9 @@
                       liana_warnings  <- "divert" # TRUE, FALSE, or "divert"
                       
                       save_results    <- TRUE
-                      trial_run       <- FALSE
+                      trial_run       <- TRUE
                       
-                      cellchat_nperms <- 10      # default 100 for real data
+                      cellchat_nperms <- 2      # default 100 for real data
                       
                       outputs <- c(
                         "top_ranks_overlap",
@@ -288,17 +287,7 @@ if(liana_warnings == "divert") {
 top_ranks <-
   map(methods_list, function(method) {
     
-    if(method != "cellchat") {
-      top_ranks_for_method <- liana_results[[method]] %>%
-        map_depth(
-          .,
-          .depth = 2,
-          get_top_ranks_clust,
-          method = method,
-          top_n = number_ranks[[method]]
-        )
-    } else if(method == "cellchat") {
-      top_ranks_for_method <- liana_results[[method]] %>%
+    top_ranks_for_method <- liana_results[[method]] %>%
         map_depth(
           .,
           .depth = 2,
@@ -307,7 +296,6 @@ top_ranks <-
           top_n = number_ranks[[method]],
           with_ties = TRUE
         )
-    }
 
   })  %>%
   map_depth(., .depth = 3, format_top_ranks)
@@ -315,8 +303,6 @@ top_ranks <-
 
 overlaps <- map(methods_list, function(method) {
   
-  if(method != "cellchat") {
-    
     overlaps_for_method <-  top_ranks[[method]] %>%
       map_depth(.,
                 .depth = 2,
@@ -324,21 +310,11 @@ overlaps <- map(methods_list, function(method) {
                 main_ranks = top_ranks[[method]]$Reshuffle_0[[1]],
                 verbose = FALSE)
     
-    
-    
-  } else if(method == "cellchat") {
-
-    overlaps_for_method <-  top_ranks[[method]] %>%
-      map_depth(.,
-                .depth = 2,
-                cellchat_rank_overlap,
-                main_ranks = top_ranks[[method]]$Reshuffle_0[[1]],
-                verbose = FALSE)
-    
-  }
-  
-  
 })
+
+
+  
+  
 
 
 # reformatting overlap as a tibble
