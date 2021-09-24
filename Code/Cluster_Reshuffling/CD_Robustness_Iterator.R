@@ -361,11 +361,17 @@ rm(overlaps)
   
   
   # Generate our plots with functions.
-  plot_line <- overlap_line_Plot(tr_overlap_for_plot,
-                                 plotting_caption)
+  plot_line <- 
+    overlap_line_Plot(tr_overlap_for_plot,
+                      plotting_caption,
+                      x_axis_var = "mismatch_prop",
+                      x_axis_name = "Mismatch of Cluster Annotations [%]")
   
-  plot_box <- overlap_box_Plot(tr_overlap_for_plot,
-                               plotting_caption)
+  plot_box <- 
+    overlap_box_Plot(tr_overlap_for_plot,
+                     plotting_caption,
+                     x_axis_var = "mismatch_prop",
+                     x_axis_name = "Mismatch of Cluster Annotations [%]")
   
   # Print out visualizations
   print(plot_line)

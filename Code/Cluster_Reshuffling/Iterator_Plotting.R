@@ -25,10 +25,13 @@
   #' complete with a caption.
   
   
-  overlap_line_Plot <- function(top_ranks_overlap, plotting_caption) {
+  overlap_line_Plot <- function(top_ranks_overlap, 
+                                      plotting_caption,
+                                      x_axis_var, 
+                                      x_axis_name) {
     
     plot_line <- 
-      ggplot(data = top_ranks_overlap, aes(dilution_prop,
+      ggplot(data = top_ranks_overlap, aes(.data[[x_axis_var]],
                                            Overlap,
                                            group = Method,  # for colors
                                            color = Method)) + 
@@ -48,7 +51,7 @@
       # add text
       ggtitle("Robustness of Method Predictions") +
       ylab("Overlap of Top Ranks [%]") +
-      xlab("Dilution of Resource [%]") +
+      xlab(x_axis_name) +
       labs(subtitle = "Line / point scatter plot.",
            caption = plotting_caption,
            color = "Method") +
@@ -83,13 +86,16 @@
   #' @return A ggplot of the top_ranks_overlap as a box plot, complete with a 
   #' caption.
 
-  overlap_box_Plot <- function(top_ranks_overlap, plotting_caption) {
+  overlap_box_Plot <- function(top_ranks_overlap, 
+                                     plotting_caption,
+                                     x_axis_var, 
+                                     x_axis_name) {
     
     plot_box <- 
-      ggplot(data = top_ranks_overlap, aes(x = dilution_prop, 
+      ggplot(data = top_ranks_overlap, aes(x = .data[[x_axis_var]], 
                                            y = Overlap, 
-                                           group = dilution_prop, # for faceting 
-                                           color = Method)) +     # ...and colors
+                                           group = .data[[x_axis_var]], # for faceting 
+                                           color = Method)) +  # ...and colors
       
       # Add boxplots, no outliers because we add points in a second
       geom_boxplot(outlier.shape = NA) + 
@@ -105,7 +111,7 @@
       # add text
       ggtitle("Robustness of Method Predictions") +
       ylab("Overlap of Top Ranks [%]") +
-      xlab("Dilution of Resource [%]") +
+      xlab(x_axis_name) +
       labs(subtitle = "Boxplot by Method.",
            caption = plotting_caption,
            color = "Method") +
