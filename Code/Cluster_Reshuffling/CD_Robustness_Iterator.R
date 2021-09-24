@@ -178,6 +178,55 @@
   # number of seconds isn't valuable information.
   
   
+  # If necessary we generate a filepath to save LIANA++ logs under.
+  if (liana_warnings == "divert") {
+    warning_logfile <-
+      cluster_auto_file_Name(
+        prefix = "Outputs/Cluster_Dilution/Logs/",
+        suffix = ".txt",
+        
+        testdata_type     = testdata_type,
+        number_ranks      = number_ranks,
+        time_of_run       = time_of_run,
+        trial_run         = trial_run
+      )
+  }
+  
+  if (save_results == TRUE) {
+    
+    # Generate the filepaths to save the data under. 
+    # RD stands for Resource Dilution.
+    box_plot_png_name <-
+      cluster_auto_file_Name(
+        prefix = "Boxplot_CR_",
+        suffix = ".png",
+        
+        testdata_type     = testdata_type,
+        number_ranks      = number_ranks,
+        time_of_run       = time_of_run,
+        trial_run         = trial_run)
+    
+    line_plot_png_name <-
+      cluster_auto_file_Name(
+        prefix = "Lineplot_CR_",
+        suffix = ".png",
+        
+        testdata_type     = testdata_type,
+        number_ranks      = number_ranks,
+        time_of_run       = time_of_run,
+        trial_run         = trial_run)
+    
+    iterator_results_save_path <- 
+      cluster_auto_file_Name(
+        prefix = "Outputs/Cluster_Dilution/Iterator_Results_CR_",
+        suffix = ".RData",
+        
+        testdata_type     = testdata_type,
+        number_ranks      = number_ranks,
+        time_of_run       = time_of_run,
+        trial_run         = trial_run)
+    
+  }
   
 
   
@@ -406,32 +455,36 @@ rm(overlaps)
   
   # We then summarise the above information and more metadata into a single
   # object
-  metadata <- summarise_Metadata(number_seeds      = number_seeds,
-                                 master_seed_list  = master_seed_list,
-                                 testdata_type     = testdata_type,
-                                 feature_type      = feature_type, 
-                                 preserve_topology = preserve_topology,    
-                                 dilution_props    = dilution_props,
-                                 number_ranks      = number_ranks ,
-                                 methods_vector    = methods_vector,
-                                 
-                                 sink_output       = sink_output,    
-                                 liana_warnings    = liana_warnings,
-                                 
-                                 cellchat_nperms   = cellchat_nperms,       
-                                 bundled_outputs   = bundled_outputs,
-                                 master_outputs    = master_outputs,
-                                 
-                                 
-                                 save_results = save_results,
-                                 trial_run    = trial_run,
-                                 
-                                 runtime      = runtime,
-                                 time_of_run  = time_of_run)
+  metadata <- clust_summarise_Metadata(
+    master_seed_list = master_seed_list,
+    mismatch_props   = mismatch_props,
+    methods_list     = methods_list,
+    
+    testdata_type    = testdata_type,
+    cluster_col      = cluster_col,
+    number_ranks     = number_ranks,
+    
+    cellchat_nperms  = cellchat_nperms,
+    outputs          = outputs,
+    
+    liana_warnings   = liana_warnings,
+    save_results     = save_results,
+    trial_run        = trial_run,
+    
+    runtime     = runtime,
+    time_of_run = time_of_run,
+    
+    warning_logfile    = warning_logfile,
+    line_plot_png_name = line_plot_png_name,
+    box_plot_png_name  = box_plot_png_name,
+    iterator_results_save_path = iterator_results_save_path
+  )
   
   # Now that these objects are stored in the metadata object, we can remove
   # this clutter from the environment.
-  rm(runtime, master_seed_list)
+  rm(runtime, master_seed_list, mismatch_props, number_ranks, methods_list,
+     cellchat_nperms, cluster_col, methods_vector, number_seeds, testdata_type, 
+     time_of_run, trial_run)
   
   
 }
