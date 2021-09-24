@@ -5,6 +5,7 @@ shuffle_Clusters <- function(master_seed,
   
   set.seed(master_seed)
   
+  
   metadata_old <- metadata %>%
     rownames_to_column(var = "Bar_Code") %>%
     as_tibble()
@@ -62,10 +63,10 @@ shuffle_Clusters <- function(master_seed,
     as.factor()
   
   
-  print(str_glue("Cluster annotations reshuffled. There is ", 
-                 round((sum(metadata_new$Mismatched) / nrow(metadata_new)) *100, 
-                       2),
-                 " % mismatch to the original annotation."))
+  print(
+    str_glue("Cluster annotations reshuffled. ", 
+             round((sum(metadata_new$Mismatched) / nrow(metadata_new)) *100, 2),
+             " % mismatch to the original annotation."))
   
 
         
@@ -74,25 +75,22 @@ shuffle_Clusters <- function(master_seed,
 }
 
 
-wrap_Shuffler <- function(master_seed,
-                          reshuffle_props,
+wrap_Shuffler <- function(master_seed_list,
+                          mismatch_prop,
                           metadata,
                           cluster_col) {
   
-  print(str_glue(""))
-  print(str_glue(""))
-  print(str_glue("Iteration ", master_seed))
-  print(str_glue(""))
+  print_Title(str_glue("Creating ",
+                       mismatch_prop*100, 
+                       " % mismatched cluster annotations."))
   
-  reshuffled_metadatas <- lapply(reshuffle_props,
+  reshuffled_metadatas <- lapply(master_seed_list,
                                  shuffle_Clusters,
-                                 master_seed = master_seed,
-                                 metadata    = metadata,
-                                 cluster_col = cluster_col)
+                                 mismatch_prop = mismatch_prop,
+                                 metadata      = metadata,
+                                 cluster_col   = cluster_col)
   
-  metadata_list <- list("Reshuffle_0" = metadata) %>%
-    append(reshuffled_metadatas)
   
-  return(metadata_list)
+  return(reshuffled_metadatas)
   
 }

@@ -127,6 +127,21 @@
       
     })
   
+  # depending on the testdata type, the name of the column in the metadata
+  # that has the cluster annotations is different. We need the name of that
+  # column for multiple applications
+  if (testdata_type == "seurat_pbmc") {
+    cluster_col <- "seurat_clusters"
+    
+  } else if (testdata_type == "liana_test") {
+    cluster_col <- "seurat_annotations"
+    
+  } else {
+    stop("Testdata type is not recognized!")
+    
+  }
+  
+  
   # Format the Sys.time() of the run to not contain characters that are bad to
   # have in save file names. We will later use this to tag file names and
   # plots so they can be grouped according to run, and all have unique names.
@@ -144,11 +159,15 @@
 #----------------------------------------------------------------------------#
 # 1.2 Create Reshuffled Cluster Annotations ----------------------------------
 {
-
-  # reshuffled_clusters <- lapply(master_seed_list,
-  #                               reshuffle_Clusters)
-  
-  # gimme: seed, proportion, an existing metadata, cluster column
+  #
+  reshuffled_clusters <- lapply(
+    mismatch_props,
+    wrap_Shuffler,
+    master_seed_list  = master_seed_list,
+    metadata          = testdata@meta.data,
+    cluster_col       = cluster_col
+  ) %>%
+    append(list("Reshuffle_0" = testdata@meta.data), .)
   
   
   # Convert dilution.props to a list and name it, creating a named list
