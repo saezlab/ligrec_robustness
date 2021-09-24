@@ -190,11 +190,40 @@
   
   
   
-    
-    
-  
-  
+}
 
+#----------------------------------------------------------------------------#
+# 1.3 Run LIANA --------------------------------------------------------------
+
+# On original and reshuffled  metadata
+
+liana_results <-
+  iterate_liana_wrap(
+    master_seed_list = master_seed_list,
+    mismatch_props   = mismatch_props,
+    testdata         = testdata,
+    methods_vector   = methods_vector,
+    
+    liana_warnings   = liana_warnings,
+    warning_logfile  = warning_logfile,
+    
+    cellchat_nperms  = cellchat_nperms
+  )  
+
+runtime <- liana_results$runtime
+liana_results$runtime <- NULL
+
+liana_results <- liana_results %>%
+  map_depth(., .depth = 1, transpose) %>%
+  map_depth(., .depth = 0, transpose)
+
+
+if(liana_warnings == "divert") {
+  
+  # let the user know where to find the log
+  cat(str_wrap(str_glue("LIANA warnings saved at ~/", 
+                        warning_logfile, "."), width = 60), " \n\n")
+  
   
 }
 
