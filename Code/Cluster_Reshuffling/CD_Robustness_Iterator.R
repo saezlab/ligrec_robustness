@@ -140,6 +140,16 @@
     
   })
   
+  # This is our third iterable structure, we iterate over every method
+  # the user specified.
+  
+  # Convert methods_vector to a list and name it, creating a named list
+  methods_list <- as.list(methods_vector)
+  
+  names(methods_list) <- methods_vector
+  
+  
+  
   # depending on the testdata type, the name of the column in the metadata
   # that has the cluster annotations is different. We need the name of that
   # column for multiple applications
@@ -243,10 +253,78 @@ if(liana_warnings == "divert") {
   # We extract the top_ranks_overlap data and turn it into a convenient tibble
   collated_top_ranks_overlap <-
     extract_top_ranks(collated_robustness_results)
-  
-  
-}
+# 1.4 Compare Top-Ranked Predictions -----------------------------------------
 
+top_ranks <-
+  map(methods_list, function(method) {
+    
+    if(method != "cellchat") {
+      top_ranks_for_method <- liana_results[[method]] %>%
+        map_depth(
+          .,
+          .depth = 2,
+          get_top_ranks_clust,
+          method = method,
+          top_n = number_ranks[[method]]
+        )
+    } else if(method == "cellchat") {
+      top_ranks_for_method <- liana_results[[method]] %>%
+        map_depth(
+          .,
+          .depth = 2,
+          get_top_ranks_clust,
+          method = method,
+          top_n = number_ranks[[method]],
+          with_ties = TRUE
+        )
+    }
+
+  })  %>%
+  map_depth(., .depth = 3, format_top_ranks)
+
+
+overlaps <- map(methods_list, function(method) {
+  
+  if(method != "cellchat") {
+    
+    overlaps_for_method <-  top_ranks[[method]] %>%
+      map_depth(.,
+                .depth = 2,
+                rank_overlap,
+                main_ranks = top_ranks[[method]]$Reshuffle_0[[1]],
+                verbose = FALSE)
+    
+    
+    
+  } else if(method == "cellchat") {
+
+    overlaps_for_method <-  top_ranks[[method]] %>%
+      map_depth(.,
+                .depth = 2,
+                cellchat_rank_overlap,
+                main_ranks = top_ranks[[method]]$Reshuffle_0[[1]],
+                verbose = FALSE)
+    
+  }
+  
+  
+})
+
+
+# reformatting overlap as a tibble
+top_ranks_overlap <- as_tibble(overlaps)         %>%
+  mutate("mismatch_prop" = c(0, mismatch_props)) %>%
+  unnest(cols = all_of(methods_vector))          %>%
+  unnest(cols = everything())                    %>%
+  relocate("mismatch_prop")                      %>%
+  pivot_longer(cols = !(starts_with("mismatch_prop")), names_to = "Method") %>%
+  arrange(Method)                                %>%
+  rename("Overlap" = value)
+
+
+
+# removing superfluous values
+rm(overlaps)
 
 
 #----------------------------------------------------------------------------#

@@ -78,6 +78,43 @@
     return(topranks)
     
   } #end of function
+  
+  
+  
+}
+
+
+format_top_ranks <- function(top_ranks) {
+  
+  # Format the top_ranks data frame for future processing steps.
+  top_ranks <- top_ranks %>%
+    unite("LR_Pair",
+          c(ligand, receptor),
+          remove = FALSE,
+          sep = "_") %>%
+    relocate("LR_Pair", .after = last_col()) %>%
+    unite("LR_ID",
+          c(source, target, ligand, receptor),
+          remove = FALSE,
+          sep = "_") %>%
+    relocate("LR_ID", .after = last_col())
+  
+  
+  return(top_ranks)
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
 # rank_overlap()
 {
   #' Takes get_n_top_ranks outputs that have an LR_ID and determines their 
