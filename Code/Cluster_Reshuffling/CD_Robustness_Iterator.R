@@ -47,34 +47,34 @@
 #------------------------------------------------------------------------------#
 # 1. Define wrap_resource_Iterator() -----------------------------------------
 {
+  #' Iterator
+  #'
+  #' @description This function iteratively evaluates the robustness of CCI
+  #' inference methods by running them on the same testdata with somewhat
+  #' reshuffled cluster annotations.
+  #'
   
-#' Iterator
-#' 
-#' @description This function iteratively evaluates the robustness of CCI 
-#' inference methods by running them on the same testdata with somewhat
-#' reshuffled cluster annotations.
-#' 
-
-# turn this into wrapper
-# wrap_cluster_Iterator <- 
-#  function(
-    number_seeds      <- 3            # how many seeds should we iterate over
-    testdata_type     <- "seurat_pbmc" # seurat_pbmc or liana_test
-    reshuffle_props    <- c(seq(0.40, 1.00, 0.40))
-    
-    number_ranks <- list(
-      "call_connectome" = 20,
-      "call_natmi"      = 20,
-      "call_italk"      = 20,
-      "call_sca"        = 20,
-      "cellchat"        = 20,
-      "squidpy"         = 20
-    )
-    
-    methods_vector <- c('call_connectome' ,
+  # turn this into wrapper
+  # wrap_cluster_Iterator <-
+  #  function(
+  number_seeds      <-
+    3            # how many seeds should we iterate over
+  testdata_type     <- "liana_test" # seurat_pbmc or liana_test
+  mismatch_props    <- c(seq(0.40, 1.00, 0.40))
+  
+  number_ranks <- list(
+    "call_connectome" = 20,
+    "call_natmi"      = 20,
+    "call_italk"      = 20,
+    "call_sca"        = 20,
+    "cellchat"        = 20,
+    "squidpy"         = 20
+  )
+  
+  methods_vector <- c('call_connectome' ,
                       # 'call_natmi'      ,
-                      # 'call_italk'      ,
-                       'call_sca'        #,
+                      'call_italk'      ,
+                      'call_sca'        #,
                       # 'cellchat'        ,
                       # 'squidpy'
     )
