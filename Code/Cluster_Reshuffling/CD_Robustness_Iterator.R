@@ -261,7 +261,10 @@ liana_results <-
     liana_warnings   = liana_warnings,
     warning_logfile  = warning_logfile,
     
-    cellchat_nperms  = cellchat_nperms
+    expr_prop = 0.1,
+    cellchat.params   = list(nboot = cellchat_nperms, 
+                             expr_prop = 0.1,
+                             thresh = 1)
   )  
 
 runtime <- liana_results$runtime

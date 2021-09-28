@@ -1,8 +1,9 @@
 liana_with_warnings <- function(liana_warnings,
                                 methods_vector,
-                                cellchat_nperms,
                                 testdata,
-                                warning_logfile) {
+                                warning_logfile,
+                                ...) {
+  
   
   # Generate Undiluted liana results by running wrapper function
   # Omnipath x the methods vector, on the selected data
@@ -22,11 +23,8 @@ liana_with_warnings <- function(liana_warnings,
       liana_wrap(testdata, 
                  method = methods_vector, 
                  resource = c('OmniPath'), 
-                 expr_prop = 0,
-                 cellchat.params   = list(nboot = cellchat_nperms, 
-                                          expr_prop = 0,
-                                          thresh = 1),
-                 call_natmi.params = list(output_dir = natmi_output))
+                 call_natmi.params = list(output_dir = natmi_output),
+                 ...)
     
     
   } else if (liana_warnings == "divert") {
@@ -37,11 +35,8 @@ liana_with_warnings <- function(liana_warnings,
           liana_wrap(testdata, 
                      method = methods_vector, 
                      resource = c('OmniPath'), 
-                     expr_prop = 0,
-                     cellchat.params   = list(nboot      = cellchat_nperms, 
-                                              expr_prop  = 0,
-                                              thresh     = 1),
-                     call_natmi.params = list(output_dir = natmi_output))
+                     call_natmi.params = list(output_dir = natmi_output),
+                     ...)
         
       }, logFile = warning_logfile)
     
@@ -53,11 +48,8 @@ liana_with_warnings <- function(liana_warnings,
           liana_wrap(testdata, 
                      method = methods_vector, 
                      resource = c('OmniPath'), 
-                     expr_prop = 0,
-                     cellchat.params   = list(nboot = cellchat_nperms, 
-                                              expr_prop = 0,
-                                              thresh = 1),
-                     call_natmi.params = list(output_dir = natmi_output))
+                     call_natmi.params = list(output_dir = natmi_output),
+                     ...)
         
       })
     
@@ -100,22 +92,11 @@ iterate_liana_wrap <- function(master_seed_list,
                                methods_vector,
                                liana_warnings,
                                warning_logfile,
-                               cellchat_nperms) {
-  
-  print_Title("LIANA with default annotations.", super = TRUE)
+                               ...) {
+
+
   
   runtime <- list("Start Iterations" = Sys.time())
-  
-  original_results <- liana_with_warnings(testdata        = testdata,
-                                          methods_vector  = methods_vector,
-                                          liana_warnings  = liana_warnings,
-                                          warning_logfile = warning_logfile,
-                                          cellchat_nperms = cellchat_nperms)
-  
-  original_results <- 
-    map(master_seed_list, function(seed) {return(original_results)})
-  
-  runtime[["Default Clusters"]] <- Sys.time()
   
   liana_results <- map(mismatch_props, function(mismatch_prop) {
   
@@ -144,9 +125,9 @@ iterate_liana_wrap <- function(master_seed_list,
       liana_results_mismatch_seed <- 
         liana_with_warnings(liana_warnings  = liana_warnings,
                             methods_vector  = methods_vector,
-                            cellchat_nperms = cellchat_nperms,
                             testdata        = reshuffled_testdata,
-                            warning_logfile = warning_logfile)
+                            warning_logfile = warning_logfile,
+                            ...)
       
       return(liana_results_mismatch_seed)
       
@@ -157,6 +138,21 @@ iterate_liana_wrap <- function(master_seed_list,
   })
   
   runtime[["Shuffled Clusters"]] <- Sys.time()
+  
+  print_Title("LIANA with default annotations.", super = TRUE)
+  
+  original_results <- liana_with_warnings(testdata        = testdata,
+                                          methods_vector  = methods_vector,
+                                          liana_warnings  = liana_warnings,
+                                          warning_logfile = warning_logfile,
+                                          ...)
+  
+  original_results <- 
+    map(master_seed_list, function(seed) {return(original_results)})
+  
+  runtime[["Default Clusters"]] <- Sys.time()
+  
+  
   
   complete_liana_results <- original_results %>%
     list("Reshuffle_0" = .)  %>%
