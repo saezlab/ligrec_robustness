@@ -213,9 +213,9 @@ print_Title(str_glue("Iteration ",
       liana_wrap(testdata, 
                  method = methods_vector, 
                  resource = c('OmniPath'), 
-                 expr_prop = 0,
+                 expr_prop = 0.1,
                  cellchat.params   = list(nboot = cellchat_nperms, 
-                                          expr_prop = 0,
+                                          expr_prop = 0.1,
                                           thresh = 1),
                  call_natmi.params = list(output_dir = natmi_output))
     
@@ -228,9 +228,9 @@ print_Title(str_glue("Iteration ",
           liana_wrap(testdata, 
                      method = methods_vector, 
                      resource = c('OmniPath'), 
-                     expr_prop = 0,
+                     expr_prop = 0.1,
                      cellchat.params   = list(nboot = cellchat_nperms, 
-                                              expr_prop = 0,
+                                              expr_prop = 0.1,
                                               thresh = 1),
                      call_natmi.params = list(output_dir = natmi_output))
         
@@ -244,9 +244,9 @@ print_Title(str_glue("Iteration ",
           liana_wrap(testdata, 
                      method = methods_vector, 
                      resource = c('OmniPath'), 
-                     expr_prop = 0,
+                     expr_prop = 0.1,
                      cellchat.params   = list(nboot = cellchat_nperms, 
-                                              expr_prop = 0,
+                                              expr_prop = 0.1,
                                               thresh = 1),
                      call_natmi.params = list(output_dir = natmi_output))
         
@@ -517,7 +517,7 @@ print_Title(str_glue("Iteration ",
                  resource          = c('custom'),
                  expr_prop         = 0,
                  cellchat.params   = list(nboot     = cellchat_nperms, 
-                                          expr_prop = 0,
+                                          expr_prop = 0.1,
                                           thresh    = 1),
                  call_natmi.params = list(output_dir = natmi_output))
       
@@ -541,7 +541,7 @@ print_Title(str_glue("Iteration ",
                    resource          = c('custom'),
                    expr_prop         = 0,
                    cellchat.params   = list(nboot     = cellchat_nperms, 
-                                            expr_prop = 0,
+                                            expr_prop = 0.1,
                                             thresh    = 1),
                    call_natmi.params = list(output_dir = natmi_output))
         
@@ -568,7 +568,7 @@ print_Title(str_glue("Iteration ",
                    resource          = c('custom'),
                    expr_prop         = 0,
                    cellchat.params   = list(nboot     = cellchat_nperms, 
-                                            expr_prop = 0,
+                                            expr_prop = 0.1,
                                             thresh    = 1),
                    call_natmi.params = list(output_dir = natmi_output))
         
