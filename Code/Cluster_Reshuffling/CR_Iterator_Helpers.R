@@ -115,6 +115,7 @@ format_top_ranks <- function(top_ranks) {
 
 
 
+
 # rank_overlap()
 {
   #' Takes get_n_top_ranks outputs that have an LR_ID and determines their 
@@ -123,13 +124,21 @@ format_top_ranks <- function(top_ranks) {
   #' @param main_ranks A tibble of of top ranked interactions
   #' @param comparison_ranks A tibble of top ranked interactions
   #' @param verbose Should the function describe the overlap to you or not?
+  #' @param expect_same_size A boolean that indicates if it is expected that the
+  #' two tibbles being compared are of the same size. If this is not expected,
+  #' (FALSE) it is assumed the user knows that overlaps are directional and no 
+  #' warning is produced when the two tibbles are not the same size.
   #'
   #' @return The overlap (0-1) between the two input frames in contents of the
   #' LR_ID column, as well as an optional print statement that gives more 
   #' detail.
   
   rank_overlap <-
-    function(main_ranks, comparison_ranks, verbose = TRUE) {
+    function(main_ranks, 
+             comparison_ranks, 
+             verbose = TRUE, 
+             expect_same_size = TRUE) {
+      
       # calculate overlap between LR_IDs
       overlap <- sum(comparison_ranks$LR_ID %in% main_ranks$LR_ID)
       percentage_overlap <- overlap / nrow(main_ranks)
@@ -153,9 +162,10 @@ format_top_ranks <- function(top_ranks) {
       # put out a warning if the rankings are not of the same length, in this 
       # case the overlap percentage is only based on the main_ranks, which might
       # catch the user off-guard
-      if (nrow(main_ranks) != nrow(comparison_ranks)) {
+      if ((expect_same_size == TRUE) &&
+          (nrow(main_ranks) != nrow(comparison_ranks))) {
         warning("Rankings are not of same length.
-              Percentage based on main_ranks argument.")
+            Percentage based on main_ranks argument.")
       }
       
       
@@ -165,6 +175,7 @@ format_top_ranks <- function(top_ranks) {
   
   
 }
+
 
 
 # cellchat_rank_overlap()

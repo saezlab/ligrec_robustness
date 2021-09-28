@@ -363,7 +363,8 @@ overlaps <- map(methods_list, function(method) {
                 .depth = 2,
                 rank_overlap,
                 main_ranks = top_ranks[[method]]$Reshuffle_0[[1]],
-                verbose = FALSE)
+                verbose = FALSE,
+                expect_same_size = FALSE)
     
 })
 
