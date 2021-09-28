@@ -313,20 +313,18 @@ liana_results <- liana_results %>%
                                    nchar(iterator_results_save_path) - 6),
                            "_ERROR.RData"))
       
-      stop(str_glue("An error occured in one of the LIANA methods.
-                    Instead of an output tibble, LIANA returned: \n",
-                    as.character(result)))
+      stop(str_glue("An error occured in one of the LIANA methods. ",
+                    "Instead of an output tibble, LIANA returned: \n",
+                    as.character(result), 
+                    "\n\n The mismatch proportion may be too high to return ", 
+                    "any significant LR Interactions, this makes some ",
+                    "methods, such as CellChat crash."))
+      
     } else {
       
       return(result)
       
     }
-    
-  }) %>%
-  
-  map_depth(., .depth = 2, function(sublist) {
- 
-    keep(sublist, is_tibble)
     
   })
 
@@ -375,20 +373,6 @@ overlaps <- map(methods_list, function(method) {
 })
 
 
-if(trial_run == TRUE) {
-  
-  # add NAs to the end of the overlaps to replace where errors were produced.
-  overlaps <- overlaps %>%
-    map_depth(., .depth = 2, function(x) { 
-      c(x, rep(NA, length(mismatch_props)+1-length(x)))
-    })
-  
-}
-
-
-         
-
-
 # reformatting overlap as a tibble
 top_ranks_overlap <- as_tibble(overlaps)         %>%
   mutate("mismatch_prop" = c(0, mismatch_props)) %>%
@@ -425,18 +409,13 @@ rm(overlaps)
     mutate(mismatch_prop = mismatch_prop * 100) %>% # proportion to percent
     mutate(Overlap       = Overlap       * 100) %>% # proportion to percent
     as_tibble()                                 %>%
-    mutate(
-      "Method" = recode(
-        Method,
-        "call_connectome" = "Connectome",
-        "squidpy"         = "CellPhoneDB",
-        "call_natmi"      = "NATMI",
-        "call_italk"      = "iTALK",
-        "call_sca"        = "SingleCellSignalR",
-        "cellchat"        = "CellChat"
-      )
-    ) %>% # renaming
-    drop_na()
+    mutate("Method" = recode(Method,
+                             "call_connectome" = "Connectome",
+                             "squidpy"         = "CellPhoneDB",
+                             "call_natmi"      = "NATMI",
+                             "call_italk"      = "iTALK",
+                             "call_sca"        = "SingleCellSignalR",
+                             "cellchat"        = "CellChat")) # renaming
   
   # To directly be able to associate the box plot with the settings that
   # produced it, we automatically generate a plot description
