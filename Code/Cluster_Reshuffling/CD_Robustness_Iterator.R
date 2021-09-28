@@ -238,7 +238,6 @@
     wrap_Shuffler,
     master_seed_list  = master_seed_list,
     metadata          = testdata@meta.data,
-    cluster_col       = cluster_col
   ) %>%
     append(list("Reshuffle_0" = testdata@meta.data), .)
   
