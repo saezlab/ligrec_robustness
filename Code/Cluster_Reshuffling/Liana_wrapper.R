@@ -139,7 +139,7 @@ iterate_liana_wrap <- function(master_seed_list,
         reshuffled_clusters[[mismatch_name]][[seed]]
       
       Idents(reshuffled_testdata) <- 
-        reshuffled_testdata@meta.data[[cluster_col]]
+        reshuffled_testdata@meta.data$cluster_key
       
       liana_results_mismatch_seed <- 
         liana_with_warnings(liana_warnings  = liana_warnings,

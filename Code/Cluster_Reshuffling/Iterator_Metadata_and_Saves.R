@@ -120,7 +120,6 @@
                                  methods_list,
                                  
                                  testdata_type,
-                                 cluster_col,
                                  number_ranks,
                                  cellchat_nperms,
                                  
@@ -173,7 +172,6 @@
       "methods_list"     = methods_list,
       
       "testdata_type"    = testdata_type,
-      "cluster_col"      = cluster_col,
       "number_ranks"     = number_ranks,
       "cellchat_nperms"  = cellchat_nperms
     )

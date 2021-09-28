@@ -205,6 +205,19 @@ wrap_resource_Iterator <-
     testdata <- extract_Testdata(testdata_type = testdata_type)
     
     
+    # We format the metadata so that the cluster annotations in metadata and 
+    # the seurat idents are the same. This is a prerequisite for squidpy.
+    testdata@meta.data <- testdata@meta.data %>%
+      mutate("cluster_key" = as.factor(as.numeric((Idents(testdata)))))
+    
+    Idents(testdata) <-  testdata@meta.data$cluster_key
+    
+    
+    if(is.null(liana:::.get_ident(testdata))) {
+      stop(str_glue("There is no column in the metadata of the seurat object ",
+                    "that is equal to the seurat object's idents"))
+      
+    }
     
     # Format a named list of seeds, it contains as many seeds as the user 
     # specified, from 1 to n, and each entry has an appropriate name, "Seed_n"

@@ -1,7 +1,6 @@
 shuffle_Clusters <- function(master_seed,
                              mismatch_prop,
-                             metadata,
-                             cluster_col) {
+                             metadata) {
   
   set.seed(master_seed)
   
@@ -10,28 +9,28 @@ shuffle_Clusters <- function(master_seed,
     rownames_to_column(var = "Bar_Code") %>%
     as_tibble()
   
-  metadata_old[[cluster_col]] <- metadata_old[[cluster_col]] %>%
-    as.character()
+  metadata_old$cluster_key <- metadata_old$cluster_key %>%
+    as.numeric()
   
   meta_clusters_dilute <- slice_sample(metadata_old, prop = mismatch_prop) %>%
-    select(c("Bar_Code", all_of(cluster_col)))
+    select(c("Bar_Code", all_of("cluster_key")))
   
   
   
   
-  meta_clusters_dilute[[cluster_col]] <- 
-    map(meta_clusters_dilute[[cluster_col]], function(annotation) {
+  meta_clusters_dilute$cluster_key <- 
+    map(meta_clusters_dilute$cluster_key, function(annotation) {
       
       replacement_candidates <-
         filter(metadata_old, 
-               metadata_old[[cluster_col]] != annotation)[[cluster_col]]
+               metadata_old$cluster_key != annotation)$cluster_key
       
       new_annotation <- sample(replacement_candidates, 1)
       
       return(new_annotation)
       
     }) %>%
-    unlist()
+    unlist() 
   
   meta_clusters_dilute <- meta_clusters_dilute
   
@@ -42,26 +41,26 @@ shuffle_Clusters <- function(master_seed,
               by = "Bar_Code",
               suffix = c("_old", ""))
   
-  helper_index <- which(is.na(metadata_new[[cluster_col]]))
+  helper_index <- which(is.na(metadata_new$cluster_key))
   
-  metadata_new[[cluster_col]][helper_index] <-
-    metadata_new[[str_glue(cluster_col, "_old")]][helper_index]
+  metadata_new$cluster_key[helper_index] <-
+    metadata_new[["cluster_key_old"]][helper_index]
   
   metadata_new <- metadata_new %>%
     mutate("Mismatched" = 
-             ifelse(.[[str_glue(cluster_col, "_old")]] ==
-                      . [[cluster_col]], FALSE, TRUE)) %>%
-    select(-str_glue(cluster_col, "_old")) %>%
+             ifelse(.$cluster_key_old == .$cluster_key, FALSE, TRUE)) %>%
+    select(-"cluster_key_old") %>%
     as.data.frame()
   
   rownames(metadata_new) <- metadata_new$Bar_Code
   
   metadata_new <- metadata_new %>%
     select(-"Bar_Code")
+
+
   
-  metadata_new[[cluster_col]] <- metadata_new[[cluster_col]] %>%
+  metadata_new$cluster_key <- metadata_new$cluster_key %>%
     as.factor()
-  
   
   print(
     str_glue("Cluster annotations reshuffled. ", 
@@ -78,7 +77,7 @@ shuffle_Clusters <- function(master_seed,
 wrap_Shuffler <- function(master_seed_list,
                           mismatch_prop,
                           metadata,
-                          cluster_col) {
+                          cluster_key) {
   
   print_Title(str_glue("Creating ",
                        mismatch_prop*100, 
@@ -87,8 +86,7 @@ wrap_Shuffler <- function(master_seed_list,
   reshuffled_metadatas <- lapply(master_seed_list,
                                  shuffle_Clusters,
                                  mismatch_prop = mismatch_prop,
-                                 metadata      = metadata,
-                                 cluster_col   = cluster_col)
+                                 metadata      = metadata)
   
   
   return(reshuffled_metadatas)

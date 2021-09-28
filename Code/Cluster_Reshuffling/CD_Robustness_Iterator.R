@@ -111,6 +111,17 @@
   # Retrieve either seurat_pbmc or liana_test data
   testdata <- extract_Testdata(testdata_type = testdata_type)
   
+  testdata@meta.data <- testdata@meta.data %>%
+    mutate("cluster_key" = as.factor(as.numeric((Idents(testdata)))))
+  
+  Idents(testdata) <-  testdata@meta.data$cluster_key
+  
+  
+  if(is.null(liana:::.get_ident(testdata))) {
+    stop(str_glue("There is no column in the metadata of the seurat object ",
+                  "that is equal to the seurat object's idents"))
+    
+  }
   
   
   # Format a named list of seeds, it contains as many seeds as the user
@@ -147,20 +158,6 @@
   names(methods_list) <- methods_vector
   
   
-  
-  # depending on the testdata type, the name of the column in the metadata
-  # that has the cluster annotations is different. We need the name of that
-  # column for multiple applications
-  if (testdata_type == "seurat_pbmc") {
-    cluster_col <- "seurat_clusters"
-    
-  } else if (testdata_type == "liana_test") {
-    cluster_col <- "seurat_annotations"
-    
-  } else {
-    stop("Testdata type is not recognized!")
-    
-  }
   
   
   # Format the Sys.time() of the run to not contain characters that are bad to
@@ -284,7 +281,6 @@ liana_results <- liana_results %>%
         methods_list     = methods_list,
         
         testdata_type    = testdata_type,
-        cluster_col      = cluster_col,
         number_ranks     = number_ranks,
         
         cellchat_nperms  = cellchat_nperms,
@@ -481,7 +477,6 @@ rm(overlaps)
     methods_list     = methods_list,
     
     testdata_type    = testdata_type,
-    cluster_col      = cluster_col,
     number_ranks     = number_ranks,
     
     cellchat_nperms  = cellchat_nperms,
@@ -503,7 +498,7 @@ rm(overlaps)
   # Now that these objects are stored in the metadata object, we can remove
   # this clutter from the environment.
   rm(runtime, master_seed_list, mismatch_props, number_ranks, methods_list,
-     cellchat_nperms, cluster_col, methods_vector, number_seeds, testdata_type, 
+     cellchat_nperms, methods_vector, number_seeds, testdata_type, 
      time_of_run, trial_run)
   
   
