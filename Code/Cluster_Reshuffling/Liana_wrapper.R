@@ -95,6 +95,7 @@ liana_with_warnings <- function(liana_warnings,
 
 iterate_liana_wrap <- function(master_seed_list,
                                mismatch_props,
+                               reshuffled_clusters,
                                testdata,
                                methods_vector,
                                liana_warnings,

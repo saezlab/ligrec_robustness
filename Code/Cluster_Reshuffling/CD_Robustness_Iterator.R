@@ -59,9 +59,10 @@
   # turn this into wrapper
   # wrap_cluster_Iterator <-
   #  function(
-  number_seeds      <- 3            # how many seeds should we iterate over
+  number_seeds      <- 2             # how many seeds should we iterate over
   testdata_type     <- "liana_test" # seurat_pbmc or liana_test
-  mismatch_props    <- c(seq(0.60, 0.30, -0.30))
+  mismatch_props    <- c(seq(0.20, 0.10, -0.10)) # choose at least two else the
+                                                 # formatting won't work.
   
   number_ranks <- list(
     "call_connectome" = 20,
@@ -71,9 +72,11 @@
     "cellchat"        = 20,
     "squidpy"         = 20
   )
+
+  #  top_n <- 20
   
   methods_vector <- c('call_connectome' ,
-                      # 'call_natmi'      ,
+                      #'call_natmi'     ,
                       'call_italk'      ,
                       'call_sca'        ,
                       'cellchat'        #,
@@ -86,7 +89,7 @@
                       save_results    <- TRUE
                       trial_run       <- TRUE
                       
-                      cellchat_nperms <- 2      # default 100 for real data
+                      cellchat_nperms <- 10      # default 100 for real data
                       
                       outputs <- c(
                         "top_ranks_overlap",
@@ -95,6 +98,8 @@
                         "reshuffling_results",
                         "metadata"
                       )
+                      
+#  reshuffle_or_subset <- "reshuffle"                    
                       
 }
 
@@ -253,6 +258,7 @@ liana_results <-
   iterate_liana_wrap(
     master_seed_list = master_seed_list,
     mismatch_props   = mismatch_props,
+    reshuffled_clusters = reshuffled_clusters,
     testdata         = testdata,
     methods_vector   = methods_vector,
     
