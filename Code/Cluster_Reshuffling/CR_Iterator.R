@@ -29,16 +29,14 @@
   
   # Define the functions needed to perform our analysis
   
-  # Define general functions for data processing in the iterator
-  source("Code/Cluster_Reshuffling/CR_Iterator_funs.R")
+  source("Code/Cluster_Reshuffling/CR_LIANA_Functions.R")
+  source("Code/Cluster_Reshuffling/CR_Shuffler_Functions.R")
+  source("Code/Cluster_Reshuffling/Iterator_Meta_and_Saves.R")
+  source("Code/Cluster_Reshuffling/Iterator_Top_Ranks.R")
   
-  # Define Utility Functions
+  
   source("Code/Utilities/Iterator_Functions.R")
   source("Code/Utilities/User_Outputs_and_Plots.R")
-  
-  
-  
-  
   
   
 }
