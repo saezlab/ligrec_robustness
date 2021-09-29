@@ -3,8 +3,9 @@
 {
   
   # This is the Iterator_Processing_Functions.R script. These function work as 
-  # intermediary steps in the process of running the iterator. Information on
-  # how the iterator runs can be found in RD_Robustness_Iterator.R.
+  # miscellaneous intermediary steps in the process of running the iterator. 
+  # Information on how the iterator runs can be found in 
+  # RD_Robustness_Iterator.R.
   
 }
 
@@ -234,53 +235,6 @@
 }
 
 
-# extract_Testdata()
-{
-  #' Helper function that gets a specific seurat object from the outputs folder
-  #' 
-  #' @param testdata_type As a string. Which testdata should be retrieved? 
-  #' Either "seurat_pbmc" or "liana_test". Seurat_pbmc is the data set used in 
-  #' the seurat tutorial, while liana_test is the testdata that comes with 
-  #' LIANA++, and is a small subset of seurat_pbmc. 
-  #' 
-  #' @return A seurat object loaded from the outputs folder or liana package.
-  
-  
-  extract_Testdata <- function(testdata_type) {
-    
-    # Get seurat or liana test data
-    if (testdata_type == "seurat_pbmc") {
-      
-      # Read testdata from outputs
-      testdata <- readRDS(file = "Data/pbmc3k_final.rds")     
-      
-    } else if (testdata_type == "liana_test") {
-      
-      # Where is the liana testdata located?
-      liana_path <- system.file(package = 'liana')       
-      # Read the testdata from its location.
-      testdata <- 
-        readRDS(file.path(liana_path, "testdata", "input", "testdata.rds"))   
-      
-      # removing superfluous values
-      rm(liana_path)
-      
-      
-    } else {
-      
-      # error if its not one of the supported data sets
-      stop("Testdata name not recognized!")
-      
-    }
-    
-    
-    # Return the seurat.
-    return(testdata)
-    
-  } # end of function
-}
-
-
 # reformat_Results()
 {
   #' Reformats the outputs from lapplying resource_Robustness over the master
@@ -464,5 +418,169 @@
     # returnt eh collated top_ranks_overlap information
     return(collated_top_ranks_overlap)
   }
+}
+
+
+# auto_plot_Description()
+{
+  #' Automatically creates a verbose caption of a top ranks overlap plot
+  #' 
+  #' @param top_ranks_overlap As a tibble in the form of a extract_top_ranks 
+  #' output, though ideally it will be preprocessed for plotting (better method 
+  #' names, no NAs, etc.). This is the top_ranks_overlap that would be plotted
+  #' with this caption. The function takes data from the tibble's general 
+  #' structure to describe it accurately. 
+  #' 
+  #' @param trial_run The same parameter from wrap_resource_Iterator(). Used
+  #' in the file name to mark the file.
+  #'
+  #' @param preserve_topology The same parameter from 
+  #' wrap_resource_Iterator(). Used in the file name to mark the file.
+  #' 
+  #' @param testdata_type The same parameter from wrap_resource_Iterator(). 
+  #' Used in the file name to mark the file.
+  #' 
+  #' @param feature_type The same parameter from wrap_resource_Iterator(). 
+  #' Used in the file name to mark the file.
+  #' 
+  #' @param number_ranks The same parameter from wrap_resource_Iterator(). 
+  #' Used in the file name to mark the file.
+  #' 
+  #' @param time_of_run The char tag of the time the script started being 
+  #' executed.
+  #' 
+  #' @return A verbose caption describing the parameters used to generate the 
+  #' results in the plot.
+  
+  auto_plot_Description <- function(top_ranks_overlap,
+                                    
+                                    trial_run,
+                                    preserve_topology,
+                                    testdata_type,
+                                    feature_type,
+                                    number_ranks,
+                                    time_of_run) {
+    
+    ## General comment, on testdata type, feature_type and topology
+    {
+      if (preserve_topology == FALSE) {
+        topology_comment <- "random_Dilute()"
+        
+      } else if (preserve_topology == TRUE) {
+        topology_comment <- "preserve_Dilute()"
+        
+      }
+      
+      
+      general_comment <-
+        str_glue(
+          "This plot was created using the ",
+          testdata_type,
+          " data. Dilution was performed using ",
+          feature_type,
+          " features and the ",
+          topology_comment,
+          " function. "
+        )
+      
+      rm(topology_comment)
+    }
+    
+    
+    
+    ## Dilution comment, on proportions
+    {
+      dilution_overview <- count(top_ranks_overlap,
+                                 dilution_prop,
+                                 run_mode = "real")
+      
+      
+      dilution_comment <- str_glue(
+        "The dilution occured in ",
+        dilution_overview$dilution_prop[2] -
+          dilution_overview$dilution_prop[1],
+        " % increments up to a maximum of ",
+        max(top_ranks_overlap$dilution_prop),
+        " %. "
+      )
+      
+      if (nrow(dilution_overview) < 1) {
+        stop(
+          "Expected at least two dilution proportions in input (0, and one ",
+          "more. But found only one instead, namely ",
+          dilution_overview$dilution_prop
+        )
+      }
+      
+      if (length(unique(dilution_overview$n)) != 1) {
+        stop(
+          "There should be an equal number of samples for every dilution, ",
+          "but there is not."
+        )
+      }
+      
+      
+      rm(dilution_overview)
+      
+    }
+    
+    
+    ## Nperms and top_ranks comment
+    {
+      top_ranks_vector <- unlist(number_ranks)
+      
+      permutations_overview <- top_ranks_overlap %>%
+        filter(dilution_prop == 0) %>%
+        count(Method)
+      
+      
+      top_ranks_permutations_comment <-
+        str_glue(
+          "The overlap was compared between the ",
+          median(top_ranks_vector),
+          " highest ranked interactions over ",
+          permutations_overview$n[1],
+          " permutations."
+        )
+      
+      if (length(unique(permutations_overview$n)) != 1) {
+        stop(
+          "There should be an equal number of samples for each method at , ",
+          "dilution proportion 0, but there is not."
+        )
+      }
+      
+      rm(permutations_overview, top_ranks_vector)
+    }
+    
+    
+    ## Date and time comment
+    time_comment <- str_glue("Generated at ",
+                             time_of_run,
+                             ".")
+    
+    
+    ## Assemple plotting caption
+    plotting_caption <-
+      str_glue(
+        general_comment,
+        "\n",
+        dilution_comment,
+        "\n\n",
+        top_ranks_permutations_comment,
+        "\n",
+        time_comment
+      )
+    
+    
+    ## Add addendum if trial run
+    if (trial_run == TRUE) {
+      plotting_caption <-
+        str_glue(plotting_caption, "   --   [TRIAL RUN]")
+    }
+    
+    return(plotting_caption)
+  }  # end of function
+  
 }
 
