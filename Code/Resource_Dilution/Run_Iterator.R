@@ -75,22 +75,30 @@
   source("Code/Resource_Dilution/RD_Robustness_Iterator.R")
   # Define general functions for data processing in the iterator
   source("Code/Resource_Dilution/Iterator_Processing_Functions.R")
-  # Define functions for plotting the iterator results
-  source("Code/Resource_Dilution/Iterator_Plotting.R")
   # Define functions for capturing metadata and saving iterator results
   source("Code/Resource_Dilution/Iterator_Metadata_and_Saves.R")
+  
   
   # The evaluator function tests method robustness over multiple dilution stages
   # The script below defines resource_Robustness, a function for testing 
   # resource robustness
   source("Code/Resource_Dilution/RD_Robustness_Evaluator.R")
   # Define functions that help the evaluator run.
-  source("Code/Resource_Dilution/Evaluator_Processing_Functions.R")
+  source("Code/Resource_Dilution/Evaluator_Top_Ranks_Functions.R")
+  
   
   # Define the dilutor function, a function that dilutes resources.
   source("Code/Resource_Dilution/RD_Dilutor.R")
   # Define general helper functions for the dilutor 
   source("Code/Resource_Dilution/Dilutor_Processing_Functions.R")
+  
+  
+  # Define utility functions that are used in resource dilution and in cluster
+  # reshuffling.
+  # Define common functions for the Iterators
+  source("Code/Utilities/Iterator_Functions.R")
+  # Define common functions for console outputs and plots 
+  source("Code/Utilities/User_Outputs_and_Plots.R")
   
   
   
@@ -101,9 +109,10 @@
 # 2. Get Resource Dilution Robustness Results ----------------------------------
 
 # We run the wrapper with default settings and twice the standard permutations
-robustness_default <- wrap_resource_Iterator(number_seeds = 2,
-                                             methods_vector = c("call_sca"),
-                                             testdata_type = "liana_test",
-                                             number_ranks = list("call_sca" = 20))
-
+robustness_default <- 
+  wrap_resource_Iterator(number_seeds = 2,
+                         dilution_props = seq(0.1, 0.2, 0.1),
+                         methods_vector = c("call_sca"),
+                         testdata_type = "liana_test",
+                         number_ranks = list("call_sca" = 20))
 
