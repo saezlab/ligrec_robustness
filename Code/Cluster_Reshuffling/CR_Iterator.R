@@ -200,6 +200,9 @@ wrap_cluster_Iterator <-
   # 1.2 Create Reshuffled Cluster Annotations ----------------------------------
   {
     #
+    print_Title("1. Creating Reshuffled Cluster Annotations",
+                space_after = 0, 
+                super = TRUE)
     
     reshuffled_clusters <- lapply(
       mismatch_props,
@@ -305,6 +308,9 @@ wrap_cluster_Iterator <-
   # 1.4 Compare Top-Ranked Predictions -----------------------------------------
   
   # Segment header for user.
+  print_Title(str_glue("4. Calculate Overlap Between Default and Reshuffled ",
+                       "CCI predictions"),
+              super = TRUE)
   
   top_ranks <-
     map(methods_list, function(method) {
@@ -347,6 +353,9 @@ wrap_cluster_Iterator <-
     arrange(Method)                                %>%
     rename("Overlap" = value)
   
+
+  # print a sample of the output for the user
+  print(head(top_ranks_overlap, 15))
   
   # removing superfluous values
   rm(overlaps)
@@ -426,6 +435,15 @@ wrap_cluster_Iterator <-
   #----------------------------------------------------------------------------#
   # 1.5 Capturing Script Metadata ----------------------------------------------
   {
+    # Segment header for user.
+    if (save_results == TRUE) {
+      
+      print_Title(str_glue("5. Summarizing Metadata and Saving Results"),
+                  super = TRUE)
+    } else {
+      print_Title(str_glue("5. Summarizing Metadata"),
+                  super = TRUE)
+    }
     
     # In this segment, we summarize the metadata of the resource_Robustness run
     # and the iterator in general. When troubleshooting or reproducing results,
@@ -514,7 +532,16 @@ wrap_cluster_Iterator <-
 
     
     
+    # clust_save_Results() prints where files were saved to, we expand on that
+    # here by letting the user know where the LIANA warning file is stored.
+    if(liana_warnings == "divert") {
       
+      # let the user know where to find the log
+      cat(str_wrap(str_glue("LIANA warnings saved at ~/", 
+                            warning_logfile, "."), width = 60), " \n\n")
+      
+      
+    }
     
     # In this segment we save the plots and environment to the outputs folder,
     # if it's specified in by the user.

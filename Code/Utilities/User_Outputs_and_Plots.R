@@ -163,45 +163,36 @@
   #'
   #' @param title A char of what the title should read
   #' @param super TRUE or FALSE. Should this title be extra large?
+  #' @param space_after How many empty line should be after a header?
   #'
   #' @return Prints a title into the console.
   
   
-  print_Title <- function(title, super = FALSE) {
+  print_Title <- function(title, super = FALSE, space_after = 3) {
     divider <- str_glue(
       "|=======================================",
       "=======================================|"
     )
     
     if (super == FALSE) {
-      print(str_glue(""))
-      print(str_glue(""))
+      cat(rep("\n", 3))
       print(str_glue(divider))
-      print(str_glue(""))
+      cat(rep("\n", 1))
       print(str_glue("   ", title))
-      print(str_glue(""))
+      cat(rep("\n", 1))
       print(str_glue(divider))
-      print(str_glue(""))
-      print(str_glue(""))
-      print(str_glue(""))
+      cat(rep("\n", space_after))
       
     } else if (super == TRUE) {
-      print(str_glue(""))
-      print(str_glue(""))
-      print(str_glue(""))
+      cat(rep("\n", 7))
       print(str_glue(divider))
       print(str_glue(divider))
-      print(str_glue(""))
-      print(str_glue(""))
-      print(str_glue("   ", title))
-      print(str_glue(""))
-      print(str_glue(""))
+      cat(rep("\n", 2))
+      print(str_glue("   ", toupper(title)))
+      cat(rep("\n", 2))
       print(str_glue(divider))
       print(str_glue(divider))
-      print(str_glue(""))
-      print(str_glue(""))
-      print(str_glue(""))
-      print(str_glue(""))
+      cat(rep("\n", space_after))
       
     }
     

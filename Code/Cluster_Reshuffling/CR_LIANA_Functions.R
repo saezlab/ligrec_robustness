@@ -21,19 +21,22 @@ iterate_liana_wrap <- function(master_seed_list,
   
   runtime <- list("Start Iterations" = Sys.time())
   
+  # separate from other outputs
+  print_Title("2. LIANA for Mismatched Cluster Annotations",
+              space_after = 0, 
+              super = TRUE)
+  
+  
   liana_results <- map(mismatch_props, function(mismatch_prop) {
     
-    print_Title(str_glue("LIANA for ", 
-                         mismatch_prop*100, 
-                         " % mismatched cluster annotations"), 
-                super = TRUE)
+
     
     liana_results_mismatch <- map(master_seed_list, function(seed) {
       
       print_Title(str_glue(mismatch_prop*100,
-                           " % Iteration ",
+                           " % Mismatch  --  Iteration ",
                            seed,
-                           " ",
+                           ": ",
                            as.character(Sys.time())))
       
       reshuffled_testdata <- testdata
@@ -62,7 +65,8 @@ iterate_liana_wrap <- function(master_seed_list,
   
   runtime[["Shuffled Clusters"]] <- Sys.time()
   
-  print_Title("LIANA with default annotations.", super = TRUE)
+  print_Title("3. LIANA with Default Annotations.",
+              super = TRUE)
   
   original_results <- liana_with_warnings(testdata        = testdata,
                                           methods_vector  = methods_vector,
