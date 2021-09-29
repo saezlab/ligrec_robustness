@@ -2,13 +2,14 @@
 # 0. Introduction and Goals ----------------------------------------------------
 {
   # This is the cluster . It funnels data into a robustness test for
-  # various dilutions (resource_Robustness()), repeats this test many times, and
+  # various Reshufflings (resource_Robustness()), repeats this test many times, and
   # collates the resulting information and presents it to the user. The code to
   # accomplish this is presented in a  wrapper with default arguments below.
   
   # Running parameters can be left a their defaults or altered when the function
   # is called. To learn more, check the Run_Iterator.R script.
 }
+
 
 
 #------------------------------------------------------------------------------#
@@ -29,15 +30,11 @@
   # Define the functions needed to perform our analysis
   
   # Define general functions for data processing in the iterator
-  source("Code/Cluster_Reshuffling/Iterator_Processing_Functions.R")
-  # Define functions for plotting the iterator results
-  source("Code/Cluster_Reshuffling/Iterator_Plotting.R")
-  # Define functions for capturing metadata and saving iterator results
-  source("Code/Cluster_Reshuffling/Iterator_Metadata_and_Saves.R")
+  source("Code/Cluster_Reshuffling/CR_Iterator_funs.R")
   
-  source("Code/Cluster_Reshuffling/CD_Reshuffler.R")
-  source("Code/Cluster_Reshuffling/CR_Iterator_Helpers.R")
-  source("Code/Cluster_Reshuffling/Liana_wrapper.R")
+  # Define Utility Functions
+  source("Code/Utilities/Iterator_Functions.R")
+  source("Code/Utilities/User_Outputs_and_Plots.R")
   
   
   
@@ -46,10 +43,17 @@
   
 }
 
+
+testdata_type     <- "liana_test"  # seurat_pbmc or liana_test
+
+# Retrieve either seurat_pbmc or liana_test data
+testdata <- extract_Testdata(testdata_type = testdata_type)
+
+
 #------------------------------------------------------------------------------#
-# 1. Define wrap_resource_Iterator() -----------------------------------------
+# 1. Define wrap_cluster_Iterator() -----------------------------------------
 {
-  #' Iterator
+  #' Determine the robustness of CCI inference methods
   #'
   #' @description This function iteratively evaluates the robustness of CCI
   #' inference methods by running them on the same testdata with somewhat
@@ -59,24 +63,18 @@
   # turn this into wrapper
   # wrap_cluster_Iterator <-
   #  function(
+  
+  testdata
+  
   number_seeds      <- 2             # how many seeds should we iterate over
-  testdata_type     <- "liana_test" # seurat_pbmc or liana_test
+  
   mismatch_props    <- c(seq(0.20, 0.10, -0.10)) # choose at least two else the
                                                  # formatting won't work.
   
-  number_ranks <- list(
-    "call_connectome" = 20,
-    "call_natmi"      = 20,
-    "call_italk"      = 20,
-    "call_sca"        = 20,
-    "cellchat"        = 20,
-    "squidpy"         = 20
-  )
-
-  #  top_n <- 20
+  top_n <- 20
   
   methods_vector <- c('call_connectome' ,
-                      #'call_natmi'     ,
+                      'call_natmi'      ,
                       'call_italk'      ,
                       'call_sca'        ,
                       'cellchat'        #,
@@ -89,7 +87,7 @@
                       save_results    <- TRUE
                       trial_run       <- TRUE
                       
-                      cellchat_nperms <- 10      # default 100 for real data
+                      cellchat_nperms <- 20      # default 100 for real data
                       
                       outputs <- c(
                         "top_ranks_overlap",
@@ -104,13 +102,19 @@
 }
 
 
-
 #----------------------------------------------------------------------------#
 # 1.1 Generate Parameters  ---------------------------------------------------
 {
-  # Retrieve either seurat_pbmc or liana_test data
-  testdata <- extract_Testdata(testdata_type = testdata_type)
+  # We generate number_ranks, a list with each methods name and the number of
+  # top ranked CCIs to consider relevant for that method. Top_n is always the
+  # same.
+  number_ranks <- as.list(rep(top_n, length(methods_vector)))
   
+  names(number_ranks) <- methods_vector
+  
+  
+  
+  # Format testdata  
   testdata@meta.data <- testdata@meta.data %>%
     mutate("cluster_key" = as.factor(as.numeric((Idents(testdata)))))
   
@@ -122,6 +126,8 @@
                   "that is equal to the seurat object's idents"))
     
   }
+  
+  
   
   
   # Format a named list of seeds, it contains as many seeds as the user
@@ -144,7 +150,7 @@
   mismatch_props <- as.list(mismatch_props)
   
   names(mismatch_props) <- map(mismatch_props, function(prop) {
-    # Name every dilution proportion
+    # Name every Reshuffling proportion
     str_glue("Reshuffle_", as.character(prop * 100))
     
   })
@@ -175,7 +181,7 @@
   if (liana_warnings == "divert") {
     warning_logfile <-
       cluster_auto_file_Name(
-        prefix = "Outputs/Cluster_Dilution/Logs/",
+        prefix = "Outputs/Cluster_Reshuffling/Logs/",
         suffix = ".txt",
         
         testdata_type     = testdata_type,
@@ -188,7 +194,7 @@
   if (save_results == TRUE) {
     
     # Generate the filepaths to save the data under. 
-    # RD stands for Resource Dilution.
+    # RD stands for Resource Reshuffling.
     box_plot_png_name <-
       cluster_auto_file_Name(
         prefix = "Boxplot_CR_",
@@ -211,7 +217,7 @@
     
     iterator_results_save_path <- 
       cluster_auto_file_Name(
-        prefix = "Outputs/Cluster_Dilution/Iterator_Results_CR_",
+        prefix = "Outputs/Cluster_Reshuffling/Iterator_Results_CR_",
         suffix = ".RData",
         
         testdata_type     = testdata_type,
@@ -226,7 +232,6 @@
   
   
 }
-
 
 
 #----------------------------------------------------------------------------#
@@ -244,6 +249,8 @@
   
   
 }
+
+
 
 #----------------------------------------------------------------------------#
 # 1.3 Run LIANA --------------------------------------------------------------
@@ -391,7 +398,7 @@ rm(overlaps)
 # 1.4 Plotting of Collated Results -------------------------------------------
 {
   # Here we visualize the overlap between top ranked CCI predictions as they
-  # change with the dilution of OmniPath. once as a boxplot, and once as a
+  # change with the Reshuffling of OmniPath. once as a boxplot, and once as a
   # scatter/line plot.
   
   
@@ -399,7 +406,7 @@ rm(overlaps)
   # We reformat the collated_top_ranks_overlap tibble so its more suitable for
   # plotting
   
-  # The dilution proportion and overlap are clearer in percentage
+  # The Reshuffling proportion and overlap are clearer in percentage
   # NAs can't be displayed in the plot anyway and cause uneccesary warnings
   # Rename the methods from the LIANA++ internal string to their official name
   tr_overlap_for_plot <- top_ranks_overlap  %>%
