@@ -140,7 +140,7 @@
   }
 
 
-# auto_plot_Description()
+# clust_plot_Description()
 {
   #' Automatically creates a verbose caption of a top ranks overlap plot
   #' 

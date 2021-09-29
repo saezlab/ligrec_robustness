@@ -1,7 +1,7 @@
 #------------------------------------------------------------------------------#
 # A. For Resource Robustness
 
-# get_top_n_ranks()
+# get_top_ranks_clust()
 {
   #' Get the top n ranked items of a method from the tibble liana wrapper or
   #' call_x results
