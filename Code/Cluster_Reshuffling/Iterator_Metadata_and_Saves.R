@@ -196,7 +196,7 @@
 }
 
 
-# save_Results()
+# clust_save_Results()
 {
   #' Saves its three arguments to custom filepaths
   #'
@@ -246,7 +246,7 @@
       box_plot_png_name,
       height = 7.75,
       width = 8.00,
-      path = "Outputs/Cluster_Dilution"
+      path = "Outputs/Cluster_Reshuffling"
     )
     
     ggsave(
@@ -254,17 +254,17 @@
       line_plot_png_name,
       height = 9.00,
       width = 8.00,
-      path = "Outputs/Cluster_Dilution"
+      path = "Outputs/Cluster_Reshuffling"
     )
     
     # Save R environment and all the results within it
     save(iterator_results, file = iterator_results_save_path)
     
     # Let the user know where everything was stored.
-    cat(str_wrap(str_glue("Box Plot saved at ~/Outputs/Cluster_Dilution/",
+    cat(str_wrap(str_glue("Box Plot saved at ~/Outputs/Cluster_Reshuffling/",
                           box_plot_png_name, "."), width = 60), "\n\n")
     
-    cat(str_wrap(str_glue("Line Plot saved at ~/Outputs/Cluster_Dilution/",
+    cat(str_wrap(str_glue("Line Plot saved at ~/Outputs/Cluster_Reshuffling/",
                           line_plot_png_name, "."), width = 60), "\n\n")
     
     cat(str_wrap(str_glue("Iterator Results saved at ~/",
