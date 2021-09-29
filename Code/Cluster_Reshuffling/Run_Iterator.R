@@ -18,9 +18,9 @@
 #------------------------------------------------------------------------------#
 # 1. Setup ---------------------------------------------------------------------
 {
-  # In this segment, we set up all the required infrastructure to run the 
-  # wrapper. The default parameters for the wrapper are set in 
-  # CD_Robustness_Iterator.R, but custom parameters can be set in the function 
+  # In this segment, we set up all the required infrastructure to run the
+  # wrapper. The default parameters for the wrapper are set in
+  # CD_Robustness_Iterator.R, but custom parameters can be set in the function
   # call.
   
   # Load required Packages
@@ -32,18 +32,16 @@
   
   # Define the functions needed to perform our analysis
   
-  # Define the iterator wrapper function (wrap_cluster_Iterator), which 
-  # produces the end results. The wrapper iterates the evaluator function and 
-  # collates its results.
-  source("Code/Cluster_Reshuffling/CD_Robustness_Iterator.R")
-  # Define general functions for data processing in the iterator
-  source("Code/Cluster_Reshuffling/Iterator_Processing_Functions.R")
-  # Define functions for plotting the iterator results
-  source("Code/Cluster_Reshuffling/Iterator_Plotting.R")
-  # Define functions for capturing metadata and saving iterator results
-  source("Code/Cluster_Reshuffling/Iterator_Metadata_and_Saves.R")
+  source("Code/Cluster_Reshuffling/CR_LIANA_Functions.R")
+  source("Code/Cluster_Reshuffling/CR_Shuffler_Functions.R")
+  source("Code/Cluster_Reshuffling/CR_Iterator.R")
   
-
+  source("Code/Cluster_Reshuffling/Iterator_Meta_and_Saves.R")
+  source("Code/Cluster_Reshuffling/Iterator_Top_Ranks.R")
+  
+  
+  source("Code/Utilities/Iterator_Functions.R")
+  source("Code/Utilities/User_Outputs_and_Plots.R")
   
   
   
@@ -51,16 +49,19 @@
 }
 
 #------------------------------------------------------------------------------#
-# 2. Get cluster Reshuffling Robustness Results ----------------------------------
+# 2. Get cluster Reshuffling Robustness Results --------------------------------
 
 
+testdata_type     <- "liana_test"  # seurat_pbmc or liana_test
 
+# Retrieve either seurat_pbmc or liana_test data
+testdata <- extract_Testdata(testdata_type = testdata_type)
 
 
 # We run the wrapper with default settings and twice the standard permutations
-robustness_default <- wrap_cluster_Iterator(number_seeds = 2,
-                                             methods_vector = c("call_sca"),
-                                             testdata_type = "liana_test",
-                                             number_ranks = list("call_sca" = 20))
+robustness_default <- 
+  wrap_cluster_Iterator(testdata      = testdata,
+                        testdata_type = testdata_type,
+                        methods_vector = c("call_connectome", "call_sca"))
 
 
