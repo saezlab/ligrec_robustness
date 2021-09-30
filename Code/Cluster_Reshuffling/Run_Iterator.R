@@ -103,18 +103,24 @@
 
 
 #------------------------------------------------------------------------------#
-# 2. Get cluster Reshuffling Robustness Results --------------------------------
+# 2. Get Cluster Reshuffling Robustness Results --------------------------------
+{
+  
+  
+  # First we load testdata from the data folder. 
+  # We also give a label (testdata_type, choose "seurat_pbmc" or "liana_test")
+  testdata_type <- "liana_test"  
+  testdata      <- extract_Testdata(testdata_type = testdata_type)
+  
+  
+  # We run the wrapper function, feeding it the testdata and the testdata label
+  robustness_default <- 
+    wrap_cluster_Iterator(testdata      = testdata,
+                          testdata_type = testdata_type,
+                          methods_vector = c("call_connectome", "call_sca"))
+  
+  
+}
 
-# First we load testdata from the data folder. 
-# We also give it a label (testdata_type, choose "seurat_pbmc" or "liana_test")
-testdata_type     <- "liana_test"  
-testdata <- extract_Testdata(testdata_type = testdata_type)
-
-
-# We run the wrapper function, feeding it the testdata and the testdata label
-robustness_default <- 
-  wrap_cluster_Iterator(testdata      = testdata,
-                        testdata_type = testdata_type,
-                        methods_vector = c("call_connectome", "call_sca"))
 
 
