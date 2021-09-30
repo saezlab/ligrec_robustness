@@ -307,8 +307,7 @@ wrap_cluster_Iterator <-
     mismatch_props,
     wrap_Shuffler,
     master_seed_list  = master_seed_list,
-    metadata          = testdata@meta.data,
-  ) %>%
+    metadata          = testdata@meta.data) %>%
     # Add the default metadata to the reshuffled cluster for completeness' sake
     append(list("Reshuffle_0" = testdata@meta.data), .)
   
