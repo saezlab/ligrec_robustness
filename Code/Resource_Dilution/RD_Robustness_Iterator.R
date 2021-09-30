@@ -91,8 +91,7 @@
 #' 
 #' @param trial_run Is this a trial run of the iterator or serious results?
 #' Takes a boolean. If this is a trial run, the save file names, logs and plot
-#' captions will reflect this. Only takes a boolean as a default, not a vector
-#' of a boolean.
+#' captions will reflect this. 
 #' 
 #' @param cellchat_nperms Cellchat is one of the slower methods, for test runs
 #' it may be useful to set this parameter to 10 to speed up the analysis. 
@@ -143,6 +142,9 @@
 #' "collated_robustness_results": The bundle of information that was the
 #'  resource_Robusntess() output, though more sensibly structured. Check the 
 #'  bundled_outputs parameter.
+#'  
+#'  "metadata": The metadata of the run. Save file names, parameters, run times 
+#'  and so on.
 
 
 wrap_resource_Iterator <- 
