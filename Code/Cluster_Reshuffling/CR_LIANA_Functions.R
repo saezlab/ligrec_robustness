@@ -38,6 +38,23 @@ iterate_liana_wrap <- function(master_seed_list,
                            seed,
                            ": ",
                            as.character(Sys.time())))
+      if (liana_warnings == "divert") {
+        cat("\n\n\n",
+            str_glue("|=======================================",
+                     "=======================================|"),
+            "\n\n",
+            str_glue("  ",
+                     mismatch_prop * 100,
+                     " % Mismatch  --  Iteration ",
+                     seed,
+                     ": ",
+                     as.character(Sys.time())),
+            "\n\n\n",
+            file = warning_logfile,
+            append = TRUE)
+        
+        
+      }
       
       reshuffled_testdata <- testdata
       mismatch_name <- names(which(mismatch_props == mismatch_prop))
