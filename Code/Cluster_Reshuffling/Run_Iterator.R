@@ -117,8 +117,7 @@
   robustness_default <- 
     wrap_cluster_Iterator(testdata      = testdata,
                           testdata_type = testdata_type,
-                          methods_vector = c("call_connectome", "call_sca"),
-                          liana_warnings = TRUE
+                          methods_vector = c("call_connectome", "call_sca")
                           )
   
   

@@ -134,7 +134,7 @@
   #' what degree were the cluster annotations mismatched? Will be used to 
   #' iterate over and to subset reshuffled_clusters.
   #' 
-  #' @param master_seed_list As a named list of seeds. Will be used to iterate 
+  #' @param seed_list As a named list of seeds. Will be used to iterate 
   #' over and to subset reshuffled clusters.
   #' 
   #' @param liana_warnings Either TRUE, FALSE or "divert". Should the warnings 
@@ -155,7 +155,7 @@
                                  methods_vector,
     
                                  mismatch_props,
-                                 master_seed_list,
+                                 seed_list,
                                  reshuffled_clusters,
                                  
                                  liana_warnings,
@@ -175,7 +175,7 @@
     # for every mismatch_prop and seed, run liana_with_warnings()
     liana_results <- map(mismatch_props, function(mismatch_prop) {
       
-      liana_results_mismatch <- map(master_seed_list, function(seed) {
+      liana_results_mismatch <- map(seed_list, function(seed) {
         
         # let the user know what parameters the liana++ outputs are for
         print_Title(str_glue(mismatch_prop * 100,
@@ -252,7 +252,7 @@
     
     # Create a similar format for the original results as the reshuffled ones
     original_results <-
-      map(master_seed_list, function(seed) {
+      map(seed_list, function(seed) {
         return(original_results)
       })
     

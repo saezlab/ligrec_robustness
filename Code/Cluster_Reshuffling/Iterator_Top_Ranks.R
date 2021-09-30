@@ -10,7 +10,7 @@
 #------------------------------------------------------------------------------#
 # 1. Define Functions ----------------------------------------------------------
 
-# get_top_ranks_clust()
+# clust_get_top_ranks()
 {
   #' Get the top n ranked items of a method from the tibble liana wrapper or
   #' call_x results
@@ -28,7 +28,7 @@
   #' @return Returns the tibble input cut down to the top n highest ranked
   #' interactions.
   
-  get_top_ranks_clust <-
+  clust_get_top_ranks <-
     function(data_set, method, top_n, with_ties = FALSE) {
       # generate a list that describes how to rank in each method to get what the
       # method considers best

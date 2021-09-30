@@ -25,7 +25,7 @@
   #' cluster annotations.
   #'
   #'
-  #' @param master_seed As an integer. Cluster reshuffling has inherent
+  #' @param seed As an integer. Cluster reshuffling has inherent
   #' randomness to it, by supplying a seed you ensure that this function runs
   #' reproducibly.
   #'
@@ -44,12 +44,12 @@
   #' cluster annotations in the "cluster_key" column.
   
   
-  shuffle_Clusters <- function(master_seed,
+  shuffle_Clusters <- function(seed,
                                mismatch_prop,
                                metadata) {
     
     # There is randomness in reshuffling, so set the seed for reproducibility
-    set.seed(master_seed)
+    set.seed(seed)
     
     # We format the input df as a tibble and store that as metadata_old
     metadata_old <- metadata %>%
@@ -154,7 +154,7 @@
   #' the shuffle_Clusters() function over every seed provided for a given
   #' mismatch proportion.
   #' 
-  #' @param master_seed_list A list of seeds to iterate over.
+  #' @param seed_list A list of seeds to iterate over.
   #' 
   #' @param mismatch_prop A mismatch proportion for which to generate multiple
   #' permuations of reshuffled metadata.
@@ -165,7 +165,7 @@
   #' The input metadata should also have the cell bar codes as its rownames.
   
   
-  wrap_Shuffler <- function(master_seed_list,
+  wrap_Shuffler <- function(seed_list,
                             mismatch_prop,
                             metadata) {
     
@@ -178,7 +178,7 @@
     
     # Iterate the shuffler across all the seeds at this mismatch prop
     reshuffled_metadatas <- lapply(
-      master_seed_list,
+      seed_list,
       shuffle_Clusters,
       mismatch_prop = mismatch_prop,
       metadata      = metadata

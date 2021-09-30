@@ -11,7 +11,7 @@
 #------------------------------------------------------------------------------#
 # 1. Define Functions ----------------------------------------------------------
 
-# cluster_auto_file_Name()
+# clust_auto_file_Name()
 {
   #' Automatically generates a file name or file path
   #'
@@ -42,7 +42,7 @@
   #' identify the save file by the parameters it was set up with.
   
   
-  cluster_auto_file_Name <- function(prefix,
+  clust_auto_file_Name <- function(prefix,
                                      suffix,
                                      
                                      trial_run,
@@ -115,7 +115,7 @@
   #' testdata. It will be included in the plot description and save file names 
   #' (if the results is saved to the outputs folder).
   #' 
-  #' @param master_seed_list As a named list of the seeds that were used in the
+  #' @param seed_list As a named list of the seeds that were used in the
   #' iterator. 
   #' 
   #' @param number_ranks A named list of which top-ranks were considered 
@@ -131,7 +131,7 @@
   clust_plot_Description <- function(mismatch_props,
                                      trial_run,
                                      testdata_type,
-                                     master_seed_list,
+                                     seed_list,
                                      number_ranks,
                                      time_of_run) {
     
@@ -162,7 +162,7 @@
           "The overlap was compared between the ",
           median(unlist(number_ranks)),
           " highest ranked interactions over ",
-          length(master_seed_list),
+          length(seed_list),
           " permutations."
         )
       
@@ -206,7 +206,7 @@
   #' the parameters below should be the same as the ones provided to 
   #' wrap_cluster_Iterator().
   #' 
-  #' @param master_seed_list As a named list of the seeds that were used in the
+  #' @param seed_list As a named list of the seeds that were used in the
   #' iterator. 
   #' 
   #' @param mismatch_props As a named list of proportions between 0 and 1. To 
@@ -258,7 +258,7 @@
   
   
   
-  clust_summarise_Metadata <- function(master_seed_list,
+  clust_summarise_Metadata <- function(seed_list,
                                        mismatch_props,
                                        methods_list,
                                        
@@ -311,7 +311,7 @@
     
     # summarise all the parameters from wrap_resource_Iterator()
     reshuffle_params <- list(
-      "master_seed_list" = master_seed_list,
+      "seed_list"        = seed_list,
       "mismatch_props"   = mismatch_props,
       "methods_list"     = methods_list,
       

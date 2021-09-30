@@ -175,11 +175,11 @@ wrap_cluster_Iterator <-
     
     # We format a named list of seeds, it contains as many seeds as the user
     # specified, from 1 to n, and each entry has an appropriate name, "Seed_n".
-    master_seed_list <- as.list(1:number_seeds)
+    seed_list <- as.list(1:number_seeds)
     
-    names(master_seed_list) <-
-      map(master_seed_list, function(seed) {
-        # Name each element of master_seed_list appropriately
+    names(seed_list) <-
+      map(seed_list, function(seed) {
+        # Name each element of seed_list appropriately
         str_glue("Seed_", seed)
         
       })
@@ -240,7 +240,7 @@ wrap_cluster_Iterator <-
   # If necessary we generate a filepath to save LIANA++ logs under.
   if (liana_warnings == "divert") {
     warning_logfile <-
-      cluster_auto_file_Name(
+      clust_auto_file_Name(
         prefix = "Outputs/Cluster_Reshuffling/Logs/",
         suffix = ".txt",
         
@@ -256,7 +256,7 @@ wrap_cluster_Iterator <-
   if (save_results == TRUE) {
     
     box_plot_png_name <-
-      cluster_auto_file_Name(
+      clust_auto_file_Name(
         prefix = "Boxplot_CR_",
         suffix = ".png",
         
@@ -266,7 +266,7 @@ wrap_cluster_Iterator <-
         trial_run         = trial_run)
     
     line_plot_png_name <-
-      cluster_auto_file_Name(
+      clust_auto_file_Name(
         prefix = "Lineplot_CR_",
         suffix = ".png",
         
@@ -276,7 +276,7 @@ wrap_cluster_Iterator <-
         trial_run         = trial_run)
     
     iterator_results_save_path <- 
-      cluster_auto_file_Name(
+      clust_auto_file_Name(
         prefix = "Outputs/Cluster_Reshuffling/Iterator_Results_CR_",
         suffix = ".RData",
         
@@ -306,8 +306,8 @@ wrap_cluster_Iterator <-
   reshuffled_clusters <- lapply(
     mismatch_props,
     wrap_Shuffler,
-    master_seed_list  = master_seed_list,
-    metadata          = testdata@meta.data) %>%
+    seed_list = seed_list,
+    metadata  = testdata@meta.data) %>%
     # Add the default metadata to the reshuffled cluster for completeness' sake
     append(list("Reshuffle_0" = testdata@meta.data), .)
   
@@ -324,7 +324,7 @@ wrap_cluster_Iterator <-
   # we created (so again, default, then for every seed and every mismatch prop)
   liana_results <-
     iterate_liana_wrap(
-      master_seed_list    = master_seed_list,
+      seed_list           = seed_list,
       mismatch_props      = mismatch_props,
       reshuffled_clusters = reshuffled_clusters,
       testdata            = testdata,
@@ -362,7 +362,7 @@ wrap_cluster_Iterator <-
         
         # summarize the metadata
         metadata <- clust_summarise_Metadata(
-          master_seed_list = master_seed_list,
+          seed_list        = seed_list,
           mismatch_props   = mismatch_props,
           methods_list     = methods_list,
           
@@ -437,7 +437,7 @@ wrap_cluster_Iterator <-
   top_ranks <-
     # We extract the top ranked interactions of all our LIANA++ results
     map(methods_list, function(method) {
-      # get_top_ranks_clust needs to know what method its working on, so we
+      # clust_get_top_ranks needs to know what method its working on, so we
       # map by method
       top_ranks_for_method <- liana_results[[method]] %>%
         # Now we use map_depth to map down to the tibbles in the nested list
@@ -445,7 +445,7 @@ wrap_cluster_Iterator <-
         map_depth(
           .,
           .depth = 2,
-          get_top_ranks_clust,
+          clust_get_top_ranks,
           method = method,
           top_n = number_ranks[[method]],
           with_ties = TRUE
@@ -534,7 +534,7 @@ wrap_cluster_Iterator <-
       mismatch_props   = mismatch_props,
       trial_run        = trial_run,
       testdata_type    = testdata_type,
-      master_seed_list = master_seed_list,
+      seed_list        = seed_list,
       number_ranks     = number_ranks,
       time_of_run      = time_of_run
     )
@@ -601,7 +601,7 @@ wrap_cluster_Iterator <-
   # We then summarise the above information and more metadata into a single
   # object
   metadata <- clust_summarise_Metadata(
-    master_seed_list = master_seed_list,
+    seed_list        = seed_list,
     mismatch_props   = mismatch_props,
     methods_list     = methods_list,
     
@@ -628,7 +628,7 @@ wrap_cluster_Iterator <-
   
   # Now that these objects are stored in the metadata object, we can remove
   # this clutter from the environment.
-  rm(runtime, master_seed_list, mismatch_props, number_ranks, methods_list,
+  rm(runtime, seed_list, mismatch_props, number_ranks, methods_list,
      cellchat_nperms, methods_vector, number_seeds, testdata_type, 
      time_of_run, trial_run)
   
