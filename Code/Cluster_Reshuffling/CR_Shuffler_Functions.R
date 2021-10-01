@@ -111,7 +111,7 @@
     # values from the tibble. Then we convert to a df because the input is a df.
     metadata_new <- metadata_new %>%
       mutate("Mismatched" = 
-               ifelse(.$cluster_key_old == .$cluster_key, FALSE, TRUE)) %>%
+               if_else(.$cluster_key_old == .$cluster_key, FALSE, TRUE)) %>%
       select(-"cluster_key_old") %>%
       as.data.frame()
     
