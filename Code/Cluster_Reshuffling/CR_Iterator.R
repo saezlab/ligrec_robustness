@@ -395,6 +395,26 @@ wrap_cluster_Iterator <-
   liana_results <- liana_results %>%
     map_depth(., .depth = 1, transpose) %>%
     map_depth(., .depth = 0, transpose) %>%
+    
+    # Correct Cellchat Errors where nothing is significant
+    map_depth(., .depth = 3, function(result) {
+      
+      if (is_tibble(result) == FALSE) {
+        if (result$message == str_glue("No significant signaling interactions ",
+                                       "are inferred based on the input!")) {
+          
+          # replace the error with an empty tibble, non significance means
+          # 0 predicted interactions, not an error.
+          return(liana_results$Reshuffle_0$Seed_1$cellchat[0, ])
+          
+        }
+        
+      }
+      
+      return(result)
+      
+    }) %>%
+    
     # If an error occurs in LIANA++ it returns it instead of an output tibble
     # Here we check if any errors (= non-tibbles) were returned.
     map_depth(., .depth = 3, function(result) {
