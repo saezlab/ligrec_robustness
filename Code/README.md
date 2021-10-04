@@ -1,22 +1,26 @@
+---
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
 # Code:
 
-1. **Functions**: This script defines all the functions each other script needs,
-sorted by script name.
+1.  **Cluster_Reshuffling**: This folder contains most of the code
+    needed to run a robustness analysis when reshuffling or sub-setting
+    cluster annotations of the test data.
 
-2. **GetData**: This script will retrieve all the data currently in use in this 
-project and drops it in the Data folder for you.
+2.  **Resource_Dilution**: This folder contains most of the code needed
+    to run a robustness analysis when diluting the resource with
+    non-canonical interactions.
 
-3. **OmniPath Dilution Robustness**: This script dilutes OP with genes active in
-the test data set that are not recorded signalling genes. It then investigates 
-how much overlap between the top n highest ranked CC-interactions is affected by
-the dilution rate.
+3.  **Utilities**: This folder contains utility functions used´in
+    cluster reshuffling or sub-setting, as well as resource dilution.
 
-4. **Snippets**: This script just represents some code snippets I used to test 
-the outputs of OmniPath Dilution Robustness. None of the content in it is 
-intended to be a long term part of the project. If it were relevant it would be 
-moved into the right script.
+4.  **GetData**: This script will retrieve all the data currently in use
+    in this project and drops it in the Data folder for you.
 
-5. **Tutorials**: This folder has two scripts in it, both of which run through 
-reproductions of the official tutorials of dependencies of this project. The 
-LIANA tutorial is useful for installing LIANA on windows, the Seurat one formats
-the PBMC data set to that it is ready to be used with LIANA.
+5.  **Seurat_Tut_Script**: This script reproduces all the processing
+    steps in the official Seurat tutorial. Use this in conjunction with
+    the GetData script before you run any analysis on the Seurat data
+    set.
