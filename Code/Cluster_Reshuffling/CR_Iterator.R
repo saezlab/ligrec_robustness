@@ -38,6 +38,13 @@
 #' testdata. It will be included in the plot description and save file names 
 #' (if the results is saved to the outputs folder).
 #' 
+#' @param reshuffle_or_subset Either "reshuffle", or "subset" as a string. 
+#' Instead of reshuffling a certain proportion, you can subset the metadata 
+#' to not include that same proportion instead. This is an alternative form of
+#' this analysis. Be aware that if this is set to "subset", anything that refers
+#' to mismatch actually refers to the excluded cells, and anything that refers
+#' to reshuffling refers to subsetting instead.
+#' 
 #' @param mismatch_props As a vector proportions between 0 and 1. To what degree
 #' of mismatch should the cluster annotations be reshuffled to during the 
 #' robusntess test. For example, c(0.1, 0.2, 0.3) would have the function 
@@ -120,9 +127,9 @@ wrap_cluster_Iterator <-
   function(testdata,
            testdata_type,
            
-           #  reshuffle_or_subset <- "reshuffle"
            mismatch_props = c(seq(0.20, 0.10, -0.10)) ,
            top_n = 20,
+           reshuffle_or_subset = "reshuffle",
            
            number_seeds = 2,
            methods_vector = c('call_connectome' ,
@@ -244,11 +251,12 @@ wrap_cluster_Iterator <-
         prefix = "Outputs/Cluster_Reshuffling/Logs/",
         suffix = ".txt",
         
-        testdata_type     = testdata_type,
-        number_ranks      = number_ranks,
-        time_of_run       = time_of_run,
-        trial_run         = trial_run
-      )
+        reshuffle_or_subset = reshuffle_or_subset,
+        testdata_type       = testdata_type,
+        number_ranks        = number_ranks,
+        time_of_run         = time_of_run,
+        trial_run           = trial_run)
+    
   }
   
   # Generate the filepaths to save the data under, if necessary.
@@ -260,30 +268,33 @@ wrap_cluster_Iterator <-
         prefix = "Boxplot_CR_",
         suffix = ".png",
         
-        testdata_type     = testdata_type,
-        number_ranks      = number_ranks,
-        time_of_run       = time_of_run,
-        trial_run         = trial_run)
+        reshuffle_or_subset = reshuffle_or_subset,
+        testdata_type       = testdata_type,
+        number_ranks        = number_ranks,
+        time_of_run         = time_of_run,
+        trial_run           = trial_run)
     
     line_plot_png_name <-
       clust_auto_file_Name(
         prefix = "Lineplot_CR_",
         suffix = ".png",
         
-        testdata_type     = testdata_type,
-        number_ranks      = number_ranks,
-        time_of_run       = time_of_run,
-        trial_run         = trial_run)
+        reshuffle_or_subset = reshuffle_or_subset,
+        testdata_type       = testdata_type,
+        number_ranks        = number_ranks,
+        time_of_run         = time_of_run,
+        trial_run           = trial_run)
     
     iterator_results_save_path <- 
       clust_auto_file_Name(
         prefix = "Outputs/Cluster_Reshuffling/Iterator_Results_CR_",
         suffix = ".RData",
         
-        testdata_type     = testdata_type,
-        number_ranks      = number_ranks,
-        time_of_run       = time_of_run,
-        trial_run         = trial_run)
+        reshuffle_or_subset = reshuffle_or_subset,
+        testdata_type       = testdata_type,
+        number_ranks        = number_ranks,
+        time_of_run         = time_of_run,
+        trial_run           = trial_run)
     
   }
   
@@ -296,20 +307,55 @@ wrap_cluster_Iterator <-
 #------------------------------------------------------------------------------#
 # 1.2 Create Reshuffled Cluster Annotations ------------------------------------
 {
-  # Let the user follow along in the console
-  print_Title("1. Creating Reshuffled Cluster Annotations",
-              space_after = 0, 
-              super = TRUE)
+  # We reach for the shuffler or subsetter function depending on user input.
+  if (reshuffle_or_subset == "reshuffle") {
+    
+    # Let the user follow along in the console
+    print_Title("1. Creating Reshuffled Cluster Annotations",
+                space_after = 0, 
+                super = TRUE)
+    
+    
+    
+    # For every mismatch proportion and for every seed, generate a meta.data df 
+    # with reshuffled cluster annotations.
+    reshuffled_clusters <- lapply(
+      mismatch_props,
+      wrap_Shuffler,
+      seed_list = seed_list,
+      metadata  = testdata@meta.data) %>%
+      # Add the default metadata to the reshuffled cluster for completeness
+      append(list("Reshuffle_0" = testdata@meta.data), .)
+    
+    
+    
+  } else if (reshuffle_or_subset == "subset") {
+    
+    # Let the user follow along in the console
+    print_Title("1. Subsetting Cell Clusters",
+                space_after = 0, 
+                super = TRUE)
+    
+    
+    # define the proportion of the cluster to remove 
+    removal_props <- mismatch_props
+    
+    # For every removal proportion and for every seed, generate a meta.data df 
+    # with subset cluster annotations.
+    reshuffled_clusters <- lapply(
+      removal_props,   # mismatch props is actually a subset props
+      wrap_Subsetter,
+      seed_list = seed_list,
+      metadata  = testdata@meta.data) %>%
+      # Add the default metadata to the reshuffled cluster for completeness
+      append(list("Reshuffle_0" = testdata@meta.data), .)
+    
+    
+    
+  }
+   
   
-  # For every mismatch proportion and for every seed, generate a meta.data df 
-  # with reshuffled cluster annotations.
-  reshuffled_clusters <- lapply(
-    mismatch_props,
-    wrap_Shuffler,
-    seed_list = seed_list,
-    metadata  = testdata@meta.data) %>%
-    # Add the default metadata to the reshuffled cluster for completeness' sake
-    append(list("Reshuffle_0" = testdata@meta.data), .)
+
   
   
   
@@ -366,8 +412,9 @@ wrap_cluster_Iterator <-
           mismatch_props   = mismatch_props,
           methods_list     = methods_list,
           
-          testdata_type    = testdata_type,
-          number_ranks     = number_ranks,
+          testdata_type       = testdata_type,
+          reshuffle_or_subset = reshuffle_or_subset,
+          number_ranks        = number_ranks,
           
           cellchat_nperms  = cellchat_nperms,
           outputs          = outputs,
@@ -531,29 +578,49 @@ wrap_cluster_Iterator <-
   # produced it, we automatically generate a plot description
   plotting_caption <-
     clust_plot_Description(
-      mismatch_props   = mismatch_props,
-      trial_run        = trial_run,
-      testdata_type    = testdata_type,
-      seed_list        = seed_list,
-      number_ranks     = number_ranks,
-      time_of_run      = time_of_run
+      mismatch_props      = mismatch_props,
+      trial_run           = trial_run,
+      testdata_type       = testdata_type,
+      reshuffle_or_subset = reshuffle_or_subset, 
+      seed_list           = seed_list,
+      number_ranks        = number_ranks,
+      time_of_run         = time_of_run
     )
   
   
-  
+  if (reshuffle_or_subset == "reshuffle") {
+    
+    plot_line <- 
+      overlap_line_Plot(tr_overlap_for_plot,
+                        plotting_caption,
+                        x_axis_var  = "Mismatch",
+                        x_axis_name = "Mismatch of Cluster Annotations [%]")
+    
+    plot_box <- 
+      overlap_box_Plot(tr_overlap_for_plot,
+                       plotting_caption,
+                       x_axis_var  = "Mismatch",
+                       x_axis_name = "Mismatch of Cluster Annotations [%]")
+    
+    
+  } else if (reshuffle_or_subset == "subset") {
+    
+    plot_line <- 
+      overlap_line_Plot(tr_overlap_for_plot,
+                        plotting_caption,
+                        x_axis_var  = "Mismatch",
+                        x_axis_name = "% of Cells Removed per Cluster")
+    
+    plot_box <- 
+      overlap_box_Plot(tr_overlap_for_plot,
+                       plotting_caption,
+                       x_axis_var  = "Mismatch",
+                       x_axis_name = "% of Cells Removed per Cluster")
+    
+    
+  }
   
   # Generate our plots with functions.
-  plot_line <- 
-    overlap_line_Plot(tr_overlap_for_plot,
-                      plotting_caption,
-                      x_axis_var  = "Mismatch",
-                      x_axis_name = "Mismatch of Cluster Annotations [%]")
-  
-  plot_box <- 
-    overlap_box_Plot(tr_overlap_for_plot,
-                     plotting_caption,
-                     x_axis_var  = "Mismatch",
-                     x_axis_name = "Mismatch of Cluster Annotations [%]")
   
   # Print out visualizations
   print(plot_line)
@@ -605,8 +672,9 @@ wrap_cluster_Iterator <-
     mismatch_props   = mismatch_props,
     methods_list     = methods_list,
     
-    testdata_type    = testdata_type,
-    number_ranks     = number_ranks,
+    testdata_type       = testdata_type,
+    reshuffle_or_subset = reshuffle_or_subset,
+    number_ranks        = number_ranks,
     
     cellchat_nperms  = cellchat_nperms,
     outputs          = outputs,
