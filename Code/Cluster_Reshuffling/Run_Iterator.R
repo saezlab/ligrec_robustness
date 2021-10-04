@@ -86,8 +86,10 @@
   source("Code/Cluster_Reshuffling/Iterator_Meta_and_Saves.R")
 
   
-  # Define functions for generating the mayn reshuffled cluster annotations
+  # Define functions for generating the many reshuffled cluster annotations
   source("Code/Cluster_Reshuffling/CR_Shuffler_Functions.R")
+  # Define functions for subsetting cluster annotations, instead of reshuffling
+  source("Code/Cluster_Reshuffling/CR_Subsetter_Functions.R")
   # Define functions for iterating LIANA on all the reshuffled clusters
   source("Code/Cluster_Reshuffling/CR_LIANA_Functions.R")
 
