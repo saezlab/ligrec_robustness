@@ -149,11 +149,11 @@
 
 wrap_resource_Iterator <- 
   function(
-    number_seeds      = 10,            # how many seeds should we iterate over
-    testdata_type     = "seurat_pbmc", # seurat_pbmc or liana_test
-    feature_type      = "variable",    # "generic" or "variable"
-    preserve_topology = FALSE,         # TRUE or FALSE
-    dilution_props    = c(seq(0.05, 1.00, 0.05)),
+    number_seeds      = 10,            
+    testdata_type     = "seurat_pbmc", 
+    feature_type      = "variable",    
+    preserve_topology = FALSE,         
+    dilution_props    = c(seq(0.05, 0.60, 0.05)),
     
     number_ranks = list(
       "call_connectome" = 500,
@@ -161,19 +161,17 @@ wrap_resource_Iterator <-
       "call_italk"      = 500,
       "call_sca"        = 500,
       "cellchat"        = 500,
-      "squidpy"         = 500
-    ),
+      "squidpy"         = 500),
     
     methods_vector = c('call_connectome' ,
                        'call_natmi'      ,
                        'call_italk'      ,
                        'call_sca'        ,
                        'cellchat'        ,
-                       'squidpy'
-    ),
+                       'squidpy'),
     
-    sink_output     = FALSE,    # TRUE or FALSE
-    liana_warnings  = "divert", # TRUE, FALSE, or "divert"
+    sink_output     = FALSE,    
+    liana_warnings  = "divert", 
     
     save_results    = TRUE,
     trial_run       = FALSE,
@@ -181,21 +179,16 @@ wrap_resource_Iterator <-
     
     
     
-    cellchat_nperms = 100,       # default 100 for real data
+    cellchat_nperms = 100,       
     
-    bundled_outputs = c(
-      "top_ranks_analysis",
-      "runtime"          
-    ),
+    bundled_outputs = c("top_ranks_analysis", "runtime"),
     
     master_outputs = c(
       "collated_top_ranks_overlap",
       "plot_box",
       "plot_line",
       "collated_robustness_results",
-      "metadata"
-    )                                  
-  ) {
+      "metadata")) {
     
     
   

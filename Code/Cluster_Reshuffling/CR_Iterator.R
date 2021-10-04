@@ -127,27 +127,26 @@ wrap_cluster_Iterator <-
   function(testdata,
            testdata_type,
            
-           mismatch_props = c(seq(0.20, 0.10, -0.10)) ,
-           top_n = 20,
            reshuffle_or_subset = "reshuffle",
+           mismatch_props = c(seq(0.60, 0.05, -0.05)) ,
+           top_n = 500,
            
-           number_seeds = 2,
+           number_seeds = 10,
            methods_vector = c('call_connectome' ,
                               'call_natmi'      ,
                               'call_italk'      ,
                               'call_sca'        ,
-                              'cellchat'        #,
-                              # 'squidpy'
-                                         ),
+                              'cellchat'        ,
+                              'squidpy'),
            
            
            liana_warnings  = "divert",
            save_results    = TRUE,
-           trial_run       = TRUE,
+           trial_run       = FALSE,
            
            
            
-           cellchat_nperms = 20,
+           cellchat_nperms = 100,
            
            outputs = c("top_ranks_overlap",
                        "plot_box",
