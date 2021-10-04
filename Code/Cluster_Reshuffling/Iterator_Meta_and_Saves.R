@@ -30,6 +30,9 @@
   #' @param testdata_type A string that serves as a name or label for your 
   #' testdata. It will be included in the plot description and save file names 
   #' (if the results is saved to the outputs folder).
+  #' 
+  #' @param reshuffle_or_subset A string that indicates if these results were 
+  #' gained using cluster annotation reshuffling or subsetting.
   #'
   #' @param number_ranks A named list of which top-ranks were considered 
   #' significant per method.
@@ -43,12 +46,13 @@
   
   
   clust_auto_file_Name <- function(prefix,
-                                     suffix,
-                                     
-                                     trial_run,
-                                     testdata_type,
-                                     number_ranks,
-                                     time_of_run) {
+                                   suffix,
+                                   
+                                   trial_run,
+                                   testdata_type,
+                                   reshuffle_or_subset,
+                                   number_ranks,
+                                   time_of_run) {
     
     # We define individual comments related to relevant parameters and then
     # string them all together for the save file name.
@@ -68,6 +72,9 @@
       str_glue(testdata_type, "_")
     
     
+    # subset comment
+    subset_comment <- 
+      str_glue(reshuffle_or_subset, "_")
     
     # Make a comment out of the median top_n that was considered top_ranked.
     top_ranks_comment <-
@@ -81,6 +88,7 @@
         prefix,
         test_run_comment,
         testdata_comment,
+        subset_comment,
         top_ranks_comment,
         time_of_run,
         suffix
@@ -111,6 +119,9 @@
   #' @param trial_run The same parameter from wrap_resource_Iterator(). Used
   #' in the file name to mark the file.
   #' 
+  #' @param reshuffle_or_subset A string that indicates if these results were 
+  #' gained using cluster annotation reshuffling or subsetting.
+  #' 
   #' @param testdata_type A string that serves as a name or label for your 
   #' testdata. It will be included in the plot description and save file names 
   #' (if the results is saved to the outputs folder).
@@ -131,13 +142,17 @@
   clust_plot_Description <- function(mismatch_props,
                                      trial_run,
                                      testdata_type,
+                                     reshuffle_or_subset,
                                      seed_list,
                                      number_ranks,
                                      time_of_run) {
     
-    ## A comment discussing the reshuffling parameters.
+    ## Comment on reshuffling or subsetting parameters and general stuff
     {
-        reshuffle_comment <- str_glue(
+      
+      if (reshuffle_or_subset == "reshuffle") {
+        
+        general_comment <- str_glue(
           "This plot was created using the ",
           testdata_type,
           " data. ",
@@ -150,6 +165,25 @@
           "it was replaced by a random sign from ",
           "all annotations that did not match itself."
         )
+        
+        
+      } else if (reshuffle_or_subset == "subset") {
+        
+        general_comment <- str_glue(
+          "This plot was created using the ",
+          testdata_type,
+          " data. ",
+          "Each cell cluster in the testdata was subset in ",
+          (mismatch_props[[2]] - mismatch_props[[1]]) * 100,
+          " % intervals to a maximum of ",
+          max(unlist(mismatch_props)) * 100,
+          " %. \n",
+          "This mimics an analysis with less samples."
+        )
+        
+        
+      }
+
       
       
     }
@@ -177,7 +211,7 @@
     
     ## Assemple plotting caption
     plotting_caption <-
-      str_glue(reshuffle_comment,
+      str_glue(general_comment,
                "\n\n",
                top_ranks_permutations_comment,
                "\n",
@@ -219,6 +253,9 @@
   #' @param testdata_type A string that serves as a name or label for your 
   #' testdata. It will be included in the plot description and save file names 
   #' (if the results is saved to the outputs folder).
+  #' 
+  #' @param reshuffle_or_subset A string that indicates if these results were 
+  #' gained using cluster annotation reshuffling or subsetting.
   #' 
   #' @param number_ranks A named list of which top-ranks were considered 
   #' significant per method.
@@ -263,6 +300,7 @@
                                        methods_list,
                                        
                                        testdata_type,
+                                       reshuffle_or_subset,
                                        number_ranks,
                                        cellchat_nperms,
                                        
@@ -277,6 +315,7 @@
                                        line_plot_png_name,
                                        box_plot_png_name,
                                        iterator_results_save_path) {
+    
     # Summarize the metadata parameters
     meta_params <- list(
       "outputs"         = outputs,
@@ -315,9 +354,10 @@
       "mismatch_props"   = mismatch_props,
       "methods_list"     = methods_list,
       
-      "testdata_type"    = testdata_type,
-      "number_ranks"     = number_ranks,
-      "cellchat_nperms"  = cellchat_nperms
+      "testdata_type"       = testdata_type,
+      "reshuffle_or_subset" = reshuffle_or_subset,
+      "number_ranks"        = number_ranks,
+      "cellchat_nperms"     = cellchat_nperms
     )
     
     # Put all the parameters in a list
