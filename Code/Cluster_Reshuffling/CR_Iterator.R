@@ -424,7 +424,7 @@ wrap_cluster_Iterator <-
       # LIANA is the most likely part of the code for errors to be generated, 
       # which is why we check for it here and salvage what's left if something
       # went wrong.
-      if(is_tibble(result) == FALSE && trial_run == FALSE) {
+      if(is_tibble(result) == FALSE) {
         
         # summarize the metadata
         metadata <- clust_summarise_Metadata(

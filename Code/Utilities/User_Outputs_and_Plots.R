@@ -58,8 +58,8 @@
       
       
       # make sure the scale is the same on both axes, since both are in percent
-      scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0,100)) +
-      scale_x_continuous(breaks = seq(0, 100, 20), limits = c(0,100)) +
+      scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0, 100)) +
+      scale_x_continuous(breaks = seq(0, 100, 20)) +
       
       # add text
       ggtitle("Robustness of Method Predictions") +
@@ -118,8 +118,8 @@
       
       
       # make sure the scale is the same on both axes, since both are in percent
-      scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0,100)) +
-      scale_x_continuous(breaks = seq(0, 100, 20)) +
+      scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0, 100)) +
+      scale_x_continuous(breaks = seq(0, 100, 20), limits = c(0, 60)) +
       
       
       # add text

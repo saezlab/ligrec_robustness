@@ -163,6 +163,8 @@
   #' you want to reshuffle. Note that the metadata should have numeric cluster
   #' labels stored as a factor in a column called "cluster_key" of the metadata.
   #' The input metadata should also have the cell bar codes as its rownames.
+  #' 
+  #' @return A list of reshuffled metadatas sorted by seed and mismatch.
   
   
   wrap_Shuffler <- function(seed_list,
