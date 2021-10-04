@@ -118,9 +118,16 @@
 {
   #' Run liana_with_warnings() for multiple mismatch proportions and seeds
   #' 
-  #' @description This function runs LIANA++ for every mismatch_prop and seed
-  #' given, provided the appropriate metadata is in reshuffled clusters. It also
-  #' runs LIANA for unshuffled metadat and returns everything.
+  #' @description This function modifies the input testdata so that it has 
+  #' the cluster annotations and metadata derived from reshuffled_clusters. 
+  #' It then runs LIANA++ on the modified metadata. This process is performed
+  #' for every mismatch proportion and seed provided (as long as the 
+  #' corresponding metadata is in reshuffled_clusters).
+  #' 
+  #' In the process, the testdata is subset so it only contains cells that are 
+  #' labelled within its metadata. If the metadata was reshuffled, this should
+  #' change nothing, but it also enables this function to work with subset 
+  #' metadata.
   #' 
   #' @param testdata A seurat object to run liana_with_warnings on.
   #' 
@@ -203,6 +210,9 @@
           
         }
         
+        
+        
+        
         # Create anew testdata with the reshuffled meta.data
         reshuffled_testdata <- testdata
         
@@ -211,9 +221,31 @@
         reshuffled_testdata@meta.data <-
           reshuffled_clusters[[mismatch_name]][[seed]]
         
+        # Make sure only cells labelled in the metadata are in the testdata
+        reshuffled_testdata <- 
+          subset(reshuffled_testdata, 
+                 cells = rownames(reshuffled_testdata@meta.data))
+        
+        # Let the suer know the impact of subsetting
+        cat(str_wrap(
+          str_glue(
+            "The testdata was subset to only contain cells that ",
+            "are labelled in the modified metadata. ",
+            "As a result of this, ",
+            ncol(testdata) - ncol(reshuffled_testdata),
+            " cells were removed."),
+          80),
+          "\n\n")
+        
+        # Set the idents of the reshuffled testdata through the new metadata
         Idents(reshuffled_testdata) <-
           reshuffled_testdata@meta.data$cluster_key
         
+
+
+
+
+    
         
         # Run liana with the modified testdata
         liana_results_mismatch_seed <-
