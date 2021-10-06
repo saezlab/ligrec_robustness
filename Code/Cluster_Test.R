@@ -32,4 +32,4 @@ print("Hello world!")
 
 warning("uh oh...")
 
-save(liana_results, "Outputs/cluster_test.RData")
+save(liana_results, file = "Outputs/cluster_test.RData")
