@@ -9,7 +9,7 @@ testdata <-
 # testdata <-  readRDS("Data/pbmc3k_final.rds")
 
 liana_results <- liana_wrap(testdata,
-                            methods = c('call_connectome',
+                            method = c('call_connectome',
                                         'call_natmi',
                                         'call_italk',
                                         'call_sca',
