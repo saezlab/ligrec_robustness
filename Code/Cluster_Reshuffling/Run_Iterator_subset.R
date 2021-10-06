@@ -84,7 +84,7 @@
   source("Code/Cluster_Reshuffling/Iterator_Top_Ranks.R")
   # Define Iterator helpers that work at a meta level, saving results and so on 
   source("Code/Cluster_Reshuffling/Iterator_Meta_and_Saves.R")
-
+  
   
   # Define functions for generating the many reshuffled cluster annotations
   source("Code/Cluster_Reshuffling/CR_Shuffler_Functions.R")
@@ -92,8 +92,8 @@
   source("Code/Cluster_Reshuffling/CR_Subsetter_Functions.R")
   # Define functions for iterating LIANA on all the reshuffled clusters
   source("Code/Cluster_Reshuffling/CR_LIANA_Functions.R")
-
-
+  
+  
   # Define utility functions that help the iterator run 
   source("Code/Utilities/Iterator_Functions.R")
   # Define utiltiy functions for user-facing console outputs and plotting
@@ -114,12 +114,11 @@
   testdata_type <- "seurat_pbmc"  
   testdata      <- extract_Testdata(testdata_type = testdata_type)
   
-  
   # We run the wrapper function, feeding it the testdata and the testdata label
-  robustness_reshuffle_default <- 
+  robustness_subset_default <- 
     wrap_cluster_Iterator(testdata      = testdata,
                           testdata_type = testdata_type,
-                          reshuffle_or_subset = "reshuffle")
+                          reshuffle_or_subset = "subset")
   
   
 }
