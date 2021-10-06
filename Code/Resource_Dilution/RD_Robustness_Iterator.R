@@ -324,7 +324,7 @@ wrap_resource_Iterator <-
                                "call_connectome" = "Connectome",
                                "squidpy"         = "CellPhoneDB",
                                "call_natmi"      = "NATMI",
-                               "call_italk"      = "iTALK",
+                               "call_italk"      = "LogFC Product",
                                "call_sca"        = "SingleCellSignalR",
                                "cellchat"        = "CellChat")) # renaming
     
