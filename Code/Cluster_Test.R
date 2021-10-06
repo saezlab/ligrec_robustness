@@ -3,8 +3,10 @@ require(Seurat)
 require(tidyverse)
 require(lubridate)
 
-
-testdata <- readRDS("Data/pbmc3k_final.rds")
+liana_path <- system.file(package = "liana")
+testdata <-
+  readRDS(file.path(liana_path , "testdata", "input", "testdata.rds"))
+# testdata <-  readRDS("Data/pbmc3k_final.rds")
 
 liana_results <- liana_wrap(testdata,
                             methods = c('call_connectome',
