@@ -31,7 +31,7 @@
   
   
   methods_vector <- c("call_connectome",
-                      #"call_squidpy",
+                      #"squidpy",
                       "call_natmi",
                       "call_italk",
                       "call_sca",
