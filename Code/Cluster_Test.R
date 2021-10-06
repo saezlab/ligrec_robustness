@@ -30,6 +30,8 @@ ggsave(plot = test_plot,
 
 print("Hello world!")
 
+print(Sys.time())
+
 warning("uh oh...")
 
 save(liana_results, file = "Outputs/cluster_test.RData")
