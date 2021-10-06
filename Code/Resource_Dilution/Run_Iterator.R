@@ -110,9 +110,9 @@
 
 # We run the wrapper with default settings and twice the standard permutations
 robustness_default <- 
-  wrap_resource_Iterator(number_seeds = 2,
-                         dilution_props = seq(0.1, 0.2, 0.1),
-                         methods_vector = c("call_sca"),
-                         testdata_type = "liana_test",
-                         number_ranks = list("call_sca" = 20))
+  wrap_resource_Iterator(testdata_type = "seurat_pbmc")
+
+robustness_preserve_topo <- 
+  wrap_resource_Iterator(testdata_type = "seurat_pbmc",
+                         preserve_topology = TRUE)
 

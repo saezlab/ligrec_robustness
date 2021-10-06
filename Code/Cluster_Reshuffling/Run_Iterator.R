@@ -111,16 +111,21 @@
   
   # First we load testdata from the data folder. 
   # We also give a label (testdata_type, choose "seurat_pbmc" or "liana_test")
-  testdata_type <- "liana_test"  
+  testdata_type <- "seurat_pbmc"  
   testdata      <- extract_Testdata(testdata_type = testdata_type)
   
   
   # We run the wrapper function, feeding it the testdata and the testdata label
-  robustness_default <- 
+  robustness_reshuffle_default <- 
     wrap_cluster_Iterator(testdata      = testdata,
                           testdata_type = testdata_type,
-                          methods_vector = c("call_connectome", "call_sca")
-                          )
+                          reshuffle_or_subset = "reshuffle")
+  
+  # We run the wrapper function, feeding it the testdata and the testdata label
+  robustness_subset_default <- 
+    wrap_cluster_Iterator(testdata      = testdata,
+                          testdata_type = testdata_type,
+                          reshuffle_or_subset = "subset")
   
   
 }
