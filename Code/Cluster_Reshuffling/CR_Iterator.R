@@ -385,6 +385,11 @@ wrap_cluster_Iterator <-
                                thresh    = 1)
     )  
   
+  save(liana_result, file = str_glue(str_sub(iterator_results_save_path,
+                                             1, 
+                                             nchar(iterator_results_save_path) - 6),
+                                     "_ERROR.RData"))
+  
   # The output has the runtime tacked on to the end of it, we separate that here
   runtime <- liana_results$runtime
   liana_results$runtime <- NULL
