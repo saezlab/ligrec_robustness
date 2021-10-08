@@ -272,9 +272,9 @@ print_Title(str_glue("Iteration ",
   # Update runtime
   runtime[["First Liana"]] <- Sys.time()
   
-  save(liana_results, file = str_glue("Outputs/", 
-                                      natmi_output, 
-                                      "RD_base_LIANA_ERROR.RData"))
+  save(liana_results_OP_0, file = str_glue("Outputs/", 
+                                           natmi_output, 
+                                           "RD_base_LIANA_ERROR.RData"))
   
   
   # Remove superfluous variables
