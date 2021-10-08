@@ -43,11 +43,14 @@
     # NATMI results are contaminated with results from earlier runs if you
     # don't specify a special output folder for the results to go in. Here we
     # define an output folder unique to this usage of this function.
+    # Since this can also happen with inputs we actually use the 
+    # .delete_input_output to further minimize folder confusion.
     natmi_output <-  Sys.time() %>%
       as.character()       %>%
       gsub(':', '-', .)    %>%
       gsub(' ', '_', .)    %>%
       str_glue('Test_', .)
+    
     
     # If the user wants warnings, simply run liana_wrap
     if (liana_warnings == TRUE) {
@@ -56,7 +59,8 @@
         liana_wrap(testdata,
                    method   = methods_vector,
                    resource = c('OmniPath'),
-                   call_natmi.params = list(output_dir = natmi_output),
+                   call_natmi.params = list(output_dir = natmi_output,
+                                            .delete_input_output = TRUE),
                    ...)
       
       
@@ -70,7 +74,8 @@
           liana_wrap(testdata,
                      method   = methods_vector,
                      resource = c('OmniPath'),
-                     call_natmi.params = list(output_dir = natmi_output),
+                     call_natmi.params = list(output_dir = natmi_output,
+                                              .delete_input_output = TRUE),
                      ...)
         
       }, logFile = warning_logfile)
@@ -85,7 +90,8 @@
           liana_wrap(testdata,
                      method   = methods_vector,
                      resource = c('OmniPath'),
-                     call_natmi.params = list(output_dir = natmi_output),
+                     call_natmi.params = list(output_dir = natmi_output,
+                                              .delete_input_output = TRUE),
                      ...)
         
       })

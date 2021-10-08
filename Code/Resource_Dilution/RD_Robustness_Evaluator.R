@@ -200,11 +200,15 @@ print_Title(str_glue("Iteration ",
   
   # NATMI results are contaminated with results from earlier runs if you
   # don't specify a special output folder for the results to go in
+  # Since this can also happen with inputs we actually use the 
+  # .delete_input_output to further minimize folder confusion.
   natmi_output <-  Sys.time() %>%
     as.character()       %>%
     gsub(':', '-', .)    %>% 
     gsub(' ', '_', .)    %>%
     str_glue('Test_', .)
+    
+
   
   # The if statements give the user control over how warnings are handled
   if (liana_warnings == TRUE) {
@@ -217,7 +221,8 @@ print_Title(str_glue("Iteration ",
                  cellchat.params   = list(nboot = cellchat_nperms, 
                                           expr_prop = 0.1,
                                           thresh = 1),
-                 call_natmi.params = list(output_dir = natmi_output))
+                 call_natmi.params = list(output_dir = natmi_output,
+                                          .delete_input_output = TRUE))
     
     
   } else if (liana_warnings == "divert") {
@@ -232,7 +237,8 @@ print_Title(str_glue("Iteration ",
                      cellchat.params   = list(nboot = cellchat_nperms, 
                                               expr_prop = 0.1,
                                               thresh = 1),
-                     call_natmi.params = list(output_dir = natmi_output))
+                     call_natmi.params = list(output_dir = natmi_output,
+                                              .delete_input_output = TRUE))
         
       }, logFile = warning_logfile)
     
@@ -248,7 +254,8 @@ print_Title(str_glue("Iteration ",
                      cellchat.params   = list(nboot = cellchat_nperms, 
                                               expr_prop = 0.1,
                                               thresh = 1),
-                     call_natmi.params = list(output_dir = natmi_output))
+                     call_natmi.params = list(output_dir = natmi_output,
+                                              .delete_input_output = TRUE))
         
       })
     
@@ -500,6 +507,8 @@ print_Title(str_glue("Iteration ",
   
   # NATMI results are contaminated with results from earlier runs if you
   # don't specify a special output folder for the results to go in
+  # Since this can also happen with inputs we actually use the 
+  # .delete_input_output to further minimize folder confusion.
   
   # lapply liana wrap once per method across all the diluted resources
   natmi_output <-  Sys.time() %>%
@@ -507,6 +516,8 @@ print_Title(str_glue("Iteration ",
     gsub(':', '-', .)    %>% 
     gsub(' ', '_', .)    %>%
     str_glue('Test_', .)
+  
+
   
   if (liana_warnings == TRUE) {
     
@@ -522,7 +533,8 @@ print_Title(str_glue("Iteration ",
                  cellchat.params   = list(nboot     = cellchat_nperms, 
                                           expr_prop = 0.1,
                                           thresh    = 1),
-                 call_natmi.params = list(output_dir = natmi_output))
+                 call_natmi.params = list(output_dir = natmi_output,
+                                          .delete_input_output = TRUE))
       
       
       runtime[[str_glue(str_to_title(method), " rerun")]] <- Sys.time()
@@ -546,7 +558,8 @@ print_Title(str_glue("Iteration ",
                    cellchat.params   = list(nboot     = cellchat_nperms, 
                                             expr_prop = 0.1,
                                             thresh    = 1),
-                   call_natmi.params = list(output_dir = natmi_output))
+                   call_natmi.params = list(output_dir = natmi_output,
+                                            .delete_input_output = TRUE))
         
         }, logFile = warning_logfile)
       
@@ -573,7 +586,8 @@ print_Title(str_glue("Iteration ",
                    cellchat.params   = list(nboot     = cellchat_nperms, 
                                             expr_prop = 0.1,
                                             thresh    = 1),
-                   call_natmi.params = list(output_dir = natmi_output))
+                   call_natmi.params = list(output_dir = natmi_output,
+                                            .delete_input_output = TRUE))
         
         })
       
