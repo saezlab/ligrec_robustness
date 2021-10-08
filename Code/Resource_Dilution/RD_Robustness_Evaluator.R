@@ -597,12 +597,12 @@ print_Title(str_glue("Iteration ",
     
     
   
-  save(liana_results, file = str_glue("Outputs/", 
-                                      natmi_output, 
-                                      "RD_contrast_LIANA_ERROR.RData"))
+  save(liana_results_OP, file = str_glue("Outputs/", 
+                                         natmi_output, 
+                                         "RD_contrast_LIANA_ERROR.RData"))
   
-    # Remove uneccesary Variables
-    rm(liana_dilutions_OP, method, dilution, natmi_output)
+  # Remove uneccesary Variables
+  rm(liana_dilutions_OP, method, dilution, natmi_output)
     
     
   } # end of subpoint
