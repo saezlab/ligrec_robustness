@@ -111,5 +111,7 @@
 # Run the wrapper and preserve topology
 robustness_preserve_topo <- 
   wrap_resource_Iterator(testdata_type = "seurat_pbmc",
-                         preserve_topology = TRUE)
+                         preserve_topology = TRUE,
+                         number_seeds = 2,
+                         dilution_props = c(0.20, 0.40))
 

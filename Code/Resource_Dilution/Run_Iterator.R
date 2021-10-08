@@ -110,5 +110,7 @@
 
 # We run the wrapper with default settings and twice the standard permutations
 robustness_default <- 
-  wrap_resource_Iterator(testdata_type = "seurat_pbmc")
+  wrap_resource_Iterator(testdata_type = "seurat_pbmc",
+                         number_seeds = 2,
+                         dilution_props = c(0.20, 0.40))
 
