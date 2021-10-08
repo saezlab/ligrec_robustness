@@ -272,8 +272,7 @@ print_Title(str_glue("Iteration ",
   # Update runtime
   runtime[["First Liana"]] <- Sys.time()
   
-  save(liana_results_OP_0, file = str_glue("Outputs/", 
-                                           natmi_output, 
+  save(liana_results_OP_0, file = str_glue(str_sub(warning_logfile, 1, -5), 
                                            "RD_base_LIANA_ERROR.RData"))
   
   
@@ -595,11 +594,10 @@ print_Title(str_glue("Iteration ",
       }
     }
     
-    
   
-  save(liana_results_OP, file = str_glue("Outputs/", 
-                                         natmi_output, 
-                                         "RD_contrast_LIANA_ERROR.RData"))
+  
+  save(liana_results_OP, file = str_glue(str_sub(warning_logfile, 1, -5),
+                                         "_contrast_LIANA_ERROR.RData"))
   
   # Remove uneccesary Variables
   rm(liana_dilutions_OP, method, dilution, natmi_output)
