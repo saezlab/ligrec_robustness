@@ -42,9 +42,8 @@
     
     # NATMI results are contaminated with results from earlier runs if you
     # don't specify a special output folder for the results to go in. Here we
-    # define an output folder unique to this usage of this function.
-    # Since this can also happen with inputs we actually use the 
-    # .delete_input_output to further minimize folder confusion.
+    # define an output folder unique to this usage of this function, as well
+    # as creating unique em and metadata names
     natmi_output <-  Sys.time() %>%
       as.character()       %>%
       gsub(':', '-', .)    %>%
@@ -59,8 +58,10 @@
         liana_wrap(testdata,
                    method   = methods_vector,
                    resource = c('OmniPath'),
-                   call_natmi.params = list(output_dir = natmi_output,
-                                            .delete_input_output = TRUE),
+                   call_natmi.params = 
+                     list(output_dir = natmi_output,
+                          expr_file = str_glue(natmi_output, "_em.csv"),
+                          expr_file = str_glue(natmi_output, "_metadata.csv")),
                    ...)
       
       
@@ -70,13 +71,14 @@
       
       divert_Warnings({
         
-        liana_results <-
-          liana_wrap(testdata,
-                     method   = methods_vector,
-                     resource = c('OmniPath'),
-                     call_natmi.params = list(output_dir = natmi_output,
-                                              .delete_input_output = TRUE),
-                     ...)
+        liana_wrap(testdata,
+                   method   = methods_vector,
+                   resource = c('OmniPath'),
+                   call_natmi.params = 
+                     list(output_dir = natmi_output,
+                          expr_file = str_glue(natmi_output, "_em.csv"),
+                          expr_file = str_glue(natmi_output, "_metadata.csv")),
+                   ...)
         
       }, logFile = warning_logfile)
       
@@ -86,13 +88,14 @@
       
       suppressWarnings({
         
-        liana_results <-
-          liana_wrap(testdata,
-                     method   = methods_vector,
-                     resource = c('OmniPath'),
-                     call_natmi.params = list(output_dir = natmi_output,
-                                              .delete_input_output = TRUE),
-                     ...)
+        liana_wrap(testdata,
+                   method   = methods_vector,
+                   resource = c('OmniPath'),
+                   call_natmi.params = 
+                     list(output_dir = natmi_output,
+                          expr_file = str_glue(natmi_output, "_em.csv"),
+                          expr_file = str_glue(natmi_output, "_metadata.csv")),
+                   ...)
         
       })
       
