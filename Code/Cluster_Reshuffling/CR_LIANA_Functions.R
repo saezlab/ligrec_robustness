@@ -61,7 +61,7 @@
                    call_natmi.params = 
                      list(output_dir = natmi_output,
                           expr_file = str_glue(natmi_output, "_em.csv"),
-                          expr_file = str_glue(natmi_output, "_metadata.csv")),
+                          meta_file = str_glue(natmi_output, "_metadata.csv")),
                    ...)
       
       
@@ -71,14 +71,15 @@
       
       divert_Warnings({
         
-        liana_wrap(testdata,
-                   method   = methods_vector,
-                   resource = c('OmniPath'),
-                   call_natmi.params = 
-                     list(output_dir = natmi_output,
-                          expr_file = str_glue(natmi_output, "_em.csv"),
-                          expr_file = str_glue(natmi_output, "_metadata.csv")),
-                   ...)
+        liana_results <-
+          liana_wrap(testdata,
+                     method   = methods_vector,
+                     resource = c('OmniPath'),
+                     call_natmi.params = 
+                       list(output_dir = natmi_output,
+                            expr_file = str_glue(natmi_output, "_em.csv"),
+                            meta_file = str_glue(natmi_output, "_metadata.csv")),
+                     ...)
         
       }, logFile = warning_logfile)
       
@@ -88,14 +89,15 @@
       
       suppressWarnings({
         
-        liana_wrap(testdata,
-                   method   = methods_vector,
-                   resource = c('OmniPath'),
-                   call_natmi.params = 
-                     list(output_dir = natmi_output,
-                          expr_file = str_glue(natmi_output, "_em.csv"),
-                          expr_file = str_glue(natmi_output, "_metadata.csv")),
-                   ...)
+        liana_results <-
+          liana_wrap(testdata,
+                     method   = methods_vector,
+                     resource = c('OmniPath'),
+                     call_natmi.params = 
+                       list(output_dir = natmi_output,
+                            expr_file = str_glue(natmi_output, "_em.csv"),
+                            meta_file = str_glue(natmi_output, "_metadata.csv")),
+                     ...)
         
       })
       
