@@ -32,6 +32,9 @@
 #' testdata (choose "generic") or with the most variable features (choose 
 #' "variable")? As a string.
 #' 
+#' @param baseline_liana What were the baseline results for liana without
+#' dilution? As a named list in the res_liana_with_warnings output format.
+#' 
 #' @param preserve_topology When diluting, two methods are implemented.
 #' random_Dilute makes only a small effort to preserve the topology of the rows
 #' that are diluted from resource, preserve_Dilute makes a far greater effort.
@@ -121,6 +124,7 @@ resource_Robustness <- function(testdata,
                                 number_ranks,
                                 master_seed,
                                 bundled_outputs,
+                                baseline_liana,
                                 
                                 methods_vector,
                                 cellchat_nperms,
