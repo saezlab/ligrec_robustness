@@ -314,8 +314,6 @@ wrap_resource_Iterator <-
     
   }  
   
-  
-  
   #----------------------------------------------------------------------------#
   # 1.2 Generate base line LIANA Results --------------------------------------- 
   {
@@ -356,6 +354,7 @@ wrap_resource_Iterator <-
   #----------------------------------------------------------------------------#
   # 1.3 Iterate resource_Robustness() ------------------------------------------
   {
+   
     # resource_Robustness is a function that performs a single test of 
     # robustness by comparing unmodified LIANA predictions with ones run on 
     # diluted OP resources. Since there is randomness to resource dilution, we 
@@ -366,23 +365,21 @@ wrap_resource_Iterator <-
     # master_seed.
     # To modify the defaults of the wrapper, go to Iterator_Params.R
     collated_robustness_results <- lapply(master_seed_list,
-                                          wrap_resource_Robustness,
+                                          resource_Robustness,
                                           
                                           testdata          = testdata,
+                                          baseline_liana    = baseline_liana,
                                           feature_type      = feature_type,
                                           preserve_topology = preserve_topology, 
                                           dilution_props    = dilution_props,
                                           number_ranks      = number_ranks,
+                                          bundled_outputs   = bundled_outputs,
+                                          
                                           methods_vector    = methods_vector,
-                                          
-                                          bundled_outputs = bundled_outputs,
                                           cellchat_nperms = cellchat_nperms, 
-                                          
-                                          sink_output     = sink_output,     
                                           liana_warnings  = liana_warnings,
-                                          trial_run       = trial_run,
-                                          time_of_run     = time_of_run,
-                                          testdata_type   = testdata_type)
+                                          
+                                          warning_logfile   = warning_logfile)
     
     # We don't need the testdata after this point.
     rm(testdata)
