@@ -1,58 +1,4 @@
 #------------------------------------------------------------------------------#
-# 0. Introduction and Goals ----------------------------------------------------
-{
-  # Welcome! This is the Run_Iterator.R script.
-  
-  # This script runs a wrapper function that analyses the robustness of 
-  # predictions made by SC transcriptomic CCI inference methods in relation to
-  # resource change. If you want to understand the wrapper, go to 
-  # RD_Robustness_Iterator.R, where it is defined. In short, it analyses 
-  # robustness in the the following steps:
-  
-  # 1. Run every Cell-Cell-Interaction (CCI) prediction method in LIANA++ while
-  #    using OmniPath (OP) and a user specified test data.
-  
-  # 2. Determine the highest ranked CCI's for each method
-  #    -> these are the top ranks in the generic scenario ("0% dilution")
-  
-  # 3. Modify ("dilute") OP by replacing a proportion of its interactions with
-  #    false interactions. These following rules apply for the dilution:
-  
-  #   -> Interactions that were top-ranked by any method cannot be replaced
-  #   -> New interactions are created from genes found in the test data, and
-  #      only replace interactions relevant to the test data
-  #   -> All new interactions are unique, the diluted resource has no duplicates
-  #   -> The diluted interactions don't include any genes that are communication
-  #      partner to themselves.
-  #   -> Depending on the the selected parameters, it can also be arranged that
-  #      the topology of the resource is semi-preserved.
-  
-  #    In general, this portion has lots of adjustable arguments. What quality
-  #    of genes should dilution occur with? Should the output be logged? Etc.
-  
-  # 4. Once we have OP diluted to various percentages, for example 10 %, 40 %
-  #    and 90 %, we rerun all the LIANA++ methods for each proportion of
-  #    dilution.
-  
-  # 5. We determine the top-ranked interactions for these dilution stages, and
-  #    then compare the overlap between the new predictions and the old 0 %
-  #    prediction. We also determine the rate of diluted interactions in the
-  #    top_ranks, this is usually equal to 1 - the overlap.
-  
-  # 6. Since dilution has elements of randomness, we repeat the above process
-  #    a few times so we can collate information from multiple samples. 1-5 are
-  #    all handled by resource_Robustness(), a function we iterate here and that
-  #    can be found in RD_Robustness_Evaluator.R.
-  
-  # 7. We plot the overlap over the dilution proportion for each method,
-  #    combining all the iterations into one box plot. Then we save the plots
-  #    and all the results to automatically generated, descriptive file names.
-  
-}
-
-
-
-#------------------------------------------------------------------------------#
 # 1. Setup ---------------------------------------------------------------------
 {
   # In this segment, we set up all the required infrastructure to run the 
@@ -121,5 +67,8 @@ testdata      <- extract_Testdata(testdata_type = testdata_type)
 # We run the wrapper with default settings and twice the standard permutations
 robustness_default <- 
   wrap_resource_Iterator(testdata      = testdata,
-                         testdata_type = testdata_type)
+                         testdata_type = testdata_type,
+                         preserve_topology = TRUE,
+                         number_seeds = 2,
+                         dilution_props = c(0.2, 0.4))
 
