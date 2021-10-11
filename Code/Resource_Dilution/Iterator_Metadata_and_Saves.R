@@ -113,9 +113,6 @@
     }
     
     
-    
-    
-    
     # return the metadata.
     return(metadata)
     
