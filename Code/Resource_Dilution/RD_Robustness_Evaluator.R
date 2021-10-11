@@ -198,16 +198,6 @@ print_Title(str_glue("Iteration ",
   # Generate Undiluted liana results by running wrapper function
   # Omnipath x the methods vector, on the selected data
   
-  # NATMI results are contaminated with results from earlier runs if you
-  # don't specify a special output folder for the results to go in
-  # Since this can also happen with inputs we actually use the 
-  # .delete_input_output to further minimize folder confusion.
-  natmi_output <-  Sys.time() %>%
-    as.character()       %>%
-    gsub(':', '-', .)    %>% 
-    gsub(' ', '_', .)    %>%
-    str_glue('Test_', .)
-    
 
   
   # The if statements give the user control over how warnings are handled
@@ -221,14 +211,14 @@ print_Title(str_glue("Iteration ",
                  cellchat.params   = list(nboot = cellchat_nperms, 
                                           expr_prop = 0.1,
                                           thresh = 1),
-                 call_natmi.params = list(output_dir = natmi_output,
-                                          .delete_input_output = TRUE))
+                 call_natmi.params = unique_natmi_filepaths())
     
     
   } else if (liana_warnings == "divert") {
     
     divert_Warnings(
       {    
+        
         liana_results_OP_0 <- 
           liana_wrap(testdata, 
                      method = methods_vector, 
@@ -237,8 +227,7 @@ print_Title(str_glue("Iteration ",
                      cellchat.params   = list(nboot = cellchat_nperms, 
                                               expr_prop = 0.1,
                                               thresh = 1),
-                     call_natmi.params = list(output_dir = natmi_output,
-                                              .delete_input_output = TRUE))
+                     call_natmi.params = unique_natmi_filepaths())
         
       }, logFile = warning_logfile)
     
@@ -246,6 +235,7 @@ print_Title(str_glue("Iteration ",
     
     suppressWarnings(
       {    
+        
         liana_results_OP_0 <- 
           liana_wrap(testdata, 
                      method = methods_vector, 
@@ -254,8 +244,7 @@ print_Title(str_glue("Iteration ",
                      cellchat.params   = list(nboot = cellchat_nperms, 
                                               expr_prop = 0.1,
                                               thresh = 1),
-                     call_natmi.params = list(output_dir = natmi_output,
-                                              .delete_input_output = TRUE))
+                     call_natmi.params = unique_natmi_filepaths())
         
       })
     
@@ -283,8 +272,6 @@ print_Title(str_glue("Iteration ",
                                            "RD_base_LIANA_ERROR.RData"))
   
   
-  # Remove superfluous variables
-  rm(natmi_output)
   
   } # end of subpoint
 
@@ -505,19 +492,7 @@ print_Title(str_glue("Iteration ",
   runtime[["Resource Dilution"]] <- Sys.time()
   
   
-  # NATMI results are contaminated with results from earlier runs if you
-  # don't specify a special output folder for the results to go in
-  # Since this can also happen with inputs we actually use the 
-  # .delete_input_output to further minimize folder confusion.
   
-  # lapply liana wrap once per method across all the diluted resources
-  natmi_output <-  Sys.time() %>%
-    as.character()       %>%
-    gsub(':', '-', .)    %>% 
-    gsub(' ', '_', .)    %>%
-    str_glue('Test_', .)
-  
-
   
   if (liana_warnings == TRUE) {
     
@@ -533,8 +508,7 @@ print_Title(str_glue("Iteration ",
                  cellchat.params   = list(nboot     = cellchat_nperms, 
                                           expr_prop = 0.1,
                                           thresh    = 1),
-                 call_natmi.params = list(output_dir = natmi_output,
-                                          .delete_input_output = TRUE))
+                 call_natmi.params = unique_natmi_filepaths())
       
       
       runtime[[str_glue(str_to_title(method), " rerun")]] <- Sys.time()
@@ -558,8 +532,8 @@ print_Title(str_glue("Iteration ",
                    cellchat.params   = list(nboot     = cellchat_nperms, 
                                             expr_prop = 0.1,
                                             thresh    = 1),
-                   call_natmi.params = list(output_dir = natmi_output,
-                                            .delete_input_output = TRUE))
+                   call_natmi.params = unique_natmi_filepaths())
+          
         
         }, logFile = warning_logfile)
       
@@ -586,8 +560,7 @@ print_Title(str_glue("Iteration ",
                    cellchat.params   = list(nboot     = cellchat_nperms, 
                                             expr_prop = 0.1,
                                             thresh    = 1),
-                   call_natmi.params = list(output_dir = natmi_output,
-                                            .delete_input_output = TRUE))
+                   call_natmi.params = unique_natmi_filepaths())
         
         })
       
@@ -614,7 +587,7 @@ print_Title(str_glue("Iteration ",
                                          "_contrast_LIANA_ERROR.RData"))
   
   # Remove uneccesary Variables
-  rm(liana_dilutions_OP, method, dilution, natmi_output)
+  rm(liana_dilutions_OP, method, dilution)
     
     
   } # end of subpoint

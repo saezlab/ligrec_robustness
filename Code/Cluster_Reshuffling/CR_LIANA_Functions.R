@@ -40,28 +40,16 @@
                                   warning_logfile,
                                   ...) {
     
-    # NATMI results are contaminated with results from earlier runs if you
-    # don't specify a special output folder for the results to go in. Here we
-    # define an output folder unique to this usage of this function, as well
-    # as creating unique em and metadata names
-    natmi_output <-  Sys.time() %>%
-      as.character()       %>%
-      gsub(':', '-', .)    %>%
-      gsub(' ', '_', .)    %>%
-      str_glue('Test_', .)
-    
     
     # If the user wants warnings, simply run liana_wrap
     if (liana_warnings == TRUE) {
       
+      # NATMI needs custom file paths, check LIANA_Utilities.R for detail.
       liana_results <-
         liana_wrap(testdata,
                    method   = methods_vector,
                    resource = c('OmniPath'),
-                   call_natmi.params = 
-                     list(output_dir = natmi_output,
-                          expr_file = str_glue(natmi_output, "_em.csv"),
-                          meta_file = str_glue(natmi_output, "_metadata.csv")),
+                   call_natmi.params = unique_natmi_filepaths(),
                    ...)
       
       
@@ -71,14 +59,12 @@
       
       divert_Warnings({
         
+        # NATMI needs custom file paths, check LIANA_Utilities.R for detail.
         liana_results <-
           liana_wrap(testdata,
                      method   = methods_vector,
                      resource = c('OmniPath'),
-                     call_natmi.params = 
-                       list(output_dir = natmi_output,
-                            expr_file = str_glue(natmi_output, "_em.csv"),
-                            meta_file = str_glue(natmi_output, "_metadata.csv")),
+                     call_natmi.params = unique_natmi_filepaths(),
                      ...)
         
       }, logFile = warning_logfile)
@@ -89,14 +75,12 @@
       
       suppressWarnings({
         
+        # NATMI needs custom file paths, check LIANA_Utilities.R for detail.
         liana_results <-
           liana_wrap(testdata,
                      method   = methods_vector,
                      resource = c('OmniPath'),
-                     call_natmi.params = 
-                       list(output_dir = natmi_output,
-                            expr_file = str_glue(natmi_output, "_em.csv"),
-                            meta_file = str_glue(natmi_output, "_metadata.csv")),
+                     call_natmi.params = unique_natmi_filepaths(),
                      ...)
         
       })
