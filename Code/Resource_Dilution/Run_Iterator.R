@@ -110,6 +110,12 @@
 #------------------------------------------------------------------------------#
 # 2. Get Resource Dilution Robustness Results ----------------------------------
 
+# First we load testdata from the data folder. 
+# We also give a label (testdata_type, choose "seurat_pbmc" or "liana_test")
+testdata_type <- "liana_test"  
+testdata      <- extract_Testdata(testdata_type = testdata_type)
+
+
 # We run the wrapper with default settings and twice the standard permutations
 robustness_default <- 
   wrap_resource_Iterator(testdata_type = "liana_test")

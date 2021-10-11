@@ -30,17 +30,14 @@
 #' separated by iteration, the collated top_rank_overlap data, two plots 
 #' describing that data and metadata statistics. 
 #' 
+#' @param testdata The data set to run the analysis with.
 #' 
+#' @param testdata_type As a string. A label used to describe the testdata.
 #' 
 #' @param number_seeds As an integer. How many iterations of the robustness 
 #' evaluator should be run? This is the most important value for a 
 #' representative analysis, but also directly influences the length it takes for
-#'  the function to execute.
-#'  
-#' @param testdata_type As a string. Which testdata should be used in the 
-#' analysis? Either "seurat_pbmc" or "liana_test". Seurat_pbmc is the data set 
-#' used in the seurat tutorial, while liana_test is the testdata that comes with 
-#' LIANA++, and is a small subset of seurat_pbmc. 
+#' the function to execute.
 #' 
 #' @param feature_type Should dilution occur with all the genes profiled in
 #' testdata (choose "generic") or with the most variable features (choose 
@@ -67,17 +64,11 @@
 #' the runtime of this function. For example on widnows, natmi and cellchat are
 #' the slowest methods.
 #' 
-#' @param sink_otuput TRUE or FALSE. Should resource_Robustness() save a full 
-#' log of the Console Output to the log folder? Warnings and messages will not 
-#' be visible in the console output if this is enabled, so unless there is a 
-#' reason why such a record is necessary this option is not recommended.
-#' 
-#' @param liana_warnings Either TRUE, FALSE or "divert". A less extreme 
-#' alternative to sinking the output. Should the warnings from LIANA++, which 
-#' are often repetitive and unhelpful, be either suppressed or alternatively 
-#' diverted to the log folder? When these types of warning are left in, they can
-#' often displace valuable warnings. Be careful with this  setting, as 
-#' suppressing warnings is obviously risky.
+#' @param liana_warnings Either TRUE, FALSE or "divert". Should the warnings 
+#' from LIANA++, which are often repetitive and unhelpful, be either suppressed
+#' or alternatively diverted to the log folder? When these types of warning are
+#' left in, they can often displace valuable warnings. Be careful with this 
+#' setting, as suppressing warnings is obviously risky.
 #' 
 #' @param save_results Either TRUE or FALSE. Should the plots and iterator
 #' results objects be saved to the outputs folder with an automatically
@@ -142,44 +133,42 @@
 
 
 wrap_resource_Iterator <- 
-  function(
-    number_seeds      = 10,            
-    testdata_type     = "seurat_pbmc", 
-    feature_type      = "variable",    
-    preserve_topology = FALSE,         
-    dilution_props    = c(seq(0.05, 0.45, 0.05)),
+  function(testdata,
+           testdata_type, 
+           
+           number_seeds      = 10,            
+           feature_type      = "variable",    
+           preserve_topology = FALSE,         
+           dilution_props    = c(seq(0.05, 0.45, 0.05)),
+           
+           top_n = 500,
+           
+           methods_vector = c('call_connectome' ,
+                              'call_natmi'      ,
+                              'call_italk'      ,
+                              'call_sca'        ,
+                              'cellchat'        ,
+                              'squidpy'),
+           
+           liana_warnings  = "divert", 
+           
+           save_results    = TRUE,
+           trial_run       = FALSE,
+           
+           
+           
+           
+           cellchat_nperms = 100,       
+           
+           bundled_outputs = c("top_ranks_analysis", "runtime"),
+           
+           master_outputs = c(
+             "collated_top_ranks_overlap",
+             "plot_box",
+             "plot_line",
+             "collated_robustness_results",
+             "metadata")) {
     
-    top_n = 500,
-    
-    methods_vector = c('call_connectome' ,
-                       'call_natmi'      ,
-                       'call_italk'      ,
-                       'call_sca'        ,
-                       'cellchat'        ,
-                       'squidpy'),
-    
-    sink_output     = FALSE,    
-    liana_warnings  = "divert", 
-    
-    save_results    = TRUE,
-    trial_run       = FALSE,
-    
-    
-    
-    
-    cellchat_nperms = 100,       
-    
-    bundled_outputs = c("top_ranks_analysis", "runtime"),
-    
-    master_outputs = c(
-      "collated_top_ranks_overlap",
-      "plot_box",
-      "plot_line",
-      "collated_robustness_results",
-      "metadata")) {
-    
-    
-  
   
   #----------------------------------------------------------------------------#
   # 1.1 Generate Parameters  --------------------------------------------------- 
@@ -190,10 +179,6 @@ wrap_resource_Iterator <-
     # same.
     number_ranks        <- as.list(rep(top_n, length(methods_vector)))
     names(number_ranks) <- methods_vector
-    
-    
-    # Retrieve either seurat_pbmc or liana_test data
-    testdata <- extract_Testdata(testdata_type = testdata_type)
     
     
     # We format the metadata so that the cluster annotations in metadata and 
