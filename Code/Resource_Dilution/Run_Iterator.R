@@ -112,6 +112,5 @@
 
 # We run the wrapper with default settings and twice the standard permutations
 robustness_default <- 
-  wrap_resource_Iterator(testdata_type = "seurat_pbmc",
-                         preserve_topology = FALSE)
+  wrap_resource_Iterator(testdata_type = "liana_test")
 

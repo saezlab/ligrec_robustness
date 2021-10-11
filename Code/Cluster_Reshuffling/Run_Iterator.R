@@ -120,8 +120,7 @@
   # We run the wrapper function, feeding it the testdata and the testdata label
   robustness_reshuffle_default <- 
     wrap_cluster_Iterator(testdata      = testdata,
-                          testdata_type = testdata_type,
-                          reshuffle_or_subset = "reshuffle")
+                          testdata_type = testdata_type)
   
   
 }
