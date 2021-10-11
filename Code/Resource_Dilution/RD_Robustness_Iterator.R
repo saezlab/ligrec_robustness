@@ -57,14 +57,8 @@
 #' with 10 % of its rows diluted, undiluted vs 20 % diluted, and undiluted vs
 #' 30 % diluted.
 #' 
-#' @param number_ranks A named list. Each item is named after a method and is 
-#' equal to the number of top interactions considered relevant for that method. 
-#' 
-#' For example, item one on the list may be called call_connectome and be equal 
-#' to 500. This would signal to the function that for call_connectome, the top 
-#' 500 CCI's are considered relevant and that these 500 are the ones that are to
-#' be compared between the dilutions. Usually you consider the same number of
-#' top_ranks for each method relevant.
+#' @param top_n The top n predicted CCI's to consider relevant for every
+#' method. As a numeric.
 #' 
 #' @param methods_vector Which methods should the function run? Choose from
 #' "call_connectome", "squidpy", "call_natmi", "call_italk", "call_sca" and
@@ -155,13 +149,7 @@ wrap_resource_Iterator <-
     preserve_topology = FALSE,         
     dilution_props    = c(seq(0.05, 0.45, 0.05)),
     
-    number_ranks = list(
-      "call_connectome" = 500,
-      "call_natmi"      = 500,
-      "call_italk"      = 500,
-      "call_sca"        = 500,
-      "cellchat"        = 500,
-      "squidpy"         = 500),
+    top_n = 500,
     
     methods_vector = c('call_connectome' ,
                        'call_natmi'      ,
@@ -196,6 +184,14 @@ wrap_resource_Iterator <-
   #----------------------------------------------------------------------------#
   # 1.1 Generate Parameters  --------------------------------------------------- 
   {
+    
+    # We generate number_ranks, a list with each methods name and the number of
+    # top ranked CCIs to consider relevant for that method. Top_n is always the
+    # same.
+    number_ranks        <- as.list(rep(top_n, length(methods_vector)))
+    names(number_ranks) <- methods_vector
+    
+    
     # Retrieve either seurat_pbmc or liana_test data
     testdata <- extract_Testdata(testdata_type = testdata_type)
     
