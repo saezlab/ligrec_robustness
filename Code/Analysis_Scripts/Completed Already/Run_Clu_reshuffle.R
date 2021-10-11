@@ -57,9 +57,7 @@
   robustness_reshuffle_default <- 
     wrap_cluster_Iterator(testdata      = testdata,
                           testdata_type = testdata_type,
-                          reshuffle_or_subset = "subset",
-                          number_seeds = 2,
-                          mismatch_props = c(0.2, 0.4))
+                          reshuffle_or_subset = "reshuffle")
   
   
 }

@@ -68,5 +68,6 @@ testdata      <- extract_Testdata(testdata_type = testdata_type)
 robustness_default <- 
   wrap_resource_Iterator(testdata      = testdata,
                          testdata_type = testdata_type,
-                         preserve_topology = FALSE)
+                         preserve_topology = FALSE,
+                         feature_type = "generic")
 

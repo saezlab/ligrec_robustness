@@ -68,7 +68,5 @@ testdata      <- extract_Testdata(testdata_type = testdata_type)
 robustness_default <- 
   wrap_resource_Iterator(testdata      = testdata,
                          testdata_type = testdata_type,
-                         preserve_topology = TRUE,
-                         number_seeds = 2,
-                         dilution_props = c(0.2, 0.4))
+                         preserve_topology = TRUE)
 
