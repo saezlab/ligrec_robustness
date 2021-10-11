@@ -321,10 +321,6 @@ wrap_resource_Iterator <-
     
     # Generate Undiluted liana results by running res_liana_with_warnings() for
     # our baseline conditions.
-    
-    # test stuff
-    print(unique_natmi_filepaths())
-    
     baseline_liana <- 
       res_liana_with_warnings(testdata        = testdata, 
                               methods_vector  = methods_vector, 
@@ -337,15 +333,6 @@ wrap_resource_Iterator <-
                               cellchat.params = list(nboot = cellchat_nperms, 
                                                      expr_prop = 0.1,
                                                      thresh = 1))
-    
-    
-    
-    # test stuff
-    print(baseline_liana)
-    
-    save(baseline_liana, file = str_glue(str_sub(warning_logfile, 1, -5), 
-                                         "RD_base_LIANA_ERROR.RData"))
-    
     
     
   } 

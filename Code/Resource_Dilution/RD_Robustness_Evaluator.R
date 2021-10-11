@@ -372,9 +372,6 @@ print_Title(str_glue("Iteration ",
   runtime[["Resource Dilution"]] <- Sys.time()
   
   
-  # test stuff
-  print(unique_natmi_filepaths())
-  
   # Iterate res_liana_with_warnings over all the diluted resources
   # We assign every argument but external_resource, which is supplied by the
   # lapply.
@@ -403,12 +400,6 @@ print_Title(str_glue("Iteration ",
   
   # Update runtime
   runtime[["Diluted LIANA"]] <- Sys.time()
-  
-  # test stuff 
-  print(liana_results_OP)
-  
-  save(liana_results_OP, file = str_glue(str_sub(warning_logfile, 1, -5),
-                                         "_contrast_LIANA_ERROR.RData"))
   
   # Remove uneccesary Variables
   rm(liana_dilutions_OP)
