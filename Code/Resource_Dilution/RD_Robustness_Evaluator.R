@@ -192,95 +192,12 @@ print_Title(str_glue("Iteration ",
   print_Title(
     str_glue("1. Preparing resource_Dilute() Inputs", "   --  Iteration ", 
              master_seed))
-  
-  # 1.1 Running LIANA wrapper
+
+  # 1.1 Get highest ranked interactions for undiluted conditions 
   {
-  # Generate Undiluted liana results by running wrapper function
-  # Omnipath x the methods vector, on the selected data
-  
-  # test stuff
-  print(unique_natmi_filepaths())
-
-  
-  # The if statements give the user control over how warnings are handled
-  if (liana_warnings == TRUE) {
-    
-    liana_results_OP_0 <- 
-      liana_wrap(testdata, 
-                 method = methods_vector, 
-                 resource = c('OmniPath'), 
-                 expr_prop = 0.1,
-                 cellchat.params   = list(nboot = cellchat_nperms, 
-                                          expr_prop = 0.1,
-                                          thresh = 1),
-                 call_natmi.params = unique_natmi_filepaths())
-    
-    
-  } else if (liana_warnings == "divert") {
-    
-    divert_Warnings(
-      {    
-        
-        liana_results_OP_0 <- 
-          liana_wrap(testdata, 
-                     method = methods_vector, 
-                     resource = c('OmniPath'), 
-                     expr_prop = 0.1,
-                     cellchat.params   = list(nboot = cellchat_nperms, 
-                                              expr_prop = 0.1,
-                                              thresh = 1),
-                     call_natmi.params = unique_natmi_filepaths())
-        
-      }, logFile = warning_logfile)
-    
-  } else if (liana_warnings == FALSE) {
-    
-    suppressWarnings(
-      {    
-        
-        liana_results_OP_0 <- 
-          liana_wrap(testdata, 
-                     method = methods_vector, 
-                     resource = c('OmniPath'), 
-                     expr_prop = 0.1,
-                     cellchat.params   = list(nboot = cellchat_nperms, 
-                                              expr_prop = 0.1,
-                                              thresh = 1),
-                     call_natmi.params = unique_natmi_filepaths())
-        
-      })
-    
-  }
-
-  # If only one method is fed to liana_wrap(), the output data structure is
-  # different. So here we convert it to the same data structure that would 
-  # exist if multiple methods had been called, so the code below works
-  # properly for single method runs too.
-  if (length(methods_vector) == 1) {
-    
-    liana_results_OP_0 <- list(liana_results_OP_0)
-    
-    names(liana_results_OP_0) <- methods_vector
-  
-  }
-  
-  
-  
-  
-  # Update runtime
-  runtime[["First Liana"]] <- Sys.time()
-  
-  print(liana_results_OP_0)
-  
-  save(liana_results_OP_0, file = str_glue(str_sub(warning_logfile, 1, -5), 
-                                           "RD_base_LIANA_ERROR.RData"))
-  
-  
-  
-  } # end of subpoint
-
-  # 1.2 Get highest ranked interactions for undiluted conditions 
-  {
+  # baseline _liana is a good name for an argument but here we refer to it
+  # differently.
+  liana_results_OP_0 <- baseline_liana
     
     
   # Apply get_top_n_ranks for each method's results on OP_0 (i.e. undiluted)
@@ -311,21 +228,11 @@ print_Title(str_glue("Iteration ",
     
   }
     
-    rm(method)
+  rm(method)
   
-  # an interesting note here is that NATMI produces far more unique LR Pairs in 
-  # its top rankings than other methods. Cellchat identifies less for example, 
-  # filling its top 1000 (or n) by repeating those interactions between many
-  # combinations of source cell clusters and target cell clusters.
-  # NATMI repeats its interactions less, providing more unique LR pairs than
-  # cellchat. In exchange it only finds these interacting pairs more rarely 
-  # between cell clusters.
-  
-  
-    
   } # end of subpoint
   
-  # 1.3 Format OmniPath and filter non-hits
+  # 1.2 Format OmniPath and filter non-hits
   {
     
   

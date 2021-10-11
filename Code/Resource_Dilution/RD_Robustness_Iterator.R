@@ -317,7 +317,44 @@ wrap_resource_Iterator <-
   
   
   #----------------------------------------------------------------------------#
-  # 1.2 Iterate resource_Robustness() ------------------------------------------
+  # 1.2 Generate base line LIANA Results --------------------------------------- 
+  {
+    print_Title("0. Calculating Undiluted Baseline LIANA Results")
+    
+    # Generate Undiluted liana results by running res_liana_with_warnings() for
+    # our baseline conditions.
+    
+    # test stuff
+    print(unique_natmi_filepaths())
+    
+    baseline_liana <- 
+      res_liana_with_warnings(testdata        = testdata, 
+                              methods_vector  = methods_vector, 
+                              resource        = c('OmniPath'), 
+                              
+                              liana_warnings  = liana_warnings, 
+                              warning_logfile = warning_logfile, 
+                              
+                              expr_prop       = 0.1,
+                              cellchat.params = list(nboot = cellchat_nperms, 
+                                                     expr_prop = 0.1,
+                                                     thresh = 1))
+    
+    
+    
+    # test stuff
+    print(baseline_liana)
+    
+    save(baseline_liana, file = str_glue(str_sub(warning_logfile, 1, -5), 
+                                         "RD_base_LIANA_ERROR.RData"))
+    
+    
+    
+  } 
+    
+    
+  #----------------------------------------------------------------------------#
+  # 1.3 Iterate resource_Robustness() ------------------------------------------
   {
     # resource_Robustness is a function that performs a single test of 
     # robustness by comparing unmodified LIANA predictions with ones run on 
@@ -356,7 +393,7 @@ wrap_resource_Iterator <-
   
   
   #----------------------------------------------------------------------------#
-  # 1.3 Reformatting Results ---------------------------------------------------
+  # 1.4 Reformatting Results ---------------------------------------------------
   {
     # In this segment we extract the data from the results object, which is 
     # poorly formatted by default, and put it into a more appropriate hierarchy.
@@ -376,7 +413,7 @@ wrap_resource_Iterator <-
   
   
   #----------------------------------------------------------------------------#
-  # 1.4 Plotting of Collated Results -------------------------------------------
+  # 1.5 Plotting of Collated Results -------------------------------------------
   {
     # Here we visualize the overlap between top ranked CCI predictions as they
     # change with the dilution of OmniPath. once as a boxplot, and once as a
@@ -449,7 +486,7 @@ wrap_resource_Iterator <-
   
   
   #----------------------------------------------------------------------------#
-  # 1.5 Capturing Script Metadata ----------------------------------------------
+  # 1.6 Capturing Script Metadata ----------------------------------------------
   {
     # In this segment, we summarize the metadata of the resource_Robustness run
     # and the iterator in general. When troubleshooting or reproducing results,
@@ -504,7 +541,7 @@ wrap_resource_Iterator <-
   
   
   #----------------------------------------------------------------------------#
-  # 1.6 Packaging Results to return them ---------------------------------------
+  # 1.7 Packaging Results to return them ---------------------------------------
   {
     #In order to save and return our results we package it in a succinct object
     iterator_results <- 
@@ -527,7 +564,7 @@ wrap_resource_Iterator <-
   
   
   #----------------------------------------------------------------------------#
-  # 1.7 Saving Results ---------------------------------------------------------
+  # 1.8 Saving Results ---------------------------------------------------------
   {
     # In this segment we save the plots and environment to the outputs folder,
     # if it's specified in by the user.
