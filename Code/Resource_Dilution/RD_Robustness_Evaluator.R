@@ -198,6 +198,8 @@ print_Title(str_glue("Iteration ",
   # Generate Undiluted liana results by running wrapper function
   # Omnipath x the methods vector, on the selected data
   
+  # test stuff
+  print(unique_natmi_filepaths())
 
   
   # The if statements give the user control over how warnings are handled
@@ -268,6 +270,8 @@ print_Title(str_glue("Iteration ",
   # Update runtime
   runtime[["First Liana"]] <- Sys.time()
   
+  print(liana_results_OP_0)
+  
   save(liana_results_OP_0, file = str_glue(str_sub(warning_logfile, 1, -5), 
                                            "RD_base_LIANA_ERROR.RData"))
   
@@ -332,6 +336,8 @@ print_Title(str_glue("Iteration ",
   OmniPath_0 <- select_resource(c('OmniPath'))[["OmniPath"]] %>%
     select(source_genesymbol,
            target_genesymbol,
+           source, 
+           target,
            is_directed,
            is_stimulation,
            consensus_stimulation,
@@ -492,6 +498,8 @@ print_Title(str_glue("Iteration ",
   runtime[["Resource Dilution"]] <- Sys.time()
   
   
+  # test stuff
+  print(unique_natmi_filepaths())
   
   
   if (liana_warnings == TRUE) {
@@ -581,7 +589,7 @@ print_Title(str_glue("Iteration ",
       }
     }
     
-  
+  print(liana_results_OP)
   
   save(liana_results_OP, file = str_glue(str_sub(warning_logfile, 1, -5),
                                          "_contrast_LIANA_ERROR.RData"))
