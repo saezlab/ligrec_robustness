@@ -83,8 +83,10 @@
   # The script below defines resource_Robustness, a function for testing 
   # resource robustness
   source("Code/Resource_Dilution/RD_Robustness_Evaluator.R")
-  # Define functions that help the evaluator run.
+  # Define functions that help the evaluator analyse top-ranked CCIs
   source("Code/Resource_Dilution/Evaluator_Top_Ranks_Functions.R")
+  # Define functions that help the evaluator run LIANA
+  source("Code/Resource_Dilution/Evaluator_LIANA_Functions.R")
   
   
   # Define the dilutor function, a function that dilutes resources.
