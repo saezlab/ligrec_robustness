@@ -217,6 +217,101 @@ wrap_resource_Iterator <-
       str_sub(1 , nchar(.) - 3) # the code never runs in under a minute, so the 
                                 # number of seconds isn't valuable information.
     
+    ## Process Dilution Proportions List
+    {
+      # By naming each dilution proportion we can use this to label data 
+      # easily. By formatting proportions as a list we can lapply over them 
+      # conveniently
+      
+      # Convert dilution.props to a list and name it, creating a named list
+      dilution_props <- as.list(dilution_props)
+      
+      names(dilution_props) <- map(dilution_props, function(prop) {
+        
+        # Name every dilution proportion
+        str_glue("OmniPath_", as.character(prop * 100))
+        
+      }) 
+      }
+    
+    ## Define File Paths for Logs
+    {
+      # If they are required, we auto generate log filepaths here. The 
+      # filepaths have the current time imminently before the lapply in them. 
+      # Each run of the iterator should be assigned to a unique log this way 
+      # that has all iterations in it.
+      
+      # Initiate empty filepath
+      warning_logfile <- ""
+      
+      
+      # If necessary, create a log name, store it in script params, then 
+      # remove the leftover clutter
+      if (liana_warnings == "divert") {
+        # The file name includes many script_params in it to be informative and
+        # unique. RD stands for Resource Dilution.
+        warning_logfile <-
+          auto_file_Name(
+            prefix = "Outputs/Resource_Dilution/Logs/LIANA_warnings_RD_",
+            suffix =  ".txt",
+            
+            preserve_topology  = preserve_topology,
+            testdata_type      = testdata_type,
+            feature_type       = feature_type,
+            number_ranks       = number_ranks,
+            time_of_run        = time_of_run,
+            trial_run          = trial_run)
+        
+        
+      }
+    }
+    
+    ## Define File Paths for plots and data
+    {
+      if (save_results == TRUE) {
+        
+        # Generate the filepaths to save the data under. 
+        # RD stands for Resource Dilution.
+        box_plot_png_name <-
+          auto_file_Name(
+            prefix = "Boxplot_RD_",
+            suffix = ".png",
+            
+            preserve_topology  = preserve_topology,
+            testdata_type      = testdata_type,
+            feature_type       = feature_type,
+            number_ranks       = number_ranks,
+            time_of_run        = time_of_run,
+            trial_run          = trial_run)
+        
+        line_plot_png_name <-
+          auto_file_Name(
+            prefix = "Lineplot_RD_",
+            suffix = ".png",
+            
+            preserve_topology  = preserve_topology,
+            testdata_type      = testdata_type,
+            feature_type       = feature_type,
+            number_ranks       = number_ranks,
+            time_of_run        = time_of_run,
+            trial_run          = trial_run)
+        
+        iterator_results_save_path <- 
+          auto_file_Name(
+            prefix = "Outputs/Resource_Dilution/Iterator_Results_RD_",
+            suffix = ".RData",
+            
+            preserve_topology  = preserve_topology,
+            testdata_type      = testdata_type,
+            feature_type       = feature_type,
+            number_ranks       = number_ranks,
+            time_of_run        = time_of_run,
+            trial_run          = trial_run)
+        
+      }
+    }
+    
+    
   }  
   
   
@@ -374,28 +469,30 @@ wrap_resource_Iterator <-
     
     # We then summarise the above information and more metadata into a single 
     # object
-    metadata <- summarise_Metadata(number_seeds      = number_seeds,
-                                   master_seed_list  = master_seed_list,
-                                   testdata_type     = testdata_type,
-                                   feature_type      = feature_type, 
-                                   preserve_topology = preserve_topology,    
-                                   dilution_props    = dilution_props,
-                                   number_ranks      = number_ranks ,
-                                   methods_vector    = methods_vector,
-                                   
-                                   sink_output       = sink_output,    
-                                   liana_warnings    = liana_warnings,
-                                   
-                                   cellchat_nperms   = cellchat_nperms,       
-                                   bundled_outputs   = bundled_outputs,
-                                   master_outputs    = master_outputs,
-                                   
-                                   
-                                   save_results = save_results,
-                                   trial_run    = trial_run,
-                                   
-                                   runtime      = runtime,
-                                   time_of_run  = time_of_run)
+    metadata <- 
+      summarise_Metadata(
+        number_seeds      = number_seeds,
+        testdata_type     = testdata_type,
+        feature_type      = feature_type,
+        preserve_topology = preserve_topology,
+        dilution_props    = dilution_props,
+        top_n             = top_n,
+        methods_vector    = methods_vector,
+        
+        liana_warnings = liana_warnings,
+        save_results   = save_results,
+        trial_run      = trial_run,
+        runtime        = runtime,
+        time_of_run    = time_of_run,
+        
+        warning_logfile    = warning_logfile,
+        box_plot_png_name  = box_plot_png_name,
+        line_plot_png_name = line_plot_png_name,
+        iterator_results_save_path = iterator_results_save_path,
+        
+        cellchat_nperms = cellchat_nperms,
+        bundled_outputs = bundled_outputs,
+        master_outputs  = master_outputs)
     
     # Now that these objects are stored in the metadata object, we can remove
     # this clutter from the environment.
@@ -440,12 +537,9 @@ wrap_resource_Iterator <-
                    plot_line = plot_line, 
                    iterator_results = iterator_results,
                    
-                   preserve_topology  = preserve_topology,
-                   testdata_type      = testdata_type,
-                   feature_type       = feature_type,
-                   number_ranks       = number_ranks,
-                   time_of_run        = time_of_run,
-                   trial_run          = trial_run)
+                   box_plot_png_name  = box_plot_png_name,
+                   line_plot_png_name = line_plot_png_name,
+                   iterator_results_save_path = iterator_results_save_path)
       
     }
     

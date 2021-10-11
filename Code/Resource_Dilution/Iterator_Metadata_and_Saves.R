@@ -22,15 +22,6 @@
   #' @description This function summarizes all the iterator parameters, file 
   #' names that were used, runtime data, and more into one metadata object.
   #' 
-  #' @inheritParams wrap_resource_Iterator
-  #' 
-  #' @param master_seed_list The list of seeds that resource_Robustness() 
-  #' iterated over.
-  #' 
-  #' @param runtime The tibble runtime output of calulate_Runtime().
-  #' 
-  #' @param time_of_run The char tag of the time the script started being 
-  #' executed.
   #' 
   #' @return Returns a compiled list of metadata, parameters and save file 
   #' locations (if files were saved to the computer).
@@ -42,23 +33,25 @@
                                  feature_type, 
                                  preserve_topology,    
                                  dilution_props,
-                                 number_ranks,
+                                 top_n,
                                  methods_vector,
                                  
-                                 sink_output,    
                                  liana_warnings,
                                  
                                  cellchat_nperms,       
                                  bundled_outputs,
                                  master_outputs,
                                  
-                                 
                                  save_results,
                                  trial_run,
                                  
-                                 master_seed_list,
                                  runtime,
-                                 time_of_run) {
+                                 time_of_run,
+                                 
+                                 warning_logfile,
+                                 box_plot_png_name,
+                                 line_plot_png_name,
+                                 iterator_results_save_path) {
     
     # Summarize the metadata parameters
     meta_params <- list(
@@ -70,15 +63,13 @@
     # summarise all the parameters from wrap_resource_Iterator()
     dilution_params <- list(
       "number_seeds"      = number_seeds,
-      "master_seed_list"  = master_seed_list,
       "testdata_type"     = testdata_type,
       "feature_type"      = feature_type, 
       "preserve_topology" = preserve_topology,    
       "dilution_props"    = dilution_props,
-      "number_ranks"      = number_ranks ,
+      "top_n"             = top_n,
       "methods_vector"    = methods_vector,
       
-      "sink_output"       = sink_output,    
       "liana_warnings"    = liana_warnings,
       
       "cellchat_nperms"   = cellchat_nperms,       
@@ -101,80 +92,23 @@
       # Generate the filepaths data was saved under. 
       # RD stands for Resource Dilution.
       metadata[["box_plot_png_name"]] <-
-        auto_file_Name(
-          prefix = "Boxplot_RD_",
-          suffix = ".png",
-          
-          preserve_topology  = preserve_topology,
-          testdata_type      = testdata_type,
-          feature_type       = feature_type,
-          number_ranks       = number_ranks,
-          time_of_run        = time_of_run,
-          trial_run          = trial_run)
+        box_plot_png_name
       
       metadata[["line_plot_png_name"]] <-
-        auto_file_Name(
-          prefix = "Lineplot_RD_",
-          suffix = ".png",
-          
-          preserve_topology  = preserve_topology,
-          testdata_type      = testdata_type,
-          feature_type       = feature_type,
-          number_ranks       = number_ranks,
-          time_of_run        = time_of_run,
-          trial_run          = trial_run)
+        line_plot_png_name
       
       metadata[["iterator_results_save_path"]] <-
-        auto_file_Name(
-          prefix = "Outputs/Resource_Dilution/Iterator_Results_RD_",
-          suffix = ".RData",
-          
-          preserve_topology  = preserve_topology,
-          testdata_type      = testdata_type,
-          feature_type       = feature_type,
-          number_ranks       = number_ranks,
-          time_of_run        = time_of_run,
-          trial_run          = trial_run)
+        iterator_results_save_path
     }
     
     
-    # If the resource_Robustness() output was sunk and logged, append the 
-    # file name of the log to the metadata.
-    if (sink_output == TRUE) {
-      # The file name includes many script_params in it to be informative and
-      # unique. RD stands for Resource Dilution.
-      metadata[["sink_logfile"]] <-
-        auto_file_Name(
-          prefix = "Outputs/Resource_Dilution/Logs/Complete_Log_RD_",
-          suffix =  ".txt",
-          
-          preserve_topology  = preserve_topology,
-          testdata_type      = testdata_type,
-          feature_type       = feature_type,
-          number_ranks       = number_ranks,
-          time_of_run        = time_of_run,
-          trial_run          = trial_run)
-      
-      
-    }
     
     # If a warnings log was created for resource_Robustness(), append the file
     # name of the log to the metadata.
     if (liana_warnings == "divert") {
-      # The file name includes many script_params in it to be informative and
-      # unique. RD stands for Resource Dilution.
-      metadata[["warning_logfile"]] <-
-        auto_file_Name(
-          prefix = "Outputs/Resource_Dilution/Logs/LIANA_warnings_RD_",
-          suffix =  ".txt",
-          
-          preserve_topology  = preserve_topology,
-          testdata_type      = testdata_type,
-          feature_type       = feature_type,
-          number_ranks       = number_ranks,
-          time_of_run        = time_of_run,
-          trial_run          = trial_run)
       
+      metadata[["warning_logfile"]] <-
+        warning_logfile
       
     }
     
@@ -205,76 +139,18 @@
   #' @param iterator_results Takes the list of results from the iterator, saves 
   #' them to a descriptive file name in the outputs folder.
   #' 
-  #' @param trial_run The same parameter from wrap_resource_Iterator(). Used
-  #' in the file name to mark the file.
-  #'
-  #' @param preserve_topology The same parameter from 
-  #' wrap_resource_Iterator(). Used in the file name to mark the file.
-  #' 
-  #' @param testdata_type The same parameter from wrap_resource_Iterator(). 
-  #' Used in the file name to mark the file.
-  #' 
-  #' @param feature_type The same parameter from wrap_resource_Iterator(). 
-  #' Used in the file name to mark the file.
-  #' 
-  #' @param number_ranks The same parameter from wrap_resource_Iterator(). 
-  #' Used in the file name to mark the file.
-  #' 
-  #' @param time_of_run The char tag of the time the script started being 
-  #' executed.
-
-  
+  #' @param box_plot_png_name Name for the boxplot, ending in ".png".
+  #' @param line_plot_png_name Name for the lineplot, ending in ".png".
+  #' @param iterator_results_save_path Filepath to save the iterator results 
+  #' under.
   
   save_Results <- function(plot_box,
                            plot_line,
                            iterator_results,
                            
-                           trial_run,
-                           preserve_topology,
-                           testdata_type,
-                           feature_type,
-                           number_ranks,
-                           time_of_run) {
-    
-    # Generate the filepaths to save the data under. 
-    # RD stands for Resource Dilution.
-    box_plot_png_name <-
-      auto_file_Name(
-        prefix = "Boxplot_RD_",
-        suffix = ".png",
-        
-        preserve_topology  = preserve_topology,
-        testdata_type      = testdata_type,
-        feature_type       = feature_type,
-        number_ranks       = number_ranks,
-        time_of_run        = time_of_run,
-        trial_run          = trial_run)
-    
-    line_plot_png_name <-
-      auto_file_Name(
-        prefix = "Lineplot_RD_",
-        suffix = ".png",
-        
-        preserve_topology  = preserve_topology,
-        testdata_type      = testdata_type,
-        feature_type       = feature_type,
-        number_ranks       = number_ranks,
-        time_of_run        = time_of_run,
-        trial_run          = trial_run)
-    
-    iterator_results_save_path <- 
-      auto_file_Name(
-      prefix = "Outputs/Resource_Dilution/Iterator_Results_RD_",
-      suffix = ".RData",
-      
-      preserve_topology  = preserve_topology,
-      testdata_type      = testdata_type,
-      feature_type       = feature_type,
-      number_ranks       = number_ranks,
-      time_of_run        = time_of_run,
-      trial_run          = trial_run)
-    
-    
+                           box_plot_png_name,
+                           line_plot_png_name,
+                           iterator_results_save_path) {
     
     
     # Save both plots
