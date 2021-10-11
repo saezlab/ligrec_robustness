@@ -402,111 +402,49 @@ print_Title(str_glue("Iteration ",
   
   # 3.1 Reapply individual methods with diluted resources
   {
-  
-  # Initialize a list for liana results using diluted resources
-  liana_dilutions_OP <- list()
-  
   runtime[["Resource Dilution"]] <- Sys.time()
   
   
   # test stuff
   print(unique_natmi_filepaths())
   
+  # Iterate res_liana_with_warnings over all the diluted resources
+  # We assign every argument but external_resource, which is supplied by the
+  # lapply.
+  liana_dilutions_OP <- 
+    lapply(resources_OP[-1],
+           res_liana_with_warnings,
+           
+           testdata        = testdata, 
+           methods_vector  = methods_vector, 
+           resource        = c('custom'), 
+           
+           liana_warnings  = liana_warnings, 
+           warning_logfile = warning_logfile, 
+           
+           expr_prop       = 0.1,
+           cellchat.params = list(nboot = cellchat_nperms, 
+                                  expr_prop = 0.1,
+                                  thresh = 1))
   
-  if (liana_warnings == TRUE) {
-    
-    for (method in methods_vector) {
-      
-        liana_dilutions_OP[[method]] <-
-          lapply(resources_OP[-1], 
-                 liana_wrap,
-                 seurat_object     = testdata,
-                 method            = method,
-                 resource          = c('custom'),
-                 expr_prop         = 0.1,
-                 cellchat.params   = list(nboot     = cellchat_nperms, 
-                                          expr_prop = 0.1,
-                                          thresh    = 1),
-                 call_natmi.params = unique_natmi_filepaths())
-      
-      
-      runtime[[str_glue(str_to_title(method), " rerun")]] <- Sys.time()
-      
-    }
-    
-  } else if (liana_warnings == "divert") {
-    
-    for (method in methods_vector) {
-      
-      divert_Warnings(
-        {    
-          
-          liana_dilutions_OP[[method]] <-
-            lapply(resources_OP[-1], 
-                   liana_wrap,
-                   seurat_object     = testdata,
-                   method            = method,
-                   resource          = c('custom'),
-                   expr_prop         = 0.1,
-                   cellchat.params   = list(nboot     = cellchat_nperms, 
-                                            expr_prop = 0.1,
-                                            thresh    = 1),
-                   call_natmi.params = unique_natmi_filepaths())
-          
-        
-        }, logFile = warning_logfile)
-      
-      
-      
-      runtime[[str_glue(str_to_title(method), " rerun")]] <- Sys.time()
-      
-    }
-    
-  } else if (liana_warnings == FALSE) {
-    
-    for (method in methods_vector) {
-      
-      suppressWarnings(
-        {    
-          
-          liana_dilutions_OP[[method]] <-
-            lapply(resources_OP[-1], 
-                   liana_wrap,
-                   seurat_object     = testdata,
-                   method            = method,
-                   resource          = c('custom'),
-                   expr_prop         = 0.1,
-                   cellchat.params   = list(nboot     = cellchat_nperms, 
-                                            expr_prop = 0.1,
-                                            thresh    = 1),
-                   call_natmi.params = unique_natmi_filepaths())
-        
-        })
-      
-      runtime[[str_glue(str_to_title(method), " rerun")]] <- Sys.time()
-      
-    }
-  }
-    
-    
-    
-    # Merge with undiluted results, could use mapply but its less consistent
-    for (method in methods_vector) {
-      for (dilution in names(dilution_props)) {
-        
-        liana_results_OP[[method]][[dilution]] <- 
-          liana_dilutions_OP[[method]][[dilution]]
-        
-      }
-    }
-    
+  # Merge with undiluted results
+  liana_results_OP <- 
+    liana_results_OP %>%
+    transpose() %>%
+    append(., liana_dilutions_OP) %>%
+    transpose() 
+  
+  # Update runtime
+  runtime[["Diluted LIANA"]] <- Sys.time()
+  
+  # test stuff 
   print(liana_results_OP)
   
   save(liana_results_OP, file = str_glue(str_sub(warning_logfile, 1, -5),
                                          "_contrast_LIANA_ERROR.RData"))
   
   # Remove uneccesary Variables
-  rm(liana_dilutions_OP, method, dilution)
+  rm(liana_dilutions_OP)
     
     
   } # end of subpoint
