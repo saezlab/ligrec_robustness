@@ -93,26 +93,15 @@
 #' 
 #' @param cellchat_nperms Cellchat is one of the slower methods, for test runs
 #' it may be useful to set this parameter to 10 to speed up the analysis.
-#'
-#' @param sink_otuput TRUE or FALSE. Should the function save a full log of the 
-#' Console Output as a log to the log folder? Warnings and messages will not be 
-#' visible in the console output if this is enabled, so unless there is a reason
-#' why such a record is necessary this option is not recommended.
 #' 
-#' @param liana_warnings Either TRUE, FALSE or "divert". A less extreme 
-#' alternative to sinking the output. Should the warnings from LIANA++, which 
-#' are often repetitive and unhelpful, be either suppressed or alternatively 
-#' diverted to the log folder? When these types of warning are left in, they can
-#' often displace valuable warnings. Be careful with this  setting, as 
-#' suppressing warnings is obviously risky.
-#' 
-#' @param sink_logfile Only if sink_output == TRUE. As a char, under what file 
-#' path (including the name of the log) should your sunk output be stored? For 
-#' example, "Outputs/Logs/Complete_Log_xyz.txt" would store the log in the logs
-#' folder of outputs, under the name "Complete_Log_xyz.txt".
+#' @param liana_warnings Either TRUE, FALSE or "divert". Should the warnings 
+#' from LIANA++, which are often repetitive and unhelpful, be either suppressed
+#' or alternatively diverted to the log folder? When these types of warning are
+#' left in, they can often displace valuable warnings. Be careful with this 
+#' setting, as suppressing warnings is obviously risky.
 #'  
-#' @param warning_logfile Only if liana_warnings == "divert". Same idea as 
-#' sink_logfile.
+#' @param warning_logfile Only if liana_warnings == "divert". The filepath
+#' warnings should be saved to.
 #' 
 #' @return Depending on outputs arg, a list with many possible contents is 
 #' returned.
@@ -128,9 +117,7 @@ resource_Robustness <- function(testdata,
                                 
                                 methods_vector,
                                 cellchat_nperms,
-                                sink_output,
                                 liana_warnings,
-                                sink_logfile,
                                 warning_logfile) {
   
 runtime <- list()
@@ -150,27 +137,9 @@ print_Title(str_glue("Iteration ",
 # 0. Preparing Logs ------------------------------------------------------------
 {
   print_Title(
-    str_glue("0. Sinking Outputs", "                      --  Iteration ",
+    str_glue("0. Preparing Logs", "                      --  Iteration ",
              master_seed))
-  # 0.1 Sinking Outputs
-  {
-    
 
-  if(sink_output == TRUE) {
-  
-    connection <- file(sink_logfile, open = "at")
-    sink(connection, append=TRUE, type = "output", split = TRUE)
-    sink(connection, append=TRUE, type="message")
-    
-    
-  } 
-    
-    
-  } # end of subpoint
-  
-  # 0.2 Printing Iteration Header to Warnings Log
-  {
-    
   if(liana_warnings == "divert") {
     
     cat(str_glue("|=======================================",
@@ -181,10 +150,8 @@ print_Title(str_glue("Iteration ",
         file = warning_logfile, 
         append = TRUE)
 
-  } 
-    
-    
-  } # end of subpoint
+
+  }
   
 }
 
@@ -707,22 +674,10 @@ print_Title(str_glue("Iteration ",
     # stop the stopwatch
     runtime[[str_glue("Iteration Epilogue - Seed ", master_seed)]] <- Sys.time()  
     
-    # If the output was sunk the location of the log is brought to the user's 
-    # attention
-    if(sink_output == TRUE) {
-      
-      cat(str_wrap(str_glue("Complete log saved at ~/", 
-                     sink_logfile, "."), width = 60), " \n\n")
-      
-      # Keep the environment tidy
-      rm(sink_logfile)
-      
-    }
     
-      
+    # let the user know where to find the log
     if(liana_warnings == "divert") {
       
-      # let the user know where to find the log
       cat(str_wrap(str_glue("LIANA warnings saved at ~/", 
                             warning_logfile, "."), width = 60), " \n\n")
       
@@ -736,13 +691,6 @@ print_Title(str_glue("Iteration ",
     rm(dilution_props, number_ranks, cellchat_nperms, feature_type, 
        methods_vector, preserve_topology)
     
-    
-    if(sink_output == TRUE) {
-      
-      sink() 
-      sink(type="message")
-      
-    }
   
     
   } # end of subpoint
