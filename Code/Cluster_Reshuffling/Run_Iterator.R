@@ -119,14 +119,18 @@ testdata      <- extract_Testdata(testdata_type = testdata_type)
 # you don't need this tag
 tag <- 12345
 
-# We run the wrapper function, feeding it the testdata and the testdata label
+# We run the wrapper with test settings
 robustness_reshuffle_default <- 
-  wrap_cluster_Iterator(testdata      = testdata,
-                        testdata_type = testdata_type,
-                        NATMI_tag     = tag,
-                        methods_vector = c("call_sca", "call_natmi"),
-                        number_seeds = 2,
-                        mismatch_props = c(0.2, 0.4))
+  wrap_cluster_Iterator(testdata       = testdata,
+                        testdata_type  = testdata_type,
+                        NATMI_tag      = tag,
+                        methods_vector = c("call_sca", 
+                                           "call_natmi",
+                                           "call_connectome"),
+                        number_seeds   = 2,
+                        top_n          = 100,
+                        mismatch_props = c(0.2, 0.4, 0.6),
+                        trial_run      = TRUE)
   
   
 
