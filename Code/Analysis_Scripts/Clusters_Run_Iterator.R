@@ -77,9 +77,7 @@ robustness_reshuffle_default <-
                         
                         reshuffle_or_subset = reshuffle_or_subset,
                         top_n               = top_n,
-                        NATMI_tag           = job_id,
-                        
-                        number_seeds = 2)
+                        NATMI_tag           = job_id)
   
 
 
