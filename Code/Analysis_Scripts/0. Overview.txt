@@ -1,0 +1,22 @@
+4 Base Settings - top 500:				|
+							|
+	1. Resource dilution, random, variable		| 0/1	
+	2. Resource dilution, preserve, variable	| 0/1
+							|
+	3. Cluster reshuffling 				| 1/1
+	4. Cluster subsetting 				| 1/1
+							|
+4 x 2 Top Ranks Modulate:				|
+							| 
+	1. 1000 top ranks				| 0/4
+	2. 1500 top ranks				| 0/4
+							|
+1 x variant analysis:					|
+							|
+	1. resource dilution, random, generic		| 0/1
+	2. resource dilution, random, editable topranks | 0/1
+							|
+							|
+
+==================================================================
+14 total runs, 2 complete

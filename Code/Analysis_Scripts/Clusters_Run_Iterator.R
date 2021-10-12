@@ -1,4 +1,11 @@
 #------------------------------------------------------------------------------#
+# 0. Introduction and Goals ----------------------------------------------------
+
+# This is the implementation of Run_Iterator.R that runs with slurm inputs.
+
+
+
+#------------------------------------------------------------------------------#
 # 1. Setup ---------------------------------------------------------------------
 {
   # In this segment, we set up all the required infrastructure to run the
@@ -44,24 +51,36 @@
 
 #------------------------------------------------------------------------------#
 # 2. Get Cluster Reshuffling Robustness Results --------------------------------
-{
+
+# We get SLURM input arguments, including job_id to mark NATMI files with.
+args = commandArgs(TRUE)
+
+reshuffle_or_subset = args[1]
+top_n               = args[2]
+job_id              = args[3]
+
+# Double-check the Inputs
+print(args)
+
+
+
+# First we load testdata from the data folder. 
+# We also give a label (testdata_type, choose "seurat_pbmc" or "liana_test")
+testdata_type <- "liana_test"  
+testdata      <- extract_Testdata(testdata_type = testdata_type)
+
+
+# We run the wrapper with test settings
+robustness_reshuffle_default <- 
+  wrap_cluster_Iterator(testdata      = testdata,
+                        testdata_type = testdata_type,
+                        
+                        reshuffle_or_subset = reshuffle_or_subset,
+                        top_n               = top_n,
+                        NATMI_tag           = job_id,
+                        
+                        number_seeds = 2)
   
-  
-  # First we load testdata from the data folder. 
-  # We also give a label (testdata_type, choose "seurat_pbmc" or "liana_test")
-  testdata_type <- "liana_test"  
-  testdata      <- extract_Testdata(testdata_type = testdata_type)
-  
-  
-  # We run the wrapper function, feeding it the testdata and the testdata label
-  robustness_reshuffle_default <- 
-    wrap_cluster_Iterator(testdata      = testdata,
-                          testdata_type = testdata_type,
-                          reshuffle_or_subset = "reshuffle",
-                          top_n = 1000)
-  
-  
-}
 
 
 

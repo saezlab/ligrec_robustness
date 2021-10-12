@@ -1,4 +1,11 @@
 #------------------------------------------------------------------------------#
+# 0. Introduction and Goals ----------------------------------------------------
+
+# This is the implementation of Run_Iterator.R that runs with slurm inputs.
+
+
+
+#------------------------------------------------------------------------------#
 # 1. Setup ---------------------------------------------------------------------
 {
   # In this segment, we set up all the required infrastructure to run the 
@@ -55,8 +62,23 @@
   
 }
 
+
+
 #------------------------------------------------------------------------------#
 # 2. Get Resource Dilution Robustness Results ----------------------------------
+
+# We get SLURM input arguments, including job_id to mark NATMI files with.
+args = commandArgs(TRUE)
+
+preserve_topology = args[1]
+feature_type      = args[2]
+top_n             = args[3]
+job_id            = args[4]
+
+# Double-check the Inputs
+print(args)
+
+
 
 # First we load testdata from the data folder. 
 # We also give a label (testdata_type, choose "seurat_pbmc" or "liana_test")
@@ -64,9 +86,13 @@ testdata_type <- "liana_test"
 testdata      <- extract_Testdata(testdata_type = testdata_type)
 
 
-# We run the wrapper with default settings and twice the standard permutations
+# We run the wrapper with test settings
 robustness_default <- 
   wrap_resource_Iterator(testdata      = testdata,
                          testdata_type = testdata_type,
-                         preserve_topology = FALSE)
+                         
+                         preserve_topology = preserve_topology,
+                         feature_type      = feature_type,
+                         top_n             = top_n,
+                         NATMI_tag         = job_id)
 
