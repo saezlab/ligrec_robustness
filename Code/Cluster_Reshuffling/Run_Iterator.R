@@ -108,22 +108,27 @@
 
 #------------------------------------------------------------------------------#
 # 2. Get Cluster Reshuffling Robustness Results --------------------------------
-{
+
+# First we load testdata from the data folder. 
+# We also give a label (testdata_type, choose "seurat_pbmc" or "liana_test")
+testdata_type <- "liana_test"  
+testdata      <- extract_Testdata(testdata_type = testdata_type)
+
+# We need a tag to distinctly mark this analysis from others in the NATMI save
+# files, such as a SLURM JOBID. If you're only running one analysis at a time
+# you don't need this tag
+tag <- 12345
+
+# We run the wrapper function, feeding it the testdata and the testdata label
+robustness_reshuffle_default <- 
+  wrap_cluster_Iterator(testdata      = testdata,
+                        testdata_type = testdata_type,
+                        NATMI_tag     = tag,
+                        methods_vector = c("call_sca", "call_natmi"),
+                        number_seeds = 2,
+                        mismatch_props = c(0.2, 0.4))
   
   
-  # First we load testdata from the data folder. 
-  # We also give a label (testdata_type, choose "seurat_pbmc" or "liana_test")
-  testdata_type <- "seurat_pbmc"  
-  testdata      <- extract_Testdata(testdata_type = testdata_type)
-  
-  
-  # We run the wrapper function, feeding it the testdata and the testdata label
-  robustness_reshuffle_default <- 
-    wrap_cluster_Iterator(testdata      = testdata,
-                          testdata_type = testdata_type)
-  
-  
-}
 
 
 

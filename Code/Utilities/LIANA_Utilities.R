@@ -21,21 +21,25 @@
   #' custom file paths for every input, output and intermediate value, to avoid
   #' this cross-talk. 
   #' 
-  #' Using the systime as a unique tag, this function creates NATMI-safe 
-  #' filepaths that can be directly passed to call_natmi.params.
+  #' Using the systime and a user tag as unique markers, this function creates 
+  #' NATMI-safe filepaths that can be directly passed to call_natmi.params.
+  #' 
+  #' @param tag An additional tag that specifies the save files beyond the time
+  #' of run, as with parallel analyses the time can overlap.
   #' 
   #' @return A named list of custom filepaths.
   
-  unique_natmi_filepaths <- function() {
+  unique_natmi_filepaths <- function(tag) {
     
     # Time marker for this specific LIANA run. Underscores and hyphens can 
     # confuse natmi file recognition so we only use numbers.
+    # We add a random five letter tag to further distinguish runs.
     natmi_output <-  Sys.time() %>%
       as.character()   %>%
       gsub(':', '', .) %>% 
       gsub(' ', '', .) %>%
       gsub('-', '', .) %>%
-      str_glue('Test', .)
+      str_glue('Job', tag, 'Test', .)
     
     # Use the unique tag to create unique filepaths
     natmi_params <-

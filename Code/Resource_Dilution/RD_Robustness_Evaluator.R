@@ -100,6 +100,9 @@
 #' left in, they can often displace valuable warnings. Be careful with this 
 #' setting, as suppressing warnings is obviously risky.
 #'  
+#' @param tag An additional tag that specifies the NATMI save files to this
+#' iterator run.
+#'  
 #' @param warning_logfile Only if liana_warnings == "divert". The filepath
 #' warnings should be saved to.
 #' 
@@ -114,6 +117,8 @@ resource_Robustness <- function(testdata,
                                 master_seed,
                                 bundled_outputs,
                                 baseline_liana,
+                                
+                                tag,
                                 
                                 methods_vector,
                                 cellchat_nperms,
@@ -385,6 +390,8 @@ print_Title(str_glue("Iteration ",
            
            liana_warnings  = liana_warnings, 
            warning_logfile = warning_logfile, 
+           
+           tag = tag,
            
            expr_prop       = 0.1,
            cellchat.params = list(nboot = cellchat_nperms, 

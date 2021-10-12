@@ -26,6 +26,9 @@
   #' 
   #' @param warning_logile Where should the warnings be logged? Only necessary
   #' when liana_warnings == "divert".
+  #'  
+  #' @param tag An additional tag that specifies the NATMI save files to this
+  #' iterator run.
   #' 
   #' @param ... Variable arguments to be passed to liana_wrap.
   #' 
@@ -35,6 +38,8 @@
   
   liana_with_warnings <- function(testdata,
                                   methods_vector,
+                                  
+                                  tag,
                                   
                                   liana_warnings,
                                   warning_logfile,
@@ -49,7 +54,7 @@
         liana_wrap(testdata,
                    method   = methods_vector,
                    resource = c('OmniPath'),
-                   call_natmi.params = unique_natmi_filepaths(),
+                   call_natmi.params = unique_natmi_filepaths(tag),
                    ...)
       
       
@@ -64,7 +69,7 @@
           liana_wrap(testdata,
                      method   = methods_vector,
                      resource = c('OmniPath'),
-                     call_natmi.params = unique_natmi_filepaths(),
+                     call_natmi.params = unique_natmi_filepaths(tag),
                      ...)
         
       }, logFile = warning_logfile)
@@ -80,7 +85,7 @@
           liana_wrap(testdata,
                      method   = methods_vector,
                      resource = c('OmniPath'),
-                     call_natmi.params = unique_natmi_filepaths(),
+                     call_natmi.params = unique_natmi_filepaths(tag),
                      ...)
         
       })
@@ -148,6 +153,9 @@
   #' @param warning_logile Where should the warnings be logged? Only necessary
   #' when liana_warnings == "divert".
   #' 
+  #' @param tag An additional tag that specifies the NATMI save files to this
+  #' iterator run.
+  #' 
   #' @param ... Variable arguments to be passed to liana_wrap.
   #' 
   #' @return All the liana_results
@@ -159,6 +167,8 @@
                                  mismatch_props,
                                  seed_list,
                                  reshuffled_clusters,
+                                 
+                                 tag,
                                  
                                  liana_warnings,
                                  warning_logfile,
@@ -249,6 +259,7 @@
             methods_vector  = methods_vector,
             testdata        = reshuffled_testdata,
             warning_logfile = warning_logfile,
+            tag = tag,
             ...
           )
         
@@ -274,6 +285,7 @@
         methods_vector  = methods_vector,
         liana_warnings  = liana_warnings,
         warning_logfile = warning_logfile,
+        tag = tag,
         ...
       )
     

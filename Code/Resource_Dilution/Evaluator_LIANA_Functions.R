@@ -19,6 +19,9 @@
   #' @param warning_logile Where should the warnings be logged? Only necessary
   #' when liana_warnings == "divert".
   #' 
+  #' @param tag An additional tag that specifies the NATMI save files to this
+  #' iterator run.
+  #' 
   #' @param ... Variable arguments to be passed to liana_wrap.
   #' 
   #' @return A list named after methods_vector that contains a tibble of CCIs
@@ -29,6 +32,8 @@
                                       methods_vector,
                                       resource,
                                       external_resource = NULL,
+                                      
+                                      tag,
                                       
                                       liana_warnings,
                                       warning_logfile,
@@ -42,7 +47,7 @@
         liana_wrap(testdata,
                    method   = methods_vector,
                    resource = resource,
-                   call_natmi.params = unique_natmi_filepaths(),
+                   call_natmi.params = unique_natmi_filepaths(tag),
                    external_resource = external_resource,
                    ...)
       
@@ -58,7 +63,7 @@
           liana_wrap(testdata,
                      method   = methods_vector,
                      resource = resource,
-                     call_natmi.params = unique_natmi_filepaths(),
+                     call_natmi.params = unique_natmi_filepaths(tag),
                      external_resource = external_resource,
                      ...)
         
@@ -75,7 +80,7 @@
           liana_wrap(testdata,
                      method   = methods_vector,
                      resource = resource,
-                     call_natmi.params = unique_natmi_filepaths(),
+                     call_natmi.params = unique_natmi_filepaths(tag),
                      external_resource = external_resource,
                      ...)
         

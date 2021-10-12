@@ -117,9 +117,20 @@
 testdata_type <- "liana_test"  
 testdata      <- extract_Testdata(testdata_type = testdata_type)
 
+# We need a tag to distinctly mark this analysis from others in the NATMI save
+# files, such as a SLURM JOBID. If you're only running one analysis at a time
+# you don't need this tag
+tag <- 12345
 
 # We run the wrapper with default settings and twice the standard permutations
 robustness_default <- 
-  wrap_resource_Iterator(testdata      = testdata,
-                         testdata_type = testdata_type)
+  wrap_resource_Iterator(testdata       = testdata,
+                         testdata_type  = testdata_type,
+                         NATMI_tag      = tag,
+                         methods_vector = c("call_sca",
+                                            "call_natmi",
+                                            "call_italk"),
+                         number_seeds = 2,
+                         top_n = 100,
+                         dilution_props = c(0.2, 0.4, 0.6))
 

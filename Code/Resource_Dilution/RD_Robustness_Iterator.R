@@ -70,6 +70,9 @@
 #' left in, they can often displace valuable warnings. Be careful with this 
 #' setting, as suppressing warnings is obviously risky.
 #' 
+#' @param tag An additional tag that specifies the NATMI save files to this
+#' iterator run.
+#' 
 #' @param save_results Either TRUE or FALSE. Should the plots and iterator
 #' results objects be saved to the outputs folder with an automatically
 #' generated file name? Recommended for keeping the results safe.
@@ -134,7 +137,8 @@
 
 wrap_resource_Iterator <- 
   function(testdata,
-           testdata_type, 
+           testdata_type,
+           NATMI_tag,
            
            number_seeds      = 10,            
            feature_type      = "variable",    
@@ -329,6 +333,8 @@ wrap_resource_Iterator <-
                               liana_warnings  = liana_warnings, 
                               warning_logfile = warning_logfile, 
                               
+                              tag = NATMI_tag,
+                              
                               expr_prop       = 0.1,
                               cellchat.params = list(nboot = cellchat_nperms, 
                                                      expr_prop = 0.1,
@@ -363,8 +369,10 @@ wrap_resource_Iterator <-
                                           bundled_outputs   = bundled_outputs,
                                           
                                           methods_vector    = methods_vector,
-                                          cellchat_nperms = cellchat_nperms, 
-                                          liana_warnings  = liana_warnings,
+                                          cellchat_nperms   = cellchat_nperms, 
+                                          liana_warnings    = liana_warnings,
+                                          
+                                          tag = NATMI_tag,
                                           
                                           warning_logfile   = warning_logfile)
     
