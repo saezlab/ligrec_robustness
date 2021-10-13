@@ -25,7 +25,7 @@
   # Define the iterator wrapper function (wrap_resource_Iterator), which 
   # produces the end results. The wrapper iterates the evaluator function and 
   # collates its results.
-  source("Code/Resource_Dilution/RD_Robustness_Iterator.R")
+  source("Code/Resource_Dilution/RD_Iterator.R")
   # Define general functions for data processing in the iterator
   source("Code/Resource_Dilution/Iterator_Processing_Functions.R")
   # Define functions for capturing metadata and saving iterator results
@@ -35,7 +35,7 @@
   # The evaluator function tests method robustness over multiple dilution stages
   # The script below defines resource_Robustness, a function for testing 
   # resource robustness
-  source("Code/Resource_Dilution/RD_Robustness_Evaluator.R")
+  source("Code/Resource_Dilution/RD_Evaluator.R")
   # Define functions that help the evaluator analyse top-ranked CCIs
   source("Code/Resource_Dilution/Evaluator_Top_Ranks_Functions.R")
   # Define functions that help the evaluator run LIANA
