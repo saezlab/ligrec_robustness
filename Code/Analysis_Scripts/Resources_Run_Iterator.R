@@ -79,7 +79,7 @@ job_id            = as.numeric(args[4])
 
 # First we load testdata from the data folder. 
 # We also give a label (testdata_type, choose "seurat_pbmc" or "liana_test")
-testdata_type <- "liana_test"  
+testdata_type <- "seurat_pbmc"  
 testdata      <- extract_Testdata(testdata_type = testdata_type)
 
 
