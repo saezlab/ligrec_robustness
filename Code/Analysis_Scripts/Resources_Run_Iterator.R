@@ -94,5 +94,10 @@ robustness_default <-
                          preserve_topology = preserve_topology,
                          feature_type      = feature_type,
                          top_n             = top_n,
-                         NATMI_tag         = job_id)
+                         NATMI_tag         = job_id,
+                         
+                         number_seeds = 2,
+                         dilution_props = c(0.2, 0.4, 0.6),
+                         top_n = 100,
+                         trial_run = TRUE)
 
