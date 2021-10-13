@@ -107,6 +107,5 @@ robustness_default <-
                          
                          number_seeds = 2,
                          dilution_props = c(0.2, 0.4, 0.6),
-                         top_n = 100,
                          trial_run = TRUE)
 
