@@ -59,15 +59,6 @@ reshuffle_or_subset = as.character(args[1])
 top_n               = as.numeric(args[2])
 job_id              = as.numeric(args[3])
 
-# Double-check the Inputs
-print(args)
-print(typeof(args))
-print(str_glue("reshuffle_or_subset: ", typeof(reshuffle_or_subset)))
-print(reshuffle_or_subset)
-print(str_glue("top_n: ", typeof(top_n)))
-print(top_n)
-print(str_glue("job_id: ", typeof(job_id)))
-print(job_id)
 
 
 # First we load testdata from the data folder. 
@@ -76,8 +67,28 @@ testdata_type <- "liana_test"
 testdata      <- extract_Testdata(testdata_type = testdata_type)
 
 
+# Double-check the Inputs
+{
+  important_args <- 
+    c("testdata_type", "reshuffle_or_subset", "top_n", "job_id") 
+  
+  map(important_args, function(arg) {
+    c(arg, get(arg), typeof(get(arg)))
+    
+  }) %>% 
+    transpose %>%
+    set_names(c("name", "value", "data_type")) %>%
+    as_tibble() %>% 
+    unnest(c("name", "value", "data_type")) %>%
+    print()
+  
+  cat("\n\nTestdata: \n")
+  print(testdata)
+}
+
+
 # We run the wrapper with test settings
-robustness_reshuffle_default <- 
+robustness_cluster <- 
   wrap_cluster_Iterator(testdata      = testdata,
                         testdata_type = testdata_type,
                         
@@ -86,5 +97,6 @@ robustness_reshuffle_default <-
                         NATMI_tag           = job_id)
   
 
-
+# Extra info for console output
+print(robustness_cluster)
 

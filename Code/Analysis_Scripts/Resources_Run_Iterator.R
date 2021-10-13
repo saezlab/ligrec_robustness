@@ -75,18 +75,6 @@ feature_type      = as.character(args[2])
 top_n             = as.numeric(args[3])
 job_id            = as.numeric(args[4])
 
-# Double-check the Inputs
-print(args)
-print(typeof(args))
-print(str_glue("preserve_topology: ", typeof(preserve_topology)))
-print(preserve_topology)
-print(str_glue("feature_type: ", typeof(feature_type)))
-print(feature_type)
-print(str_glue("top_n: ", typeof(top_n)))
-print(top_n)
-print(str_glue("job_id: ", typeof(job_id)))
-print(job_id)
-
 
 
 # First we load testdata from the data folder. 
@@ -95,17 +83,37 @@ testdata_type <- "liana_test"
 testdata      <- extract_Testdata(testdata_type = testdata_type)
 
 
+# Double-check the Inputs
+{
+  important_args <- 
+    c("testdata_type", "preserve_topology", "feature_type", "top_n", "job_id") 
+  
+  map(important_args, function(arg) {
+    c(arg, get(arg), typeof(get(arg)))
+    
+  }) %>% 
+    transpose %>%
+    set_names(c("name", "value", "data_type")) %>%
+    as_tibble() %>% 
+    unnest(c("name", "value", "data_type")) %>%
+    print()
+  
+  cat("\n\nTestdata: \n")
+  print(testdata)
+}
+
+
 # We run the wrapper with test settings
-robustness_default <- 
+robustness_resource <- 
   wrap_resource_Iterator(testdata      = testdata,
                          testdata_type = testdata_type,
                          
                          preserve_topology = preserve_topology,
                          feature_type      = feature_type,
                          top_n             = top_n,
-                         NATMI_tag         = job_id,
-                         
-                         number_seeds = 2,
-                         dilution_props = c(0.2, 0.4, 0.6),
-                         trial_run = TRUE)
+                         NATMI_tag         = job_id)
+
+
+# Extra info for console output
+print(robustness_resource)
 
