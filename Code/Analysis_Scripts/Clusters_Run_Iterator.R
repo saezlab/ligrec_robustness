@@ -55,9 +55,9 @@
 # We get SLURM input arguments, including job_id to mark NATMI files with.
 args = commandArgs(TRUE)
 
-reshuffle_or_subset = args[1]
-top_n               = args[2]
-job_id              = args[3]
+reshuffle_or_subset = as.character(args[1])
+top_n               = as.numeric(args[2])
+job_id              = as.numeric(args[3])
 
 # Double-check the Inputs
 print(args)

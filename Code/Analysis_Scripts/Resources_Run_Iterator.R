@@ -70,10 +70,10 @@
 # We get SLURM input arguments, including job_id to mark NATMI files with.
 args = commandArgs(TRUE)
 
-preserve_topology = args[1]
-feature_type      = args[2]
-top_n             = args[3]
-job_id            = args[4]
+preserve_topology = as.logical(args[1])
+feature_type      = as.character(args[2])
+top_n             = as.numeric(args[3])
+job_id            = as.numeric(args[4])
 
 # Double-check the Inputs
 print(args)
