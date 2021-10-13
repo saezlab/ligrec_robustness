@@ -339,8 +339,6 @@ wrap_resource_Iterator <-
                               cellchat.params = list(nboot = cellchat_nperms, 
                                                      expr_prop = 0.1,
                                                      thresh = 1))
-    
-    
   } 
     
     
@@ -375,6 +373,7 @@ wrap_resource_Iterator <-
                                           tag = NATMI_tag,
                                           
                                           warning_logfile   = warning_logfile)
+    
     
     # We don't need the testdata after this point.
     rm(testdata)
