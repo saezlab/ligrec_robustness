@@ -77,6 +77,15 @@ job_id            = as.numeric(args[4])
 
 # Double-check the Inputs
 print(args)
+print(typeof(args))
+print(str_glue("preserve_topology: ", typeof(preserve_topology)))
+print(preserve_topology)
+print(str_glue("feature_type: ", typeof(feature_type)))
+print(feature_type)
+print(str_glue("top_n: ", typeof(top_n)))
+print(top_n)
+print(str_glue("job_id: ", typeof(job_id)))
+print(job_id)
 
 
 

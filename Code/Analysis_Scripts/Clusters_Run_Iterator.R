@@ -61,7 +61,13 @@ job_id              = as.numeric(args[3])
 
 # Double-check the Inputs
 print(args)
-
+print(typeof(args))
+print(str_glue("reshuffle_or_subset: ", typeof(reshuffle_or_subset)))
+print(reshuffle_or_subset)
+print(str_glue("top_n: ", typeof(top_n)))
+print(top_n)
+print(str_glue("job_id: ", typeof(job_id)))
+print(job_id)
 
 
 # First we load testdata from the data folder. 
