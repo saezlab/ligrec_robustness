@@ -94,17 +94,17 @@
 }
 
 
-# cellchat_rank_overlap()
+# permute_rank_overlap()
 {
   #' Takes get_n_top_ranks outputs that have an LR_ID and determines their 
-  #' overlap, but handles the exceptions cellchat has
+  #' overlap, but handles the exceptions permutation methods have.
   #' 
-  #' @description Cellchat top_ranks are often overflowing with interactions 
-  #' that have p-values of zero. If you cut without ties in this scenario you
-  #' ignore a great deal of interactions that have the same ranking as your
-  #' candidates. There is also an ordering bias in the data, such that you
-  #' always receive the same 500 interactions. So you get incomplete and biased
-  #' top_ranks. 
+  #' @description Permutation methods' top_ranks are often overflowing with 
+  #' interactions that have p-values of zero. If you cut without ties in this 
+  #' scenario you ignore a great deal of interactions that have the same ranking
+  #' as your candidates. There is also an ordering bias in the data, such that
+  #' you always receive the same 500 interactions. So you get incomplete and 
+  #' biased top_ranks. 
   #' 
   #' To combat this we cut with ties, but that makes our overlap calculations 
   #' difficult. Percentage-overlap is an intuitive metric but if the two items
@@ -128,7 +128,7 @@
   #' LR_ID column, as well as an optional print statement that gives more 
   #' detail.
   
-  cellchat_rank_overlap <-function(main_ranks, 
+  permute_rank_overlap <-function(main_ranks, 
                                    comparison_ranks, 
                                    verbose = TRUE) {
       
@@ -153,8 +153,8 @@
     } else {
       
       # This case scenario shouldn't come up if top_ranks were preserved.
-      stop("The original cellchat top_ranks could not be found in the diluted
-           cellchat top_ranks. This means that cellchat_rank_overlap() can't 
+      stop("The original permutation top_ranks could not be found in the diluted
+           permutation top_ranks. This means that permute_rank_overlap() can't 
            calculate what you want it to.")
       
     }

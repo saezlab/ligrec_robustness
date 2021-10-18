@@ -183,7 +183,7 @@ print_Title(str_glue("Iteration ",
     
     # Because cellchat produces so many interactions all tied for 0, we need
     # to cut with ties
-    if(method == "cellchat") {
+    if(method %in% c("cellchat", "squidpy")) {
       
       top_ranks_OP_0[[method]] <- 
         get_top_n_ranks(data_set  = liana_results_OP_0[[method]],
@@ -421,12 +421,12 @@ print_Title(str_glue("Iteration ",
   # the names will be passed to the map output.
   methods_list        <- as.list(methods_vector)
   names(methods_list) <- methods_vector
-  # Filter out cellchat, it needs to be done separately
+  # Filter out permutation based methods, they need to be done separately
   methods_list <- methods_list %>%
-    discard(methods_list %in% "cellchat")
+    discard(methods_list %in% c("squidpy", "cellchat"))
   
   
-  # map over every method except cellchat
+  # map over every method except permutation ones
   top_dilutions_OP <- map(methods_list, function(method) {
     
     # Get the top_ranks from the liana_results for each dilution stage
@@ -439,8 +439,8 @@ print_Title(str_glue("Iteration ",
   })
   
   
-  # Because cellchat produces so many interactions all tied for 0, we need
-  # to cut with ties
+  # Because permutation methods produces so many interactions all tied for 0, 
+  # we need to cut with ties
   top_dilutions_OP[["cellchat"]] <- 
     # Get the top_ranks from the liana_results for each dilution stage
     # using get_top_n_ranks() while cutting with ties
@@ -448,6 +448,15 @@ print_Title(str_glue("Iteration ",
            get_top_n_ranks, 
            method = "cellchat", 
            top_n = number_ranks$cellchat,
+           with_ties = TRUE)  
+  
+  top_dilutions_OP[["squidpy"]] <- 
+    # Get the top_ranks from the liana_results for each dilution stage
+    # using get_top_n_ranks() while cutting with ties
+    lapply(liana_results_OP$squidpy[-1], 
+           get_top_n_ranks, 
+           method = "squidpy", 
+           top_n = number_ranks$squidpy,
            with_ties = TRUE)  
   
   
@@ -533,11 +542,11 @@ print_Title(str_glue("Iteration ",
   
   for (method in methods_vector) {
     
-    if (method == "cellchat") {
+    if (method %in% c("cellchat", "squidpy")) {
       
       overlaps[[method]] <- 
         lapply(top_ranks_OP[[method]], 
-               cellchat_rank_overlap, 
+               permute_rank_overlap, 
                main_ranks = top_ranks_OP[[method]]$OmniPath_0)
       
     } else {
