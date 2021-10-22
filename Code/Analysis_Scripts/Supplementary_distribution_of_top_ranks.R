@@ -39,11 +39,11 @@
   
   
   methods_vector <- c("call_connectome",
-                     # "call_natmi",
+                      "call_natmi",
                       "call_italk",
-                      "call_sca" #,
-                    #  "cellchat",
-                     # "squidpy"
+                      "call_sca",
+                      "cellchat",
+                      "squidpy"
                     )
   
   # Convert methods_vector to a list and name it
