@@ -19,6 +19,13 @@
   testdata_type <- "seurat_pbmc"  
   testdata      <- extract_Testdata(testdata_type = testdata_type)
   
+  # We format the metadata so that the cluster annotations in metadata and 
+  # the seurat idents are the same. This is a prerequisite for squidpy.
+  testdata@meta.data <- testdata@meta.data %>%
+    mutate("cluster_key" = as.factor(as.numeric((Idents(testdata)))))
+  
+  Idents(testdata) <-  testdata@meta.data$cluster_key
+  
   
   # NATMI results are contaminated with results from earlier runs if you
   # don't specify a special output folder for the results to go in. Here we
