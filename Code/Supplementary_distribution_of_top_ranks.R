@@ -27,31 +27,35 @@
     as.character()       %>%
     gsub(':', '-', .)    %>%
     gsub(' ', '_', .)    %>%
-    str_glue('Test_', .)
+    str_glue('Test_topology_', .)
+  
+  
+  # Use the unique tag to create unique filepaths
+  natmi_params <-
+    list(output_dir = natmi_output,
+         expr_file  = str_glue(natmi_output, "_expr_matrix.csv"),
+         meta_file  = str_glue(natmi_output, "_metadata.csv"),
+         reso_name  = str_glue(natmi_output, "Resource"))
   
   
   methods_vector <- c("call_connectome",
-                      #"squidpy",
-                      "call_natmi",
+                     # "call_natmi",
                       "call_italk",
-                      "call_sca",
-                      "cellchat"
-                      )
+                      "call_sca" #,
+                    #  "cellchat",
+                     # "squidpy"
+                    )
   
   # Convert methods_vector to a list and name it
   methods_list        <- as.list(methods_vector)
   names(methods_list) <- methods_vector
   
-  
-  
-  
-  
-  
+
   liana_results <- 
     liana_wrap(testdata, 
                methods_vector,
                resource = c("OmniPath"),
-               call_natmi.params = list(output_dir = natmi_output))
+               call_natmi.params = natmi_params)
   
   
   top_ranks <-
@@ -121,6 +125,19 @@
   
   print(topology_plot)
   
+  # Save both plots
+  ggsave(
+    plot = topology_plot,
+    "Topology_Plot.png",
+    height = 7.75,
+    width = 8.00,
+    path = "Outputs"
+  )
   
+  results <- list(top_rank_edges = top_rank_edges,
+                  topology = topology,
+                  topology_plot = topology_plot)
   
+  save(top_rank_edges, file = "Outputs/Top_Rank_Edges_supp_topology.RData")
+
 }
