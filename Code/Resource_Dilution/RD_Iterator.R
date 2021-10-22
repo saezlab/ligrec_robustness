@@ -43,6 +43,11 @@
 #' testdata (choose "generic") or with the most variable features (choose 
 #' "variable")? As a string.
 #' 
+#' @param modify_baseline TRUE or FALSE. Should the top-ranked interactions from
+#' the baseline be modifiable by dilution. Usually this is not the case, and 
+#' almost all documentation is written from the perspective that the baseline is
+#' not modifiable.
+#' 
 #' @param preserve_topology When diluting, two methods are implemented.
 #' random_Dilute makes only a small effort to preserve the topology of the rows
 #' that are diluted from resource, preserve_Dilute makes a far greater effort.
@@ -87,10 +92,9 @@
 #' default.
 #' 
 #' @param bundled_outputs Which outputs of resource_Robustness() would you like 
-#' to return? Outputs are returned bundled up in a list. By default, only the 
-#' analysis of top_ranks and runtime data is returned, but more infomation can 
-#' be returned, if desired (though usually uneccesary). If the 
-#' top_ranks_analysis and runtime aren't returned, the script wont work.
+#' to return? Outputs are returned bundled up in a list. By default, only some 
+#' of the analysis is returned. If the top_ranks_analysis and runtime aren't 
+#' returned, the script wont work.
 #' 
 #' To specify your outputs, construct an atomic vector using all or some of 
 #' "liana_results_OP", "resources_OP", "top_ranks_OP", "top_ranks_analysis", 
@@ -142,6 +146,7 @@ wrap_resource_Iterator <-
            
            number_seeds      = 10,            
            feature_type      = "variable",    
+           modify_baseline   = FALSE,
            preserve_topology = FALSE,         
            dilution_props    = c(seq(0.05, 0.45, 0.05)),
            
@@ -164,7 +169,11 @@ wrap_resource_Iterator <-
            
            cellchat_nperms = 100,       
            
-           bundled_outputs = c("top_ranks_analysis", "runtime"),
+           bundled_outputs = c(
+             "liana_results_OP",
+             "top_ranks_OP",
+             "top_ranks_analysis",
+             "runtime"),
            
            master_outputs = c(
              "collated_top_ranks_overlap",
@@ -257,9 +266,10 @@ wrap_resource_Iterator <-
         warning_logfile <-
           auto_file_Name(
             prefix = "Outputs/Resource_Dilution/Logs/LIANA_warnings_RD_",
-            suffix =  ".txt",
+            suffix = ".txt",
             
             preserve_topology  = preserve_topology,
+            modify_baseline    = modify_baseline,
             testdata_type      = testdata_type,
             feature_type       = feature_type,
             number_ranks       = number_ranks,
@@ -282,6 +292,7 @@ wrap_resource_Iterator <-
             suffix = ".png",
             
             preserve_topology  = preserve_topology,
+            modify_baseline    = modify_baseline,
             testdata_type      = testdata_type,
             feature_type       = feature_type,
             number_ranks       = number_ranks,
@@ -294,6 +305,7 @@ wrap_resource_Iterator <-
             suffix = ".png",
             
             preserve_topology  = preserve_topology,
+            modify_baseline    = modify_baseline,
             testdata_type      = testdata_type,
             feature_type       = feature_type,
             number_ranks       = number_ranks,
@@ -306,6 +318,7 @@ wrap_resource_Iterator <-
             suffix = ".RData",
             
             preserve_topology  = preserve_topology,
+            modify_baseline    = modify_baseline,
             testdata_type      = testdata_type,
             feature_type       = feature_type,
             number_ranks       = number_ranks,
@@ -318,6 +331,7 @@ wrap_resource_Iterator <-
     
   }  
   
+    
   #----------------------------------------------------------------------------#
   # 1.2 Generate base line LIANA Results --------------------------------------- 
   {
@@ -357,24 +371,27 @@ wrap_resource_Iterator <-
     # Apply resource_Robustness() wrapper, provide every argument but 
     # master_seed.
     # To modify the defaults of the wrapper, go to Iterator_Params.R
-    collated_robustness_results <- lapply(master_seed_list,
-                                          resource_Robustness,
-                                          
-                                          testdata          = testdata,
-                                          baseline_liana    = baseline_liana,
-                                          feature_type      = feature_type,
-                                          preserve_topology = preserve_topology, 
-                                          dilution_props    = dilution_props,
-                                          number_ranks      = number_ranks,
-                                          bundled_outputs   = bundled_outputs,
-                                          
-                                          methods_vector    = methods_vector,
-                                          cellchat_nperms   = cellchat_nperms, 
-                                          liana_warnings    = liana_warnings,
-                                          
-                                          tag = NATMI_tag,
-                                          
-                                          warning_logfile   = warning_logfile)
+    collated_robustness_results <- 
+      lapply(
+        master_seed_list,
+        resource_Robustness,
+        
+        testdata          = testdata,
+        baseline_liana    = baseline_liana,
+        feature_type      = feature_type,
+        modify_baseline   = modify_baseline,
+        preserve_topology = preserve_topology,
+        dilution_props    = dilution_props,
+        number_ranks      = number_ranks,
+        bundled_outputs   = bundled_outputs,
+        
+        methods_vector    = methods_vector,
+        cellchat_nperms   = cellchat_nperms,
+        liana_warnings    = liana_warnings,
+        
+        tag = NATMI_tag,
+        
+        warning_logfile   = warning_logfile)
     
     
     print(collated_robustness_results)
@@ -384,7 +401,6 @@ wrap_resource_Iterator <-
     
     
   }
-  
   
   
   #----------------------------------------------------------------------------#
@@ -443,6 +459,7 @@ wrap_resource_Iterator <-
         tr_overlap_for_plot,
         
         preserve_topology  = preserve_topology,
+        modify_baseline    = modify_baseline,
         testdata_type      = testdata_type,
         feature_type       = feature_type,
         number_ranks       = number_ranks,
@@ -507,6 +524,7 @@ wrap_resource_Iterator <-
         testdata_type     = testdata_type,
         feature_type      = feature_type,
         preserve_topology = preserve_topology,
+        modify_baseline   = modify_baseline,
         dilution_props    = dilution_props,
         top_n             = top_n,
         methods_vector    = methods_vector,
@@ -549,7 +567,7 @@ wrap_resource_Iterator <-
       )
     
     # Filter our results by the master_outputs the user wants to retrieve
-    # Usually´all the data is requested so this step doesn't chaneg anything.
+    # Usually´all the data is requested so this step doesn't change anything.
     iterator_results <- iterator_results[master_outputs]
     
     # Get rid of clutter we already summarized in different objects

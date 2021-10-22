@@ -70,23 +70,28 @@
 # We get SLURM input arguments, including job_id to mark NATMI files with.
 args = commandArgs(TRUE)
 
-preserve_topology = as.logical(args[1])
+modify_baseline   = as.logical(args[1])
 feature_type      = as.character(args[2])
 top_n             = as.numeric(args[3])
 job_id            = as.numeric(args[4])
-
+preserve_topology = as.logical(args[5])
 
 
 # First we load testdata from the data folder. 
 # We also give a label (testdata_type, choose "seurat_pbmc" or "liana_test")
-testdata_type <- "seurat_pbmc"  
+testdata_type <- "liana_test"  
 testdata      <- extract_Testdata(testdata_type = testdata_type)
 
 
 # Double-check the Inputs
 {
   important_args <- 
-    c("testdata_type", "preserve_topology", "feature_type", "top_n", "job_id") 
+    c("testdata_type", 
+      "modify_baseline",
+      "feature_type", 
+      "top_n", 
+      "job_id",
+      "preserve_topology") 
   
   map(important_args, function(arg) {
     c(arg, get(arg), typeof(get(arg)))
@@ -108,10 +113,15 @@ robustness_resource <-
   wrap_resource_Iterator(testdata      = testdata,
                          testdata_type = testdata_type,
                          
+                         modify_baseline   = modify_baseline,
                          preserve_topology = preserve_topology,
                          feature_type      = feature_type,
                          top_n             = top_n,
-                         NATMI_tag         = job_id)
+                         NATMI_tag         = job_id,
+                         
+                         trial_run = TRUE,
+                         number_seeds = 2,
+                         dilution_props = c(0.3, 0.6))
 
 
 # Extra info for console output

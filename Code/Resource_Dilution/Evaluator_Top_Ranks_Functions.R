@@ -202,3 +202,55 @@
 }
 
 
+# rank_overlap_mod()
+{
+  #' Takes get_n_top_ranks outputs that have an LR_ID and determines their 
+  #' overlap, based on the larger of both sets.
+  #' 
+  #' @description An LR_ID is a unique identifier for a CC Interaction. It is
+  #' simply the concatenated source name, target name, ligand name and receptor
+  #' name. A CCI is fully characterized by its LR_ID, which is why they can be
+  #' used when comparing two tibbles with top ranked interactions. 
+  #'
+  #' @param main_ranks A tibble of of top ranked interactions
+  #' @param comparison_ranks A tibble of top ranked interactions
+  #' @param verbose Should the function describe the overlap to you or not?
+  #'
+  #' @return The overlap (0-1) between the two input frames in contents of the
+  #' LR_ID column, as well as an optional print statement that gives more 
+  #' detail.
+  
+  rank_overlap_mod <-
+    function(main_ranks, 
+             comparison_ranks, 
+             verbose = TRUE) {
+      
+      # calculate overlap between LR_IDs
+      overlap <- sum(comparison_ranks$LR_ID %in% main_ranks$LR_ID)
+      
+      percentage_overlap <- 
+        overlap / max(nrow(main_ranks), nrow(comparison_ranks))
+      
+      
+      # describe the output to the user
+      if (verbose == TRUE) {
+        print(str_glue(""))
+        cat(
+          str_wrap(
+            str_glue(
+              "Using Flexible Overlap: The main ranking and the comparison ",
+              "ranking have ",
+              overlap,
+              " LR_IDs in common. Which corresponds to a ",
+              round(percentage_overlap * 100, 2),
+              "% overlap."), 
+            width = 60), "\n")
+      }
+      
+      
+      return(percentage_overlap)
+      
+    } #end of function
+  
+  
+}

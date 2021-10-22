@@ -212,6 +212,11 @@
   #' 
   #' @param trial_run The same parameter from wrap_resource_Iterator(). Used
   #' in the file name to mark the file.
+  #' 
+  #' @param modify_baseline TRUE or FALSE. Should the top-ranked interactions from
+  #' the baseline be modifiable by dilution. Usually this is not the case, and 
+  #' almost all documentation is written from the perspective that the baseline is
+  #' not modifiable.
   #'
   #' @param preserve_topology The same parameter from 
   #' wrap_resource_Iterator(). Used in the file name to mark the file.
@@ -235,18 +240,31 @@
                                     
                                     trial_run,
                                     preserve_topology,
+                                    modify_baseline,
                                     testdata_type,
                                     feature_type,
                                     number_ranks,
                                     time_of_run) {
     
-    ## General comment, on testdata type, feature_type and topology
+    ## General comment, on testdata type, feature_type and topology, and if
+    ## the baseline was modifiable
     {
       if (preserve_topology == FALSE) {
         topology_comment <- "random_Dilute()"
         
       } else if (preserve_topology == TRUE) {
         topology_comment <- "preserve_Dilute()"
+        
+      }
+      
+      
+      if (modify_baseline == FALSE) {
+        baseline_comment <- 
+          "The baseline CCC predictions were preserved in the resource."
+        
+      } else if (modify_baseline == TRUE) {
+        baseline_comment <- 
+          "The baseline CCC predictions were modified in the resource. "
         
       }
       
@@ -259,7 +277,8 @@
           feature_type,
           " features and the ",
           topology_comment,
-          " function. "
+          " function. \n",
+          baseline_comment
         )
       
       rm(topology_comment)

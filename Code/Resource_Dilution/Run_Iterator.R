@@ -127,11 +127,15 @@ robustness_default <-
   wrap_resource_Iterator(testdata       = testdata,
                          testdata_type  = testdata_type,
                          NATMI_tag      = tag,
-                         methods_vector = c("call_sca", 
-                                            "call_natmi",
-                                            "call_connectome"),
-                         number_seeds   = 2,
-                         top_n          = 100,
-                         dilution_props = c(0.2, 0.4, 0.6),
-                         trial_run      = TRUE)
+                         methods_vector = c("call_connectome",
+                                            "call_italk",
+                                            "call_sca", 
+                                            "cellchat"),
+                         
+                         cellchat_nperms = 10,
+                         number_seeds    = 5,
+                         top_n           = 500,
+                         dilution_props  = c(0.2, 0.4),
+                         trial_run       = TRUE,
+                         modify_baseline = TRUE)
 

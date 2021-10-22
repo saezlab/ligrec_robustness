@@ -32,6 +32,7 @@
                                  testdata_type,
                                  feature_type, 
                                  preserve_topology,    
+                                 modify_baseline,
                                  dilution_props,
                                  top_n,
                                  methods_vector,
@@ -65,6 +66,7 @@
       "number_seeds"      = number_seeds,
       "testdata_type"     = testdata_type,
       "feature_type"      = feature_type, 
+      "modify_baseline"   = modify_baseline,
       "preserve_topology" = preserve_topology,    
       "dilution_props"    = dilution_props,
       "top_n"             = top_n,
@@ -202,6 +204,11 @@
   #' @param trial_run The same parameter from wrap_resource_Iterator(). Used
   #' in the file name to mark the file.
   #'
+  #' @param modify_baseline TRUE or FALSE. Should the top-ranked interactions from
+  #' the baseline be modifiable by dilution. Usually this is not the case, and 
+  #' almost all documentation is written from the perspective that the baseline is
+  #' not modifiable.
+  #'
   #' @param preserve_topology The same parameter from 
   #' wrap_resource_Iterator(). Used in the file name to mark the file.
   #' 
@@ -227,6 +234,7 @@
                              
                              trial_run,
                              preserve_topology,
+                             modify_baseline,
                              testdata_type,
                              feature_type,
                              number_ranks,
@@ -243,6 +251,17 @@
     } else if (trial_run == TRUE) {
       
       test_run_comment <- "TRIAL_RUN_"
+      
+    }
+    
+    # If the baseline could be modified, mark the save files as such
+    if (modify_baseline == FALSE) {
+      
+      baseline_comment <- ""
+      
+    } else if (modify_baseline == TRUE) {
+      
+      baseline_comment <- "mod_baseline_"
       
     }
     
@@ -282,6 +301,7 @@
         prefix,
         test_run_comment,
         testdata_comment,
+        baseline_comment,
         topology_comment,
         feature_type_comment,
         top_ranks_comment,
