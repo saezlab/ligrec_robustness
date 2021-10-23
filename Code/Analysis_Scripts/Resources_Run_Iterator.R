@@ -117,11 +117,7 @@ robustness_resource <-
                          preserve_topology = preserve_topology,
                          feature_type      = feature_type,
                          top_n             = top_n,
-                         NATMI_tag         = job_id,
-                         
-                         trial_run = TRUE,
-                         number_seeds = 2,
-                         dilution_props = c(0.3, 0.6))
+                         NATMI_tag         = job_id)
 
 
 # Extra info for console output
