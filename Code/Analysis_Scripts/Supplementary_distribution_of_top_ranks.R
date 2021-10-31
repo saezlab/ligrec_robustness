@@ -16,7 +16,7 @@
   
   # First we load testdata from the data folder. 
   # We also give a label (testdata_type, choose "seurat_pbmc" or "liana_test")
-  testdata_type <- "liana_test"  
+  testdata_type <- "seurat_pbmc"  
   testdata      <- extract_Testdata(testdata_type = testdata_type)
   
   # We format the metadata so that the cluster annotations in metadata and 
@@ -46,11 +46,11 @@
   
   
   methods_vector <- c("call_connectome",
-                    # "call_natmi",
+                      "call_natmi",
                       "call_italk",
                       "call_sca",
-                      "cellchat" #,
-                     # "squidpy"
+                      "cellchat" ,
+                      "squidpy"
                     )
   
   # Convert methods_vector to a list and name it
