@@ -16,7 +16,7 @@
   
   # First we load testdata from the data folder. 
   # We also give a label (testdata_type, choose "seurat_pbmc" or "liana_test")
-  testdata_type <- "seurat_pbmc"  
+  testdata_type <- "liana_test"  
   testdata      <- extract_Testdata(testdata_type = testdata_type)
   
   # We format the metadata so that the cluster annotations in metadata and 
@@ -46,11 +46,11 @@
   
   
   methods_vector <- c("call_connectome",
-                      "call_natmi",
+                    # "call_natmi",
                       "call_italk",
                       "call_sca",
-                      "cellchat",
-                      "squidpy"
+                      "cellchat" #,
+                     # "squidpy"
                     )
   
   # Convert methods_vector to a list and name it
@@ -94,6 +94,19 @@
            
 
   
+  top_rank_proportions <- 
+    tibble("methods"             = methods_vector,
+           "number_unique_edges" = map(top_ranks, function(top_ranks_tib) {
+             
+             number_unique_edges <- top_ranks_tib$LR_Pair %>%
+               unique() %>%
+               length()
+             
+             proportion <- number_unique_edges / nrow(top_ranks_tib) *100
+             
+           }) %>% 
+             unlist()) %>%
+    arrange(desc(number_unique_edges))
   
   
   
@@ -141,10 +154,15 @@
     path = "Outputs"
   )
   
-  results <- list(top_rank_edges = top_rank_edges,
-                  topology = topology,
-                  topology_plot = topology_plot)
   
-  save(top_rank_edges, file = "Outputs/Top_Rank_Edges_supp_topology.RData")
+  prop_top_rank_edges <- top_rank_edges
+  
+  results <- list(top_rank_proportions = top_rank_proportions,
+                  top_rank_edges = top_rank_edges,
+                  topology = topology,
+                  topology_plot = topology_plot,
+                  liana_results = liana_results)
+  
+  save(results, file = "Outputs/Top_Rank_Edges_supp_topology.RData")
 
 }
