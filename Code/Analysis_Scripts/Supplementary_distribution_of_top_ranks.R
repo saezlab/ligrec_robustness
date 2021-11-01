@@ -1,6 +1,5 @@
-# 11. NATMI produces more unique LR Pairs in the top ranking than other methods ----
-# Other methods produce less unique LR Pairs and repeat them among more cluster combinations
-# NATMI has less repeats
+# Analysis of degreeness per significant interaction
+
 {
   
   # Load required Packages
@@ -79,7 +78,7 @@
     map_depth(., .depth = 1, format_top_ranks)
   
   
-  
+  # degreeness per method
   top_rank_edges <- 
     tibble("methods"             = methods_vector,
            "number_unique_edges" = map(top_ranks, function(top_ranks_tib) {
@@ -93,7 +92,7 @@
     arrange(desc(number_unique_edges))
            
 
-  
+  # degreeness per significant interactions per method
   top_rank_proportions <- 
     tibble("methods"             = methods_vector,
            "number_unique_edges" = map(top_ranks, function(top_ranks_tib) {
@@ -102,7 +101,7 @@
                unique() %>%
                length()
              
-             proportion <- number_unique_edges / nrow(top_ranks_tib) *100
+             proportion <- number_unique_edges / nrow(top_ranks_tib)
              
            }) %>% 
              unlist()) %>%
@@ -145,7 +144,7 @@
   
   print(topology_plot)
   
-  # Save both plots
+  # Save topology plot
   ggsave(
     plot = topology_plot,
     "Topology_Plot.png",
@@ -155,8 +154,7 @@
   )
   
   
-  prop_top_rank_edges <- top_rank_edges
-  
+  # Sum everything up and return it
   results <- list(top_rank_proportions = top_rank_proportions,
                   top_rank_edges = top_rank_edges,
                   topology = topology,
